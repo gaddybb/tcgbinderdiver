@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App states in action: desktop: 2. Loading a list</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&amp;family=Karla:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#d7e3e4}a:hover{color:#ffffff}
+@keyframes bd-rise{0%{transform:translateY(0);opacity:0}12%{opacity:1}100%{transform:translateY(-920px);opacity:0}}
+@keyframes bd-cue{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+@keyframes bd-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes bd-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.bd-far{animation:bd-rise 22s linear infinite;opacity:.35}
+.bd-mid{animation:bd-rise 14s linear infinite;opacity:.55}
+.bd-near{animation:bd-rise 9s linear infinite;opacity:.75}
+.bd-kelp{transform-origin:bottom center;animation:bd-sway 8s ease-in-out infinite}
+.bd-cue{animation:bd-cue 2.6s ease-in-out infinite}
+.bd-drift{animation:bd-drift 9s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.bd-far,.bd-mid,.bd-near,.bd-kelp,.bd-cue,.bd-drift{animation:none}}
+</style>
+
+<style>body{margin:0;background:#0b0f12}body>div:first-of-type{margin:0 auto}</style>
+</head>
+<body>
+
+
+<div style="position: relative; box-sizing: border-box; width: 1440px; height: 900px; overflow: hidden; font-family: 'Karla', ui-sans-serif, system-ui, sans-serif; color: #f1f3f2; background: #12212a"><header style="background: #172a35; border-bottom: 1px solid rgba(230, 236, 236, 0.16)">
+<nav aria-label="Main" style="max-width: 1240px; margin: 0 auto; padding: 18px 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px">
+<a href="#home" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #f1f3f2"><svg aria-hidden="true" width="32" height="32" viewBox="0 0 64 64"><circle cx="32" cy="28" r="22" fill="#c8a96a"></circle><circle cx="32" cy="29" r="12" fill="#172a35" stroke="#8e7442" stroke-width="3"></circle><path d="M20 29h24M32 17v24" stroke="#8e7442" stroke-width="2"></path><path d="M12 50h40l-4 10H16z" fill="#a98d55"></path></svg><span style="font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 21px">Binder Diver</span></a>
+<div style="display: flex; flex-wrap: wrap; gap: 22px; margin-left: auto; align-items: center; font-size: 16px; font-weight: 500">
+<a href="#walkthrough" style="text-decoration: none">Walkthrough</a>
+<a href="#support" style="text-decoration: none">Support</a>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #c3cccc">Game
+<select style="font: inherit; font-size: 15px; color: #f1f3f2; background: #12212a; border: 1px solid #6fb6e0; border-radius: 10px; padding: 9px 12px; min-height: 44px"><option>Magic: The Gathering</option></select></label>
+<a href="#lists" aria-current="page" style="color: #f1f3f2; font-weight: 700; text-decoration: none; border: 1px solid rgba(230, 236, 236, 0.4); padding: 11px 18px; border-radius: 12px">My lists</a>
+<a href="#dive" style="color: #14191c; background: #6fb6e0; font-weight: 700; text-decoration: none; padding: 12px 20px; border-radius: 12px">Store dive</a>
+</div>
+</nav>
+</header><main style="max-width: 1100px; margin: 0 auto; padding: 32px; display: flex; flex-direction: column; gap: 18px"><div aria-busy="true" aria-live="polite" style="display: flex; flex-direction: column; gap: 14px"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Loading your list</span><span aria-hidden="true" style="display: block; width: 40%; height: 30px; border-radius: 8px; background: #253e4c"></span><span aria-hidden="true" style="display: block; width: 25%; height: 14px; border-radius: 6px; background: #253e4c"></span><section style="background: #172a35; border: 1px solid rgba(230, 236, 236, 0.16); border-radius: 16px; padding: 8px 16px 12px"><ul style="list-style: none; margin: 0; padding: 0"><li style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(230, 236, 236, 0.16)"><span aria-hidden="true" style="display: block; width: 36px; height: 50px; border-radius: 4px; background: #253e4c"></span><span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px"><span aria-hidden="true" style="display: block; width: 55%; height: 14px; border-radius: 6px; background: #253e4c"></span><span aria-hidden="true" style="display: block; width: 30%; height: 10px; border-radius: 6px; background: #253e4c"></span></span><span aria-hidden="true" style="display: block; width: 48px; height: 14px; border-radius: 6px; background: #253e4c"></span></li><li style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(230, 236, 236, 0.16)"><span aria-hidden="true" style="display: block; width: 36px; height: 50px; border-radius: 4px; background: #253e4c"></span><span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px"><span aria-hidden="true" style="display: block; width: 55%; height: 14px; border-radius: 6px; background: #253e4c"></span><span aria-hidden="true" style="display: block; width: 30%; height: 10px; border-radius: 6px; background: #253e4c"></span></span><span aria-hidden="true" style="display: block; width: 48px; height: 14px; border-radius: 6px; background: #253e4c"></span></li><li style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(230, 236, 236, 0.16)"><span aria-hidden="true" style="display: block; width: 36px; height: 50px; border-radius: 4px; background: #253e4c"></span><span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px"><span aria-hidden="true" style="display: block; width: 55%; height: 14px; border-radius: 6px; background: #253e4c"></span><span aria-hidden="true" style="display: block; width: 30%; height: 10px; border-radius: 6px; background: #253e4c"></span></span><span aria-hidden="true" style="display: block; width: 48px; height: 14px; border-radius: 6px; background: #253e4c"></span></li><li style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(230, 236, 236, 0.16)"><span aria-hidden="true" style="display: block; width: 36px; height: 50px; border-radius: 4px; background: #253e4c"></span><span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px"><span aria-hidden="true" style="display: block; width: 55%; height: 14px; border-radius: 6px; background: #253e4c"></span><span aria-hidden="true" style="display: block; width: 30%; height: 10px; border-radius: 6px; background: #253e4c"></span></span><span aria-hidden="true" style="display: block; width: 48px; height: 14px; border-radius: 6px; background: #253e4c"></span></li><li style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(230, 236, 236, 0.16)"><span aria-hidden="true" style="display: block; width: 36px; height: 50px; border-radius: 4px; background: #253e4c"></span><span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px"><span aria-hidden="true" style="display: block; width: 55%; height: 14px; border-radius: 6px; background: #253e4c"></span><span aria-hidden="true" style="display: block; width: 30%; height: 10px; border-radius: 6px; background: #253e4c"></span></span><span aria-hidden="true" style="display: block; width: 48px; height: 14px; border-radius: 6px; background: #253e4c"></span></li><li style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(230, 236, 236, 0.16)"><span aria-hidden="true" style="display: block; width: 36px; height: 50px; border-radius: 4px; background: #253e4c"></span><span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px"><span aria-hidden="true" style="display: block; width: 55%; height: 14px; border-radius: 6px; background: #253e4c"></span><span aria-hidden="true" style="display: block; width: 30%; height: 10px; border-radius: 6px; background: #253e4c"></span></span><span aria-hidden="true" style="display: block; width: 48px; height: 14px; border-radius: 6px; background: #253e4c"></span></li></ul></section><p style="margin: 0; font-size: 14px; color: #c3cccc">Shapes stand in for cards while the list loads. Saved lists load from this browser, so this is usually brief.</p></div></main></div>
+
+</body>
+</html>

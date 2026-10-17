@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Show to staff, big text: phone</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&amp;family=Karla:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#d7e3e4}a:hover{color:#ffffff}
+@keyframes bd-rise{0%{transform:translateY(0);opacity:0}12%{opacity:1}100%{transform:translateY(-920px);opacity:0}}
+@keyframes bd-cue{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+@keyframes bd-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes bd-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.bd-far{animation:bd-rise 22s linear infinite;opacity:.35}
+.bd-mid{animation:bd-rise 14s linear infinite;opacity:.55}
+.bd-near{animation:bd-rise 9s linear infinite;opacity:.75}
+.bd-kelp{transform-origin:bottom center;animation:bd-sway 8s ease-in-out infinite}
+.bd-cue{animation:bd-cue 2.6s ease-in-out infinite}
+.bd-drift{animation:bd-drift 9s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.bd-far,.bd-mid,.bd-near,.bd-kelp,.bd-cue,.bd-drift{animation:none}}
+</style>
+
+<style>body{margin:0;background:#0b0f12}body>div:first-of-type{margin:0 auto}</style>
+</head>
+<body>
+
+
+<div style="position: relative; box-sizing: border-box; width: 390px; height: 844px; overflow: hidden; font-family: 'Karla', ui-sans-serif, system-ui, sans-serif; color: #f1f3f2; background: #12212a"><div style="position: absolute; inset: 0; background: #f1f3f2; color: #14191c; padding: 20px; display: flex; flex-direction: column; gap: 10px"><div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 15px; font-weight: 700; color: #3d4547">Looking for these cards</span><button type="button" style="font: inherit; font-weight: 700; font-size: 15px; color: #14191c; background: transparent; border: 1.5px solid #14191c; border-radius: 10px; padding: 0 14px; min-height: 44px; cursor: pointer">Close</button></div><ul style="list-style: none; margin: 0; padding: 0"><li style="padding: 18px 0; border-top: 1px solid rgba(20, 25, 28, 0.15)"><div style="font-weight: 700; font-size: 30px; line-height: 1.15">Heliod, Sun-Crowned</div><div style="font-size: 18px; margin-top: 4px; color: #3d4547">Theros Beyond Death · THB 18 · likely in bulk boxes</div></li><li style="padding: 18px 0; border-top: 1px solid rgba(20, 25, 28, 0.15)"><div style="font-weight: 700; font-size: 30px; line-height: 1.15">Path to Exile</div><div style="font-size: 18px; margin-top: 4px; color: #3d4547">Double Masters · 2XM 25 · likely in bulk boxes</div></li></ul><p style="margin: 0; font-size: 15px; color: #3d4547">2 cards · tap Close to mark what they found</p></div></div>
+
+</body>
+</html>
