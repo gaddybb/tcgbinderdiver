@@ -1,0 +1,9 @@
+/* Magic theme: blues. Only live game in v1. Other games get their own file with the same variable names. */
+[data-game='magic'] {
+  --color-ground: #172a35;
+  --color-deep: #12212a;
+  --color-floor1: #1f3542;
+  --color-floor2: #253e4c;
+  --color-accent: #6fb6e0;
+  --color-tint: #5aa0d0;
+}

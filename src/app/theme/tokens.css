@@ -1,0 +1,48 @@
+/* Shared design tokens. Components use only these variables: no hex values, font names or pixel sizes.
+   Values are placeholders from reference/design/mockups/UIKit.html until the visual design pass. */
+:root {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Karla', system-ui, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.75rem;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+  --weight-display: 800;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-pill: 999px;
+
+  --tap-min: 2.75rem; /* 44 px minimum tap target */
+  --content-max: 70rem;
+
+  /* Fixed across games */
+  --color-text: #f1f3f2;
+  --color-text-muted: #c3cccc;
+  --color-brass: #c8a96a;
+  --color-error: #e2a08f;
+  --color-warning: #e8c35e;
+  --color-divider: rgba(230, 236, 236, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
