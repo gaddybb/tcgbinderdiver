@@ -8,7 +8,7 @@ Card data and images from [Scryfall](https://scryfall.com).
 
 ## Develop
 
-Node 20 or newer.
+Node 22.19 or newer.
 
 ```bash
 npm install
