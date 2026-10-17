@@ -39,7 +39,12 @@ So nothing that may change gets scattered across files:
 - If a rule or number here conflicts with the reference folder, say so and stop; don't pick silently.
 
 ## Commands
-Fill this in after the scaffold PR (expected: `npm run dev`, `npm test`, `npm run lint`, `npm run build`).
+- `npm run dev`: local dev server
+- `npm test`: Vitest, once (`npm run test:watch` to watch)
+- `npm run lint`: ESLint plus `tsc` type check
+- `npm run build`: type check and production build to `dist` (Cloudflare Pages output)
+
+The build plan and PR order are in `docs/PLAN.md`.
 
 ## Never
 - Add a paywall, subscription, required sign-up or required download (Fan Content Policy).
