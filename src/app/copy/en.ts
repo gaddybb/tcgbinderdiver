@@ -400,6 +400,9 @@ export const en = {
       })[kind],
       cards: (n: number) => `${n} ${n === 1 ? 'card' : 'cards'}`,
       bigText: 'Show to staff: big text',
+      bigTextShort: 'Big text',
+      view: { label: 'View', gallery: 'Gallery', table: 'Table' },
+      foundCount: (found: number, total: number) => `${found} of ${total} found`,
       notAvailable: 'Not available',
       notAvailableLabel: (name: string) => `${name} is not available`,
       found: 'Found',
@@ -422,6 +425,11 @@ export const en = {
       keep: 'Keep diving',
       end: 'End trip',
     },
+  },
+  basicsNote: {
+    title: (n: number) => `${n} basic ${n === 1 ? 'land is' : 'lands are'} left off the hunt`,
+    detail: 'Most stores sell basics separately, so they are not planned. You can include them.',
+    action: 'Include basic lands',
   },
   tripEnd: {
     title: 'Trip complete',
