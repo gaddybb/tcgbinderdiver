@@ -315,6 +315,21 @@ describe('Store dive: the table view at a counter', () => {
     expect(screen.getByText(c.notAvailable)).toBeTruthy();
   });
 
+  it('remembers the choice on this device, so it is the Table next time', async () => {
+    const { storage, unmount } = await setup();
+    await onFoundations();
+    fireEvent.change(picker(), { target: { value: 'ask' } });
+    await screen.findByRole('heading', { name: 'Ask an associate' });
+    fireEvent.click(screen.getByRole('button', { name: c.view.table }));
+    await waitFor(async () => expect(await storage.get('settings', 'pref:counter-view')).toBe('table'));
+    unmount();
+    render(<App storage={storage} clock={() => T0} connector={fakeConnector([]).connector} />);
+    await onFoundations();
+    fireEvent.change(picker(), { target: { value: 'ask' } });
+    await screen.findByRole('heading', { name: 'Ask an associate' });
+    await waitFor(() => expect(screen.getByRole('button', { name: c.view.table }).getAttribute('aria-pressed')).toBe('true'));
+  });
+
   it('goes back to the gallery', async () => {
     await toTable();
     fireEvent.click(screen.getByRole('button', { name: c.view.gallery }));
