@@ -49,3 +49,31 @@ export function rawCard(over: Record<string, unknown> = {}) {
 
 export const list = (data: unknown[], extra: Record<string, unknown> = {}) => ({ object: 'list', has_more: false, data, ...extra });
 export const notFound = (extra: Record<string, unknown> = {}) => ({ object: 'error', code: 'not_found', status: 404, ...extra });
+
+// A fake clock where time only moves when `run` moves it, so a test can have requests that take time, running at once.
+// Inject `now` and `sleep` into the client, and use `sleep` in a fetch handler to give a request a duration.
+export function makeVirtualClock() {
+  let t = 0;
+  const timers: { at: number; wake: () => void }[] = [];
+  const settle = async () => { for (let i = 0; i < 5; i++) await new Promise<void>(resolve => setImmediate(resolve)); };
+  return {
+    now: () => t,
+    sleep: (ms: number) => new Promise<void>(resolve => { timers.push({ at: t + ms, wake: resolve }); }),
+    get time() { return t; },
+    // Waits for `promise`, jumping time to the next timer whenever everything else is waiting.
+    async run<T>(promise: Promise<T>): Promise<T> {
+      let settled = false;
+      const watched = promise.finally(() => { settled = true; });
+      watched.catch(() => {});
+      for (;;) {
+        await settle();   // lets responses and storage finish their own work first
+        if (settled) return watched;
+        if (timers.length === 0) throw new Error('Nothing is scheduled and the work has not finished.');
+        timers.sort((a, b) => a.at - b.at);
+        const next = timers.shift()!;
+        t = Math.max(t, next.at);
+        next.wake();
+      }
+    },
+  };
+}
