@@ -14,7 +14,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint . && tsc -b --noEmit"
+    "lint": "eslint . && tsc -b --noEmit",
+    "data": "node scripts/build-card-data.mjs",
+    "data:fixture": "node scripts/build-card-data.mjs --fixture"
   },
   "dependencies": {
     "idb": "8.0.4",

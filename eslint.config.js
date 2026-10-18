@@ -13,6 +13,12 @@ export default tseslint.config(
     rules: { ...reactHooks.configs.recommended.rules },
   },
   {
+    // Build scripts run in Node.
+    files: ['scripts/**/*.mjs'],
+    extends: [js.configs.recommended],
+    languageOptions: { ecmaVersion: 2022, globals: globals.node },
+  },
+  {
     // src/core stays pure: no React, no fetch, no clock reads (pass `now` in).
     files: ['src/core/**/*.ts'],
     ignores: ['src/core/**/*.test.ts'],
