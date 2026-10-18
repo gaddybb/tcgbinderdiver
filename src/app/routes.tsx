@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import { BinderGroups } from './screens/dive/BinderGroups';
 import { DivePlan } from './screens/dive/DivePlan';
+import { OpenHandoff } from './screens/dive/OpenHandoff';
 import { StoreDive } from './screens/dive/StoreDive';
 import { TripSummary } from './screens/dive/TripSummary';
 import { Home } from './screens/Home';
@@ -25,6 +26,7 @@ const ROUTES: readonly { pattern: string; screen: Screen }[] = [
   { pattern: '/groups', screen: BinderGroups },
   { pattern: '/dive', screen: StoreDive },
   { pattern: '/trip', screen: TripSummary },
+  { pattern: '/open', screen: OpenHandoff },
   { pattern: '/walkthrough', screen: Walkthrough },
   { pattern: '/support', screen: Support },
   { pattern: '/about', screen: About },

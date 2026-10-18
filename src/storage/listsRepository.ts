@@ -53,9 +53,9 @@ export class ListsRepository {
     return wishlist;
   }
 
-  async createDeck(name: string, now: Date): Promise<CardList> {
+  async createDeck(name: string, now: Date, options: { sample?: boolean } = {}): Promise<CardList> {
     if (!canCreateList((await this.all()).length)) throw new ListLimitError();
-    const deck = createList({ id: this.makeId(), kind: 'deck', name }, now);
+    const deck = { ...createList({ id: this.makeId(), kind: 'deck', name }, now), ...(options.sample ? { sample: true } : {}) };
     await this.save(deck);
     return deck;
   }

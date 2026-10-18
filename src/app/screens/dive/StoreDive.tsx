@@ -18,6 +18,7 @@ import type { ColorCategory } from '../../components';
 import { copy } from '../../copy/en';
 import { useConnector } from '../../data/CardDataProvider';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
+import { useAnalytics } from '../../analytics/AnalyticsProvider';
 import { useTrip } from '../../data/TripProvider';
 import type { CardRecord } from '../../../core/cards';
 import { formatUsd } from '../../format';
@@ -43,6 +44,7 @@ export function StoreDive() {
   const { ready, trip, lists, data, cards, plan, update } = useTripPlan();
   const { end } = useTrip();
   const tour = useTourDone();
+  const analytics = useAnalytics();
 
   const [selected, setSelected] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -85,6 +87,16 @@ export function StoreDive() {
   };
 
   const finish = (stop: PlanStop, message: (label: string) => string) => {
+    let foundCount = 0;
+    let unfoundCopies = 0;
+    for (const c of stop.cards) {
+      const p = cards.parts.get(c.key);
+      if (!p) continue;
+      const got = foundCopies(trip, p);
+      foundCount += got;
+      unfoundCopies += p.copies - got;
+    }
+    analytics.track('stop_finished', { stop_type: stop.stop.kind, found: foundCount, unfound: unfoundCopies });
     update(tr => finishBinder(tr, stop.stop.id, cards.parts));
     toast.show({ message: message(stop.stop.label) });
     go(stops[index + 1]?.stop.id ?? stops[index - 1]?.stop.id);
@@ -233,7 +245,7 @@ export function StoreDive() {
                     edge={e.edge}
                     quantity={e.part.copies}
                     found={foundCopies(trip, e.part)}
-                    onFound={() => update(tr => markFound(tr, e.part))}
+                    onFound={() => { analytics.track('card_found', { stop_type: current.stop.kind }); update(tr => markFound(tr, e.part)); }}
                     onUndo={() => update(tr => undoFound(tr, e.part))}
                   />
                 ))}
@@ -255,7 +267,7 @@ export function StoreDive() {
             records={data.records}
             categoryOf={categoryOf}
             gridClass={gridClass}
-            onFound={part => update(tr => markFound(tr, part))}
+            onFound={part => { analytics.track('card_found', { stop_type: current.stop.kind }); update(tr => markFound(tr, part)); }}
             onUndo={part => update(tr => undoFound(tr, part))}
             onNotAvailable={key => update(tr => markNotAvailable(tr, key))}
             onDone={() => finish(current, copy.storeDive.counter.doneToast)}

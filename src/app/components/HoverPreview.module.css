@@ -1,0 +1,12 @@
+.host { display: inline-block; }
+.preview {
+  position: fixed;
+  z-index: var(--z-menu);
+  width: var(--size-preview-w);
+  aspect-ratio: var(--card-ratio);
+  object-fit: cover;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-menu);
+  pointer-events: none;
+  background: var(--color-floor2);
+}

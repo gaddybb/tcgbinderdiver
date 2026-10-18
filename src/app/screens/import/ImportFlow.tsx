@@ -14,6 +14,7 @@ import { useConnector } from '../../data/CardDataProvider';
 import { useLists } from '../../data/ListsProvider';
 import { useStorage } from '../../data/StorageProvider';
 import { navigate } from '../../router';
+import { useAnalytics } from '../../analytics/AnalyticsProvider';
 import { clearDraft, loadDraft, saveDraft } from './draft';
 import { clearImportText, peekImportText } from './handoff';
 import type { ImportDraft } from './draft';
@@ -37,6 +38,7 @@ export function ImportFlow() {
   const storage = useStorage();
   const connector = useConnector();
   const toast = useToast();
+  const analytics = useAnalytics();
 
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
   const [resuming, setResuming] = useState(params.get('resume') === '1');
@@ -66,7 +68,8 @@ export function ImportFlow() {
     setEntries(found);
     setUnreadable(false);
     setStep('lookup');
-  }, [draftFrom, storage]);
+    analytics.track('list_pasted', { cards: found.length, target: f.target });
+  }, [draftFrom, storage, analytics]);
 
   // Resume: restore what was filled in and go straight to the lookup.
   useEffect(() => {

@@ -94,4 +94,7 @@ interface Storage { get; put; delete; list }   // per collection; IndexedDB now,
 - Nearby-store map needs a Google Maps key and `[STORE NAME n]` placeholders.
 - Decide before launch: the look of the big-text control on counter places (now a quiet "Aa Big text" button; an icon-only button is the other option).
 - Small choices (the Gallery or Table view at counters) are kept on the device through the storage seam, not in a cookie, so no consent is needed and they can move to the account in v3.
-- QR code generation will need a small dependency (ask at PR 16). Mana font: ask at PR 7.
+- QR code: `qrcode-generator` 2.0.4 (MIT, no dependencies) was approved by the owner and added. Mana font: not needed (owner decision).
+- Analytics needs the Google Tag Manager container id `[GTM ID]` in `src/app/analytics/config.ts`, and the analytics flag turned on in `src/app/flags.ts`. Until both, there is no consent banner and nothing is loaded or sent.
+- Sample decks: names and lists go in `src/app/data/sampleDecks.ts` (`[SAMPLE DECK NAME]`). Until then the Try a sample deck buttons stay hidden.
+- Check the service worker in a real browser after the first deploy (the in-app browser used for checks refuses service workers).

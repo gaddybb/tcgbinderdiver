@@ -1,0 +1,13 @@
+{
+  "name": "TCG Binder Diver",
+  "short_name": "Binder Diver",
+  "description": "Find out which store binders to pull for every card on your lists.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#12212a",
+  "theme_color": "#172a35",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

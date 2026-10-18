@@ -12,6 +12,7 @@ import { useStorage } from '../data/StorageProvider';
 import { joinNames, listSummaryLine } from '../format';
 import { useLayout } from '../layout/useLayout';
 import { navigate } from '../router';
+import { SampleDeckButton } from './pages/SampleDeckButton';
 import { checkPaste } from '../../core/import';
 import { clearDraft, loadDraft } from './import/draft';
 import type { ImportDraft } from './import/draft';
@@ -112,7 +113,7 @@ export function MyLists() {
         )}
 
         {!lists.ready ? <SkeletonRow /> : !hasContent ? (
-          <EmptyState title={t.empty.title} actions={<Button onClick={paste}>{t.empty.action}</Button>}>
+          <EmptyState title={t.empty.title} actions={<><Button onClick={paste}>{t.empty.action}</Button><SampleDeckButton /></>}>
             {t.empty.text}
           </EmptyState>
         ) : (
@@ -122,7 +123,7 @@ export function MyLists() {
               {lists.lists.map(list => (
                 <ListCard
                   key={list.id}
-                  kindLabel={t.kind[list.kind]}
+                  kindLabel={list.sample ? t.kind.sample : t.kind[list.kind]}
                   title={list.name}
                   to={`/lists/${list.id}`}
                   summary={listSummaryLine(list, now)}

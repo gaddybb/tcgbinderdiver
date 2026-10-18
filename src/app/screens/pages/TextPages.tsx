@@ -1,4 +1,6 @@
 // About, Support, Privacy and More: pages of plain text and links.
+import { useAnalytics } from '../../analytics/AnalyticsProvider';
+import { Button } from '../../components';
 import { copy } from '../../copy/en';
 import { isOn } from '../../flags';
 import { KOFI_URL } from '../../links';
@@ -51,12 +53,18 @@ export function Support() {
 export function Privacy() {
   const t = copy.privacyPage;
   const s = t.sections;
+  const analytics = useAnalytics();
   return (
     <div className={styles.page}>
       <PageIntro eyebrow={t.eyebrow} title={t.title} />
       <p className={styles.text}>{t.updated} {t.lead}</p>
       <TextSection title={s.device.title}><p className={styles.text}>{s.device.text}</p></TextSection>
-      {isOn('analytics') && <TextSection title={s.analytics.title}><p className={styles.text}>{s.analytics.text}</p></TextSection>}
+      {analytics.available && (
+        <TextSection title={s.analytics.title}>
+          <p className={styles.text}>{s.analytics.text}</p>
+          <div><Button variant="secondary" onClick={analytics.reopen}>{copy.consent.change}</Button></div>
+        </TextSection>
+      )}
       <TextSection title={s.cards.title}><p className={styles.text}>{s.cards.text}</p></TextSection>
       {isOn('storeMap') && <TextSection title={s.stores.title}><p className={styles.text}>{s.stores.text}</p></TextSection>}
       {isOn('affiliateLinks') && <TextSection title={s.affiliate.title}><p className={styles.text}>{s.affiliate.text}</p></TextSection>}

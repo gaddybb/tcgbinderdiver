@@ -75,6 +75,8 @@
   --size-kit-column: 16rem;
   --size-list-card: 22rem;
   --size-aside: 24rem;
+  --size-qr: 11rem;        /* the QR code beside the dive plan */
+  --size-preview-w: 18rem; /* the larger card picture shown on hover in tables */
   --size-prose: 44rem;     /* reading width for text pages */
   --size-shot: 15rem;      /* height of a screenshot placeholder */
   --content-max: 70rem;

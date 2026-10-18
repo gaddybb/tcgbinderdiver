@@ -13,6 +13,7 @@ import { formatUsd } from '../../format';
 import { navigate } from '../../router';
 import screen from '../Screen.module.css';
 import styles from './Dive.module.css';
+import { DiveQr } from './DiveQr';
 import { divePlanFor } from './planData';
 import { PullSettingsPanel } from './PullSettingsPanel';
 import { startDive } from './startDive';
@@ -88,6 +89,8 @@ export function DivePanel({ compact, records }: DivePanelProps) {
             <Button disabled={stops.length === 0} onClick={() => startDive(tripApi, next)}>{copy.dive.startDive}</Button>
           )}
           <Button variant="text" onClick={() => navigate('/plan')}>{t.fullPlan}</Button>
+
+          {!compact && <DiveQr />}
 
           <section className={styles.section} aria-label={t.groupsTitle}>
             <div className={styles.toolbar}>

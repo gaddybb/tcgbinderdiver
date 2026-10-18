@@ -2,11 +2,16 @@ import { CARD_STATUSES } from '../../../core/status';
 import type { CardStatus } from '../../../core/status';
 import { resetStatuses, setAll, setStatus, statusCounts, statusOf } from '../../../core/import';
 import type { ResolvedEntry, StatusChoices } from '../../../core/import';
-import { Button, Menu, StatusPicker } from '../../components';
+import { Button, CardThumb, HoverPreview, Menu, StatusPicker } from '../../components';
+import type { ColorCategory } from '../../components';
 import { copy } from '../../copy/en';
 import styles from './Import.module.css';
 
 const t = copy.importFlow.own;
+
+// The colored edge of a thumbnail from the card's colors (the store's own color order is not needed here).
+const EDGE: Record<string, ColorCategory> = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
+const edgeOf = (colors: readonly string[]): ColorCategory => (colors.length > 1 ? 'Multicolor' : EDGE[colors[0]] ?? 'Colorless');
 
 interface OwnStepProps {
   entries: readonly ResolvedEntry[];
@@ -41,7 +46,12 @@ export function OwnStep({ entries, choices, onChange, busy, onBack, onFinish }: 
       <ul className={styles.list}>
         {entries.map(entry => (
           <li key={entry.cardKey} className={styles.row}>
-            <span className={styles.rowName}>{entry.name}{entry.quantity > 1 && ` ×${entry.quantity}`}</span>
+            <span className={styles.rowLead}>
+              <HoverPreview src={entry.card.imageNormal}>
+                <CardThumb edge={edgeOf(entry.card.colors)} src={entry.card.imageSmall} />
+              </HoverPreview>
+              <span className={styles.rowName}>{entry.name}{entry.quantity > 1 && ` ×${entry.quantity}`}</span>
+            </span>
             <StatusPicker
               cardName={entry.name}
               status={statusOf(choices, entry.cardKey)}

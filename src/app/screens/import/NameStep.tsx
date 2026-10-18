@@ -3,6 +3,7 @@ import { chunkForLimit, overLimit } from '../../../core/import';
 import { checkPaste } from '../../../core/import';
 import { Button, Input, Radio, Switch } from '../../components';
 import { copy } from '../../copy/en';
+import { SampleDeckButton } from '../pages/SampleDeckButton';
 import type { ImportTarget, LimitChoice } from './draft';
 import styles from './Import.module.css';
 
@@ -120,7 +121,10 @@ export function NameStep({ form, onChange, attempted, unreadable, nameError, onS
       )}
 
       <div className={styles.actions}>
-        <Button variant="secondary" onClick={onCancel}>{copy.importFlow.cancel}</Button>
+        <span className={styles.actionsEnd}>
+          <Button variant="secondary" onClick={onCancel}>{copy.importFlow.cancel}</Button>
+          <SampleDeckButton />
+        </span>
         <span className={styles.actionsEnd}>
           <span className={styles.note}>{t.nothingSaved}</span>
           <Button onClick={onSubmit}>{ready ? t.lookUp(lines) : t.lookUpEmpty}</Button>

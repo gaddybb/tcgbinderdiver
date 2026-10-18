@@ -8,7 +8,7 @@ import type { NeededAcrossLists } from '../../../core/lists';
 import type { CardRecord } from '../../../core/cards';
 import { foundCopies, remainingCopies } from '../../../core/trip';
 import type { Trip } from '../../../core/trip';
-import { Button, CardThumb, CardTile, Chip, SummaryBar } from '../../components';
+import { Button, CardThumb, CardTile, Chip, HoverPreview, SummaryBar } from '../../components';
 import type { ColorCategory } from '../../components';
 import { isColorCategory } from '../../components';
 import { copy } from '../../copy/en';
@@ -119,7 +119,7 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
             const gone = trip.notAvailable.includes(row.key);
             return (
               <li key={row.key} className={cx(styles.counterRow, (found || gone) && styles.counterRowGone)}>
-                <CardThumb edge={row.edge} src={row.thumb} />
+                <HoverPreview src={row.image}><CardThumb edge={row.edge} src={row.thumb} /></HoverPreview>
                 <div className={styles.counterText}>
                   <div className={styles.counterName}>{row.name}{row.part.copies > 1 && ` ×${row.part.copies}`}</div>
                   <div className={styles.counterSub}>{row.sub}{have > 0 && !found && ` · ${t.foundCount(have, row.part.copies)}`}</div>
