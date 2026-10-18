@@ -1,0 +1,18 @@
+.group { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.button {
+  font: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  width: var(--size-color-filter-w);
+  height: var(--size-chip);
+  border-radius: var(--radius-sm);
+  border: var(--border-thin) solid var(--color-divider);
+  background: var(--color-floor1);
+  color: var(--color-text);
+  cursor: pointer;
+}
+.button[aria-pressed='true'] {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-color: transparent;
+}

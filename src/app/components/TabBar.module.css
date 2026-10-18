@@ -1,0 +1,22 @@
+.bar {
+  width: 100%;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  background: var(--color-deep);
+  border: var(--border-thin) solid var(--color-divider);
+  border-radius: var(--radius-lg);
+}
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-min);
+  padding: var(--space-2) 0;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  color: var(--color-tab);
+  text-decoration: none;
+}
+.tab[aria-current='page'] { color: var(--color-accent); }

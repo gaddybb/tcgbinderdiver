@@ -1,0 +1,21 @@
+.sm { width: 2rem; height: 2rem; }
+.md { width: 3.5rem; height: 3.5rem; }
+.lg { width: 5.25rem; height: 5.25rem; }
+.anchor { width: 6rem; height: 6rem; }
+
+.helmet { fill: var(--color-brass); }
+.lens { fill: var(--color-ground); stroke: var(--color-brass-dark); stroke-width: 3; }
+.crossbar { stroke: var(--color-brass-dark); stroke-width: 2; fill: none; }
+.collar { fill: var(--color-brass-mid); }
+
+.disc { fill: var(--color-deep); stroke: var(--color-brass); stroke-width: 3; }
+.tintDisc { fill: var(--color-tint); opacity: 0.14; }
+.star { fill: none; stroke: var(--color-brass); stroke-width: 2.5; }
+.starLines { fill: none; stroke: var(--color-brass); stroke-width: 1; opacity: 0.5; }
+.hub { fill: var(--color-brass); }
+.shine { fill: var(--color-text); opacity: 0.45; }
+.nodeWhite { fill: var(--color-edge-white); }
+.nodeBlue { fill: var(--color-edge-blue); }
+.nodeBlack { fill: var(--color-edge-black); }
+.nodeRed { fill: var(--color-edge-red); }
+.nodeGreen { fill: var(--color-edge-green); }

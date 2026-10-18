@@ -1,0 +1,37 @@
+.chip {
+  font: inherit;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  min-height: var(--size-chip);
+  padding: 0.4375rem 0.8125rem;
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  background: transparent;
+  border: var(--border-thin) solid var(--color-border-strong);
+}
+.chip[aria-pressed='true'] {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-color: transparent;
+}
+.removable {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-floor2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+.remove {
+  font: inherit;
+  width: var(--tap-min);
+  min-height: var(--tap-min);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}

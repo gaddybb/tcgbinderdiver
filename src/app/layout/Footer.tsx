@@ -8,7 +8,7 @@ export function Footer() {
       <div className={styles.inner}>
         <p className={styles.text} data-testid="fan-content-disclaimer">{copy.footer.fanContentDisclaimer}</p>
         <p className={styles.text}>
-          <a href={copy.footer.scryfallUrl} target="_blank" rel="noreferrer">{copy.footer.scryfallCredit}</a>
+          <a href={copy.footer.scryfallUrl} target="_blank" rel="noreferrer" className={styles.link}>{copy.footer.scryfallCredit}</a>
         </p>
       </div>
     </footer>

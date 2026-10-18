@@ -1,0 +1,36 @@
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-paper);
+  color: var(--color-on-paper);
+  width: max-content;
+  max-width: 100%;
+  box-shadow: var(--shadow-toast);
+}
+.message { font-size: var(--text-body-sm); font-weight: var(--weight-bold); }
+.action {
+  font: inherit;
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-on-paper);
+  background: transparent;
+  border: 0;
+  text-decoration: underline;
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+.host {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--space-4);
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+.host > * { pointer-events: auto; }
