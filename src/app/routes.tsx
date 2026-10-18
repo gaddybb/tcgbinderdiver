@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import { Home } from './screens/Home';
+import { ImportFlow } from './screens/import/ImportFlow';
 import { Kit } from './screens/Kit';
 import { ListReview } from './screens/ListReview';
 import { MyLists } from './screens/MyLists';
@@ -13,6 +14,7 @@ const ROUTES: readonly { pattern: string; screen: Screen }[] = [
   { pattern: '/', screen: Home },
   { pattern: '/kit', screen: Kit },
   { pattern: '/lists', screen: MyLists },
+  { pattern: '/import', screen: ImportFlow },
   { pattern: '/lists/:id', screen: ListReview },
 ];
 

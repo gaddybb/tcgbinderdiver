@@ -205,7 +205,7 @@ describe('BulkConnector: when the catalog is not available', () => {
     await connector.printings(found[0].card);
     expect(live.calls.printings).toEqual(['Sol Ring']);
     expect(await connector.fuzzy('x')).toEqual({ status: 'none' });
-    expect(await connector.autocomplete('so')).toEqual([]);
+    expect(await connector.autocomplete('so')).toEqual(['Sol Ring']);   // the live fake's own answer
     expect(await connector.sets(new Date())).toEqual([]);
   });
 
