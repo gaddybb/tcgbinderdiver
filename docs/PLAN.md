@@ -69,7 +69,9 @@ interface Storage { get; put; delete; list }   // per collection; IndexedDB now,
     card detail (needs the "odds" levels, which the spec does not define yet). Also from the owner: on the list review,
     desktop rows show a larger card image on hover (and on keyboard focus); phone shows larger thumbnails, with
     tap-to-enlarge if needed. Function over form for now.
-11. Import flow (4 steps, wishlist variant, fix names, problem states). Replaces the temporary paste box.
+11. Import flow (4 steps, wishlist variant, fix names, problem states). Replaces the temporary paste box. Split in four:
+    11a import core (pure, tested), 11b steps 1 and 2 (name it, look up) wired into My lists, 11c step 3 (fix names),
+    11d step 4 (what you own), problem states and the resume banner.
 12. Dive plan, pull settings, binder groups, no-binder cards.
 13. Trip core and store dive: flip stops (Found +1, Finish binder, frozen order, Reopen).
 14. Show-staff stops, big-text view, end trip, trip summary, Buy the rest.
