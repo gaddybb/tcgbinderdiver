@@ -31,6 +31,7 @@ interface CounterStopProps {
   onFound: (part: NeededAcrossLists) => void;
   onUndo: (part: NeededAcrossLists) => void;
   onNotAvailable: (key: string) => void;
+  onOpen: (key: string, keys: string[]) => void;   // opens card detail, with the cards to walk through
   onDone: () => void;
 }
 
@@ -49,7 +50,7 @@ interface Row {
 
 type View = 'gallery' | 'table';
 
-export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass, onFound, onUndo, onNotAvailable, onDone }: CounterStopProps) {
+export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass, onFound, onUndo, onNotAvailable, onOpen, onDone }: CounterStopProps) {
   const phone = useLayout() === 'phone';
   const [big, setBig] = useState(false);
   const [view, setView] = usePreference<View>('counter-view', 'gallery');
@@ -108,6 +109,7 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
               onFound={() => onFound(row.part)}
               onUndo={() => onUndo(row.part)}
               onNotAvailable={() => onNotAvailable(row.key)}
+              onOpen={() => onOpen(row.key, rows.map(r => r.key))}
             />
           ))}
         </ul>
@@ -119,7 +121,11 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
             const gone = trip.notAvailable.includes(row.key);
             return (
               <li key={row.key} className={cx(styles.counterRow, (found || gone) && styles.counterRowGone)}>
-                <HoverPreview src={row.image}><CardThumb edge={row.edge} src={row.thumb} /></HoverPreview>
+                <HoverPreview src={row.image}>
+                  <button type="button" className={styles.openThumb} aria-label={copy.cardTile.openCard(row.name)} onClick={() => onOpen(row.key, rows.map(r => r.key))}>
+                    <CardThumb edge={row.edge} src={row.thumb} />
+                  </button>
+                </HoverPreview>
                 <div className={styles.counterText}>
                   <div className={styles.counterName}>{row.name}{row.part.copies > 1 && ` ×${row.part.copies}`}</div>
                   <div className={styles.counterSub}>{row.sub}{have > 0 && !found && ` · ${t.foundCount(have, row.part.copies)}`}</div>

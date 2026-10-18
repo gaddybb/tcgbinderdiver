@@ -282,6 +282,16 @@ describe('Store dive: a counter stop', () => {
 });
 
 describe('Store dive: the table view at a counter', () => {
+  it('opens card detail from a row thumbnail', async () => {
+    await setup();
+    await onFoundations();
+    fireEvent.change(picker(), { target: { value: 'ask' } });
+    await screen.findByRole('heading', { name: 'Ask an associate' });
+    fireEvent.click(screen.getByRole('button', { name: c.view.table }));
+    fireEvent.click(screen.getAllByRole('button', { name: copy.cardTile.openCard('Old Bulk') })[0]);
+    expect(within(await screen.findByRole('dialog')).getByRole('heading', { name: 'Old Bulk' })).toBeTruthy();
+  });
+
   const toTable = async () => {
     await setup();
     await onFoundations();
@@ -409,6 +419,25 @@ describe('Ending the trip', () => {
     await waitFor(() => expect(copied).toBe('1 Soul Warden\n2 Cultivate'));
     expect(await screen.findByText(copy.tripEnd.buy.copied)).toBeTruthy();
     Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+  });
+
+  it('Buy on TCGplayer copies the leftovers and opens Mass Entry in a new tab, with no commission line while affiliate links are off', async () => {
+    let copied = '';
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (text: string) => { copied = text; } }, configurable: true });
+    const opened: unknown[][] = [];
+    const original = window.open;
+    window.open = ((...args: unknown[]) => { opened.push(args); return null; }) as typeof window.open;
+    try {
+      await setup({ lists: [{ ...DECK, cards: [['Soul Warden']] }], trip: { ...startTrip('t', T0, ['a']), endedAt: T0.toISOString() }, path: '/trip' });
+      expect(await screen.findByText(copy.tripEnd.buy.buyNote)).toBeTruthy();
+      expect(screen.queryByText(copy.affiliate.note)).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: copy.tripEnd.buy.buyOnTcgplayer }));
+      await waitFor(() => expect(copied).toBe('1 Soul Warden'));
+      await waitFor(() => expect(opened).toEqual([['https://www.tcgplayer.com/massentry', '_blank', 'noopener,noreferrer']]));
+    } finally {
+      window.open = original;
+      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+    }
   });
 
   it('offers to find game stores nearby, opening a Google Maps search in a new tab and nothing else', async () => {

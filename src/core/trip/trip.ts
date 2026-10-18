@@ -79,6 +79,25 @@ export function undoFound(trip: Trip, part: NeededAcrossLists): Trip {
   return { ...trip, found: { ...trip.found, [part.cardKey]: byList } };
 }
 
+// Card detail can put a copy on a specific list. Nothing happens when that list's copies are all found.
+export function markFoundOn(trip: Trip, part: NeededAcrossLists, listId: string): Trip {
+  const target = part.parts.find(p => p.listId === listId);
+  if (!target || foundOn(trip, part.cardKey, listId) >= target.quantity) return trip;
+  const byList = { ...trip.found[part.cardKey], [listId]: foundOn(trip, part.cardKey, listId) + 1 };
+  return { ...trip, found: { ...trip.found, [part.cardKey]: byList }, notAvailable: trip.notAvailable.filter(k => k !== part.cardKey) };
+}
+
+// Takes back one copy found for that list.
+export function undoFoundOn(trip: Trip, part: NeededAcrossLists, listId: string): Trip {
+  if (!part.parts.some(p => p.listId === listId) || foundOn(trip, part.cardKey, listId) <= 0) return trip;
+  const byList = { ...trip.found[part.cardKey], [listId]: foundOn(trip, part.cardKey, listId) - 1 };
+  return { ...trip, found: { ...trip.found, [part.cardKey]: byList } };
+}
+
+// Copies found for one list (never more than it wants).
+export const foundOnList = (trip: Trip, part: NeededAcrossLists, listId: string): number =>
+  Math.min(foundOn(trip, part.cardKey, listId), part.parts.find(p => p.listId === listId)?.quantity ?? 0);
+
 // At a counter stop one tap finds every copy the staff have.
 export function markAllFound(trip: Trip, part: NeededAcrossLists): Trip {
   let next = trip;

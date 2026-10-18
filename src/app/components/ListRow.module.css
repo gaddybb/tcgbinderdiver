@@ -8,6 +8,8 @@
 .lead { flex: 0 0 auto; display: flex; align-items: center; }
 .body { flex: 1 1 auto; min-width: 0; }
 .title { font-weight: var(--weight-bold); font-size: var(--text-body-sm); }
+.open { display: flex; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+.openTitle { font: inherit; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
 .subtitle { font-size: var(--text-caption); color: var(--color-text-muted); }
 .trailing { flex: 0 0 auto; font-weight: var(--weight-bold); }
 .rank {

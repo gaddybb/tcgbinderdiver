@@ -6,8 +6,8 @@ import { NOW, pr } from '../engine/fixtures';
 import { addEntries, createList, setEntryStatus } from '../lists';
 import type { CardList } from '../lists';
 import {
-  clearNotAvailable, endTrip, finishBinder, finishedStops, foundCopies, fullyFound, markAllFound, markFound, markNotAvailable, massEntryText,
-  remainingCopies, reopenBinder, setListOn, startTrip, stopLabel, tripCards, tripPlan, tripSummary, undoAllFound, undoFound,
+  clearNotAvailable, endTrip, finishBinder, finishedStops, foundCopies, foundOnList, fullyFound, markAllFound, markFound, markFoundOn, markNotAvailable, massEntryText,
+  remainingCopies, reopenBinder, setListOn, startTrip, stopLabel, tripCards, tripPlan, tripSummary, undoAllFound, undoFound, undoFoundOn,
 } from './index';
 
 const recent = (setCode: string, setName: string, over: Partial<Parameters<typeof pr>[0]> = {}): Printing =>
@@ -226,5 +226,41 @@ describe('the end of a trip', () => {
     const ended = endTrip(trip, NOW);
     expect(ended.endedAt).toBe(NOW.toISOString());
     expect(endTrip(ended, new Date('2030-01-01'))).toBe(ended);
+  });
+});
+
+describe('finding a copy for a specific list', () => {
+  it('puts the copy on the chosen list instead of the top one', () => {
+    const { trip, parts } = setup();
+    const a = parts.get('a')!;
+    const t = markFoundOn(trip, a, 'y');
+    expect(t.found.a).toEqual({ y: 1 });
+    expect(foundOnList(t, a, 'y')).toBe(1);
+    expect(foundOnList(t, a, 'x')).toBe(0);
+    expect(foundCopies(t, a)).toBe(1);
+    // The default Found +1 then fills the first list that still wants copies.
+    expect(markFound(t, a).found.a).toEqual({ y: 1, x: 1 });
+  });
+
+  it('does nothing when that list has every copy it wants, or is not on the card', () => {
+    const { trip, parts } = setup();
+    const a = parts.get('a')!;
+    const full = markFoundOn(trip, a, 'y');
+    expect(markFoundOn(full, a, 'y')).toBe(full);
+    expect(markFoundOn(trip, a, 'nope')).toBe(trip);
+  });
+
+  it('clears a Not available mark, like Found +1 does', () => {
+    const { trip, parts } = setup();
+    expect(markFoundOn(markNotAvailable(trip, 'a'), parts.get('a')!, 'x').notAvailable).toEqual([]);
+  });
+
+  it('takes back a copy from the chosen list only', () => {
+    const { trip, parts } = setup();
+    const a = parts.get('a')!;
+    const t = markFoundOn(markFoundOn(trip, a, 'x'), a, 'y');
+    expect(undoFoundOn(t, a, 'x').found.a).toEqual({ x: 0, y: 1 });
+    expect(undoFoundOn(trip, a, 'x')).toBe(trip);
+    expect(undoFoundOn(t, a, 'nope')).toBe(t);
   });
 });

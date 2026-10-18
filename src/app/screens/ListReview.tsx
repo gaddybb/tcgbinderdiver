@@ -23,6 +23,7 @@ import { useStoreSettings } from '../data/StoreSettingsProvider';
 import { formatDate, formatUsd } from '../format';
 import { useLayout } from '../layout/useLayout';
 import { Link, navigate } from '../router';
+import { ListCardDetail } from './detail/ListCardDetail';
 import { DivePanel } from './dive/DivePanel';
 import { neededCards } from './dive/planData';
 import review from './Review.module.css';
@@ -71,6 +72,7 @@ function ReviewBody({ list }: { list: CardList }) {
   const [colors, setColors] = useState<ColorCategory[]>([]);
   const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
   const [selecting, setSelecting] = useState(false);     // phone only: the table always has checkboxes
+  const [openKey, setOpenKey] = useState<string | null>(null);   // the card shown in card detail
 
   // This list's cards, plus the cards other lists in the next dive still need, so the dive plan beside it has its data too.
   const cards = useMemo(() => {
@@ -306,6 +308,8 @@ function ReviewBody({ list }: { list: CardList }) {
                     key={row.entry.cardKey}
                     select={selecting ? { checked: selected.has(row.entry.cardKey), label: b.selectCard(row.entry.name), onChange: () => toggle(row.entry.cardKey) } : undefined}
                     onLongPress={() => startSelecting(row.entry.cardKey)}
+                    onOpen={selecting ? undefined : () => setOpenKey(row.entry.cardKey)}
+                    openLabel={copy.cardTile.openCard(row.entry.name)}
                     lead={thumb(row)}
                     title={<>{row.entry.name}{row.entry.quantity > 1 && <> <QuantityBadge quantity={row.entry.quantity} /></>}</>}
                     subtitle={row.setLabel === t.target.none ? row.targetText : `${row.targetText} · ${row.setLabel}`}
@@ -326,10 +330,12 @@ function ReviewBody({ list }: { list: CardList }) {
                   target: row.targetText,
                   setLabel: row.setLabel,
                   price: formatUsd(row.price),
+                  onOpen: () => setOpenKey(row.entry.cardKey),
                 }))}
               />
             )}
             {catalog && <p className={styles.lead}>{t.pricesUpdated(formatDate(catalog.scryfallUpdatedAt))}{catalog.offline && ` ${t.pricesOffline}`}</p>}
+            {openKey && <ListCardDetail list={list} cardKey={openKey} keys={shownKeys} records={data.records} onOpen={setOpenKey} onClose={() => setOpenKey(null)} />}
             {phone && selecting && <SelectionBar placement="bottom" ariaLabel={b.selectedCards(picked.length)} label={b.selectedCards(picked.length)} actions={actions} />}
           </>
         )}
