@@ -77,7 +77,7 @@ export function parseDecklist(text: string): ParseResult {
   let section: Section = 'main';
 
   for (const raw of text.split(/\r?\n/)) {
-    const line = raw.replace(/[​﻿]/g, '').replace(/\s+/g, ' ').trim().normalize('NFC');
+    const line = raw.replace(/[\u200b\ufeff]/g, '').replace(/\s+/g, ' ').trim().normalize('NFC');
     if (!line) continue;
 
     const header = headerKind(line);
