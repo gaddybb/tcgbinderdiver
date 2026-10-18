@@ -110,6 +110,108 @@ describe('ListsProvider', () => {
     expect(result.current.lists.find(l => l.id === 'deck-1')!.entries[0].status).toBe('needed');
   });
 
+  describe('bulk actions', () => {
+    const line = (key: string, quantity = 1) => ({ cardKey: key, name: key.toUpperCase(), quantity });
+    let n = 0;
+    async function twoDecks() {
+      n = 0;
+      const hook = renderHook(() => useLists(), { wrapper: wrap(new MemoryStorage(), () => `deck-${++n}`) });
+      await waitFor(() => expect(hook.result.current.ready).toBe(true));
+      await act(async () => { await hook.result.current.createDeck('One', [line('a', 2), line('b'), line('c')]); });
+      await act(async () => { await hook.result.current.createDeck('Two', [line('a'), line('z')]); });
+      return hook;
+    }
+    const deck = (hook: Awaited<ReturnType<typeof twoDecks>>, id: string) => hook.result.current.lists.find(l => l.id === id)!;
+
+    it('sets the status of several cards at once, counts the ones that changed and keeps the list as it was for Undo', async () => {
+      const hook = await twoDecks();
+      await act(async () => { await hook.result.current.setStatus('deck-1', 'c', 'proxy'); });
+      let outcome: Awaited<ReturnType<typeof hook.result.current.setStatuses>>;
+      await act(async () => { outcome = await hook.result.current.setStatuses('deck-1', ['a', 'b', 'c'], 'proxy'); });
+      expect(deck(hook, 'deck-1').entries.map(e => e.status)).toEqual(['proxy', 'proxy', 'proxy']);
+      expect(outcome!.changed).toBe(2);
+      expect(outcome!.previous.entries.map(e => e.status)).toEqual(['needed', 'needed', 'proxy']);
+    });
+
+    it('changing nothing leaves the list and "Updated" alone', async () => {
+      const hook = await twoDecks();
+      const before = deck(hook, 'deck-1');
+      let outcome: Awaited<ReturnType<typeof hook.result.current.setStatuses>>;
+      await act(async () => { outcome = await hook.result.current.setStatuses('deck-1', ['a'], 'needed'); });
+      expect(outcome!.changed).toBe(0);
+      expect(deck(hook, 'deck-1')).toEqual(before);
+    });
+
+    it('restoreList puts a list back exactly as it was, including Updated', async () => {
+      const hook = await twoDecks();
+      const before = deck(hook, 'deck-1');
+      let outcome: Awaited<ReturnType<typeof hook.result.current.setStatuses>>;
+      await act(async () => { outcome = await hook.result.current.setStatuses('deck-1', ['a', 'b'], 'in_collection'); });
+      await act(async () => { await hook.result.current.restoreList(outcome!.previous); });
+      expect(deck(hook, 'deck-1')).toEqual(before);
+    });
+
+    it('removes several cards, and Undo brings them back in their places', async () => {
+      const hook = await twoDecks();
+      const before = deck(hook, 'deck-1');
+      let outcome: Awaited<ReturnType<typeof hook.result.current.removeCards>>;
+      await act(async () => { outcome = await hook.result.current.removeCards('deck-1', ['a', 'c', 'nope']); });
+      expect(outcome!.removed).toBe(2);
+      expect(deck(hook, 'deck-1').entries.map(e => e.cardKey)).toEqual(['b']);
+      await act(async () => { await hook.result.current.restoreList(outcome!.previous); });
+      expect(deck(hook, 'deck-1')).toEqual(before);
+    });
+
+    it('copies cards to another list: a card it has gains the copies, a new one is added, the source stays', async () => {
+      const hook = await twoDecks();
+      let outcome: Awaited<ReturnType<typeof hook.result.current.copyCards>>;
+      await act(async () => { outcome = await hook.result.current.copyCards('deck-1', ['a', 'b'], 'deck-2'); });
+      expect(outcome).toMatchObject({ added: 1, merged: 1, notFit: 0 });
+      expect(deck(hook, 'deck-2').entries.map(e => [e.cardKey, e.quantity])).toEqual([['a', 3], ['z', 1], ['b', 1]]);
+      expect(deck(hook, 'deck-1').entries).toHaveLength(3);
+    });
+
+    it('Undo of a copy restores the target list only', async () => {
+      const hook = await twoDecks();
+      const sourceBefore = deck(hook, 'deck-1');
+      const targetBefore = deck(hook, 'deck-2');
+      let outcome: Awaited<ReturnType<typeof hook.result.current.copyCards>>;
+      await act(async () => { outcome = await hook.result.current.copyCards('deck-1', ['a', 'b', 'c'], 'deck-2'); });
+      await act(async () => { await hook.result.current.restoreList(outcome!.previous); });
+      expect(deck(hook, 'deck-2')).toEqual(targetBefore);
+      expect(deck(hook, 'deck-1')).toEqual(sourceBefore);
+    });
+
+    it('reports the cards that did not fit under 250, and still copies the ones that did', async () => {
+      const hook = await twoDecks();
+      const many = Array.from({ length: 249 }, (_, i) => line(`m${i}`));
+      await act(async () => { await hook.result.current.createDeck('Big', many); });
+      let outcome: Awaited<ReturnType<typeof hook.result.current.copyCards>>;
+      await act(async () => { outcome = await hook.result.current.copyCards('deck-1', ['a', 'b', 'c'], 'deck-3'); });
+      expect(outcome).toMatchObject({ added: 1, merged: 0, notFit: 2 });
+      expect(deck(hook, 'deck-3').entries).toHaveLength(250);
+    });
+
+    it('copying nothing changes nothing', async () => {
+      const hook = await twoDecks();
+      const before = deck(hook, 'deck-2');
+      await act(async () => { await hook.result.current.copyCards('deck-1', [], 'deck-2'); });
+      expect(deck(hook, 'deck-2')).toEqual(before);
+    });
+
+    it('does nothing, and says so, when a list is gone', async () => {
+      const hook = await twoDecks();
+      const outcomes: unknown[] = [];
+      await act(async () => {
+        outcomes.push(await hook.result.current.setStatuses('nope', ['a'], 'proxy'));
+        outcomes.push(await hook.result.current.removeCards('nope', ['a']));
+        outcomes.push(await hook.result.current.copyCards('nope', ['a'], 'deck-1'));
+        outcomes.push(await hook.result.current.copyCards('deck-1', ['a'], 'nope'));
+      });
+      expect(outcomes).toEqual([undefined, undefined, undefined, undefined]);
+    });
+  });
+
   it('ignores an edit to a list that is gone', async () => {
     const { result } = renderHook(() => useLists(), { wrapper: wrap(new MemoryStorage()) });
     await waitFor(() => expect(result.current.ready).toBe(true));

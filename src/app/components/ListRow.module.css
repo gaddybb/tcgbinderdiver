@@ -17,3 +17,5 @@
   color: var(--color-accent);
   min-width: var(--space-5);
 }
+.selectable { cursor: pointer; }
+.selected { background: var(--color-floor1); }

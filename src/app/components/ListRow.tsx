@@ -1,17 +1,51 @@
-import type { ReactNode } from 'react';
+import { useRef } from 'react';
+import type { MouseEvent, PointerEvent, ReactNode } from 'react';
+import { cx } from '../cx';
+import { Checkbox } from './Checkbox';
 import styles from './ListRow.module.css';
+
+// How long a finger must stay down on a row to start selecting.
+export const LONG_PRESS_MS = 500;
+
+export interface RowSelect {
+  checked: boolean;
+  label: string;               // "Select Sol Ring", read aloud
+  onChange: () => void;
+}
 
 interface ListRowProps {
   lead?: ReactNode;        // a CardThumb for a card row, or a Rank for a binder row
   title: ReactNode;
   subtitle?: ReactNode;
   trailing?: ReactNode;    // a price, or a PullVerdict
+  select?: RowSelect;      // while choosing cards: a checkbox in front, and the whole row toggles it
+  onLongPress?: () => void;   // holding the row down (when not already choosing)
 }
 
 // One row in a list: a card on a phone list, or a binder in the dive plan.
-export function ListRow({ lead, title, subtitle, trailing }: ListRowProps) {
+export function ListRow({ lead, title, subtitle, trailing, select, onLongPress }: ListRowProps) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancel = () => { if (timer.current) { clearTimeout(timer.current); timer.current = null; } };
+  const longPress = onLongPress && !select
+    ? {
+        onPointerDown: (event: PointerEvent) => {
+          if ((event.target as HTMLElement).closest('button, a, input')) return;
+          cancel();
+          timer.current = setTimeout(() => { timer.current = null; onLongPress(); }, LONG_PRESS_MS);
+        },
+        onPointerUp: cancel,
+        onPointerLeave: cancel,
+        onPointerCancel: cancel,
+        onPointerMove: cancel,
+        onContextMenu: (event: MouseEvent) => event.preventDefault(),
+      }
+    : {};
+  const toggle = select
+    ? (event: MouseEvent) => { if (!(event.target as HTMLElement).closest('button, a, input, label')) select.onChange(); }
+    : undefined;
   return (
-    <li className={styles.row}>
+    <li className={cx(styles.row, select && styles.selectable, select?.checked && styles.selected)} onClick={toggle} {...longPress}>
+      {select && <div className={styles.lead}><Checkbox hideLabel label={select.label} checked={select.checked} onChange={select.onChange} /></div>}
       {lead && <div className={styles.lead}>{lead}</div>}
       <div className={styles.body}>
         <div className={styles.title}>{title}</div>

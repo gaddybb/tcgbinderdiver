@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
-  WISHLIST_ID, addEntries, clearEntries, renameList, setEntryStatus, setInNextDive as withInNextDive,
+  WISHLIST_ID, addEntries, clearEntries, copyEntries, removeEntries, renameList, setEntriesStatus, setEntryStatus,
+  setInNextDive as withInNextDive,
 } from '../../core/lists';
 import type { CardList, IncomingEntry } from '../../core/lists';
 import type { CardStatus } from '../../core/status';
@@ -11,6 +12,11 @@ import { useStorage } from './StorageProvider';
 export type CreateResult =
   | { status: 'ok'; list: CardList; kept: number; total: number }   // kept < total when the 250 limit cut some off
   | { status: 'limit' };                                            // already 25 lists
+
+// What a bulk action did, with the list as it was before, so the screen can offer Undo with `restoreList`.
+export interface BulkStatusResult { changed: number; previous: CardList }
+export interface BulkRemoveResult { removed: number; previous: CardList }
+export interface BulkCopyResult { added: number; merged: number; notFit: number; previous: CardList }   // previous is the target list
 
 export interface ListsApi {
   lists: CardList[];
@@ -25,6 +31,11 @@ export interface ListsApi {
   clearWishlist: () => Promise<void>;
   setInNextDive: (id: string, on: boolean) => Promise<void>;
   setStatus: (listId: string, cardKey: string, status: CardStatus) => Promise<void>;
+  // Bulk actions on a list's cards. They return undefined when a list is gone.
+  setStatuses: (listId: string, cardKeys: readonly string[], status: CardStatus) => Promise<BulkStatusResult | undefined>;
+  removeCards: (listId: string, cardKeys: readonly string[]) => Promise<BulkRemoveResult | undefined>;
+  copyCards: (fromId: string, cardKeys: readonly string[], toId: string) => Promise<BulkCopyResult | undefined>;
+  restoreList: (snapshot: CardList) => Promise<void>;     // puts a list back exactly as it was (Undo)
 }
 
 const ListsContext = createContext<ListsApi | null>(null);
@@ -114,6 +125,38 @@ export function ListsProvider({ children, clock = () => new Date(), makeId }: Li
       clearWishlist: () => edit(WISHLIST_ID, list => clearEntries(list, now())),
       setInNextDive: (id, on) => edit(id, list => withInNextDive(list, on)),
       setStatus: (listId, cardKey, status) => edit(listId, list => setEntryStatus(list, cardKey, status, now())),
+
+      async setStatuses(listId, cardKeys, status) {
+        const previous = await repo.get(listId);
+        if (!previous) return undefined;
+        const next = setEntriesStatus(previous, cardKeys, status, now());
+        if (next === previous) return { changed: 0, previous };
+        await repo.save(next);
+        await refresh();
+        return { changed: next.entries.filter((e, i) => e.status !== previous.entries[i].status).length, previous };
+      },
+
+      async removeCards(listId, cardKeys) {
+        const previous = await repo.get(listId);
+        if (!previous) return undefined;
+        const { list, removed } = removeEntries(previous, cardKeys, now());
+        if (removed > 0) { await repo.save(list); await refresh(); }
+        return { removed, previous };
+      },
+
+      async copyCards(fromId, cardKeys, toId) {
+        const source = await repo.get(fromId);
+        const previous = await repo.get(toId);
+        if (!source || !previous) return undefined;
+        const result = copyEntries(source, cardKeys, previous, now());
+        if (result.list !== previous) { await repo.save(result.list); await refresh(); }
+        return { added: result.added, merged: result.merged, notFit: result.overflow.length, previous };
+      },
+
+      async restoreList(snapshot) {
+        await repo.save(snapshot);
+        await refresh();
+      },
     };
   }, [lists, ready, storage.persistent, repo, refresh, now]);
 

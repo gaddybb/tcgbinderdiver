@@ -6,7 +6,7 @@ import { copy } from '../copy/en';
 import { useLayout } from '../layout/useLayout';
 import {
   Banner, BinderPicker, Button, CardTable, CardThumb, CardTile, Checkbox, Chip, ColorFilter, Dialog, DialogPanel, EmptyState, GameAnchor, Input,
-  ListCard, ListRow, Logo, Menu, MenuList, OddsLabel, PageHeader, ProgressBar, PullVerdict, QuantityBadge, Radio, Rank, Select,
+  ListCard, ListRow, Logo, Menu, MenuList, OddsLabel, PageHeader, ProgressBar, PullVerdict, QuantityBadge, Radio, Rank, Select, SelectHeader, SelectionBar,
   Sheet, SheetPanel, SkeletonRow, StandaloneLink, StatusLabel, StatusPicker, StepIndicator, Stepper, SummaryBar, Switch, TabBar, ToastView,
   TourTip, useToast,
 } from '../components';
@@ -305,6 +305,44 @@ export function Kit() {
               ]}
             />
           </div>
+        </Group>
+        <Group title={k.groupsHeading.selectionBar}>
+          <div className={styles.stack}>
+            <SelectionBar
+              ariaLabel={copy.bulk.selectedCards(3)}
+              label={copy.bulk.selectedCards(3)}
+              actions={<><Button variant="secondary">{copy.bulk.setStatus}</Button><Button variant="secondary">{copy.bulk.copyToAnotherList}</Button><Button variant="danger">{copy.bulk.removeFromList}</Button><Button variant="text">{copy.bulk.clearSelection}</Button></>}
+            />
+            <SelectionBar
+              placement="bottom"
+              ariaLabel={copy.bulk.selectedShort(3)}
+              label={copy.bulk.selectedShort(3)}
+              actions={<><Button variant="secondary">{copy.bulk.setStatus}</Button><Button variant="secondary">{copy.bulk.copyToList}</Button><Button variant="danger">{copy.bulk.remove}</Button></>}
+            />
+          </div>
+        </Group>
+        <Group title={k.groupsHeading.selectHeader}>
+          <div className={styles.stack}>
+            <SelectHeader count={3} allSelected={false} onClose={noop} onToggleAll={noop} />
+          </div>
+        </Group>
+        <Group title={k.groupsHeading.selectableRow}>
+          <ul className={styles.list}>
+            <ListRow
+              select={{ checked: true, label: copy.bulk.selectCard(s.cardName1), onChange: noop }}
+              lead={<CardThumb edge="White" />}
+              title={s.cardName1}
+              subtitle={`${s.cardSet} · ${s.cardNumber1}`}
+              trailing={<StatusLabel status="needed" />}
+            />
+            <ListRow
+              select={{ checked: false, label: copy.bulk.selectCard(s.cardName2), onChange: noop }}
+              lead={<CardThumb edge="White" />}
+              title={s.cardName2}
+              subtitle={`${s.cardSet} · ${s.cardNumber2}`}
+              trailing={<StatusLabel status="needed" />}
+            />
+          </ul>
         </Group>
         <Group title={k.groupsHeading.setChip}>
           <Chip onRemove={noop} removeLabel={`${copy.common.remove} ${s.setChip}`}>{s.setChip}</Chip>

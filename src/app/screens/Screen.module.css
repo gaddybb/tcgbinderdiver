@@ -18,3 +18,7 @@
 .controls { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; }
 .controls > * { flex: 1 1 12rem; }
 .rowEnd { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
+.filterGroup { display: flex; flex-direction: column; gap: var(--space-1); flex: 0 1 auto; }
+.controlLabel { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--color-text-muted); }
+.quick { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.quickLabel { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--color-text-muted); }

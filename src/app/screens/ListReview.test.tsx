@@ -19,6 +19,7 @@ const CARDS: Record<string, FakeCard> = {
   greaves: { name: 'Lightning Greaves', printings: [pr({ setCode: 'rna', setName: 'Ravnica Allegiance', releasedAt: '2019-01-25', rarity: 'rare', collectorNumber: '9', usd: '18.50' })] },
   forest: { name: 'Forest', typeLine: 'Basic Land — Forest', printings: [fdn('280', '0.10')] },
   online: { name: 'Online Only', printings: [pr({ setCode: 'ymid', digital: true, games: ['arena'], usd: '1.00' })] },
+  signet: { name: 'Arcane Signet', printings: [pr({ setCode: 'fdc', setName: 'Foundations Commander', setType: 'commander', collectorNumber: '334', usd: '2.00' })] },
   elves: { name: 'Llanowar Elves', colors: ['G'], typeLine: 'Creature', printings: [fdn('227', '0.30')] },
 };
 
@@ -101,7 +102,7 @@ describe('List review: the table', () => {
   it('has a column for each thing the design lists', async () => {
     await setup(THREE, { saved: ['ajani', 'tower', 'greaves'] });
     await screen.findByRole('table', { name: copy.review.tableLabel('Lifegain Commander') });
-    const heads = screen.getAllByRole('columnheader').map(h => h.textContent);
+    const heads = screen.getAllByRole('columnheader').map(h => h.textContent).filter(Boolean);
     expect(heads).toEqual(Object.values(copy.review.columns));
   });
 
@@ -344,7 +345,7 @@ describe('List review: sort and search', () => {
     await setup(FOUR, { saved });
     const search = await screen.findByLabelText(copy.review.search.label);
     fireEvent.change(search, { target: { value: 'zzz' } });
-    expect(screen.getByText(copy.review.noMatches)).toBeTruthy();
+    expect(screen.getByText(copy.filters.noMatches)).toBeTruthy();
     fireEvent.change(search, { target: { value: '' } });
     expect(names()).toHaveLength(4);
   });
@@ -410,5 +411,468 @@ describe('List review: other cases', () => {
     await setup(THREE, { lists: [spec(THREE, { on: false })], saved: ['ajani', 'tower', 'greaves'] });
     await screen.findByRole('table');
     await waitFor(() => expect(text(tableRow("Ajani's Pridemate"))).toContain('FDN 135'));
+  });
+});
+
+// ---- filters ----
+describe('List review: price and color filters', () => {
+  const CARDS5: Spec['cards'] = [["Ajani's Pridemate"], ['Command Tower'], ['Lightning Greaves'], ['Arcane Signet'], ['Llanowar Elves']];
+  const saved: Options['saved'] = ['ajani', 'tower', 'greaves', 'signet', 'elves'];
+  const priced = async () => {
+    await screen.findByRole('table');
+    await dataArrived('Lightning Greaves', '$18.50');
+    await dataArrived('Arcane Signet', '$2.00');
+    await dataArrived('Llanowar Elves', '$0.30');
+    await dataArrived("Ajani's Pridemate", '$0.25');
+    await dataArrived('Command Tower', '$0.35');
+  };
+  const price = (value: string) => fireEvent.change(screen.getByLabelText(copy.filters.price.label), { target: { value } });
+  const colorButton = (name: string) => screen.getByRole('button', { name });
+
+  it('offers the four price bands from the design', async () => {
+    await setup(CARDS5, { saved });
+    const select = await screen.findByLabelText(copy.filters.price.label);
+    expect([...select.querySelectorAll('option')].map(o => o.textContent)).toEqual(['Any price', 'Under $1', '$1 to $5', '$5 and up']);
+    expect((select as HTMLSelectElement).value).toBe('any');
+  });
+
+  it('shows only the cards in the price band', async () => {
+    await setup(CARDS5, { saved });
+    await priced();
+    price('under_1');
+    expect(names()).toEqual(["Ajani's Pridemate", 'Command Tower', 'Llanowar Elves']);
+    price('1_to_5');
+    expect(names()).toEqual(['Arcane Signet']);
+    price('5_up');
+    expect(names()).toEqual(['Lightning Greaves']);
+    price('any');
+    expect(names()).toHaveLength(5);
+  });
+
+  it('a card with no price is only shown under Any price', async () => {
+    await setup([['Online Only'], ["Ajani's Pridemate"]], { saved: ['online', 'ajani'] });
+    await screen.findByRole('table');
+    await dataArrived("Ajani's Pridemate", '$0.25');
+    price('under_1');
+    expect(names()).toEqual(["Ajani's Pridemate"]);
+  });
+
+  it('shows only the cards of the colors picked, and says which are on', async () => {
+    await setup(CARDS5, { saved });
+    await priced();
+    fireEvent.click(colorButton('White'));
+    expect(colorButton('White').getAttribute('aria-pressed')).toBe('true');
+    expect(names()).toEqual(["Ajani's Pridemate"]);
+    fireEvent.click(colorButton('Green'));
+    expect(names()).toEqual(["Ajani's Pridemate", 'Llanowar Elves']);
+    fireEvent.click(colorButton('White'));
+    expect(names()).toEqual(['Llanowar Elves']);
+    fireEvent.click(colorButton('Green'));
+    expect(names()).toHaveLength(5);
+  });
+
+  it('combines with search and sort', async () => {
+    await setup(CARDS5, { saved });
+    await priced();
+    price('under_1');
+    fireEvent.click(colorButton('Land'));
+    expect(names()).toEqual(['Command Tower']);
+    fireEvent.click(colorButton('Land'));
+    fireEvent.change(screen.getByLabelText(copy.review.search.label), { target: { value: 'an' } });
+    expect(names()).toEqual(["Ajani's Pridemate", 'Command Tower', 'Llanowar Elves']);
+    fireEvent.change(screen.getByLabelText(copy.review.sort.label), { target: { value: 'price_desc' } });
+    expect(names()).toEqual(['Command Tower', 'Llanowar Elves', "Ajani's Pridemate"]);
+  });
+
+  it('says so when nothing matches', async () => {
+    await setup(CARDS5, { saved });
+    await priced();
+    price('5_up');
+    fireEvent.click(colorButton('Green'));
+    expect(screen.getByText(copy.filters.noMatches)).toBeTruthy();
+    expect(screen.queryByRole('table')).toBeNull();
+  });
+
+  it('is on a phone too', async () => {
+    setWidth(375);
+    await setup(CARDS5, { saved });
+    await screen.findByRole('button', { name: "Status of Ajani's Pridemate: Needed" });
+    await waitFor(() => expect(screen.getAllByText('$18.50')).toHaveLength(1));
+    price('5_up');
+    expect(screen.queryByText("Ajani's Pridemate")).toBeNull();
+    expect(screen.getByText('Lightning Greaves')).toBeTruthy();
+    fireEvent.click(colorButton('Green'));
+    expect(screen.getByText(copy.filters.noMatches)).toBeTruthy();
+  });
+});
+
+// ---- bulk actions ----
+const FIVE: Spec['cards'] = [["Ajani's Pridemate"], ['Soul Warden'], ['Command Tower'], ['Lightning Greaves'], ['Arcane Signet']];
+const FIVE_SAVED: Options['saved'] = ['ajani', 'warden', 'tower', 'greaves', 'signet'];
+const ZOMBIES: Spec = { id: 'b', name: 'Zombie Tribal', created: T0, cards: [['Command Tower']] };
+const checkbox = (name: string) => screen.getByRole('checkbox', { name: `Select ${name}` }) as HTMLInputElement;
+const pick = (...cardNames: string[]) => cardNames.forEach(n => fireEvent.click(checkbox(n)));
+const press = (name: string) => fireEvent.click(screen.getByRole('button', { name }));
+const choose = (name: RegExp | string) => fireEvent.click(screen.getByRole('menuitem', { name }));
+const statusesOf = async (lists: ListsRepository, id = 'a') => (await lists.get(id))!.entries.map(e => `${e.name}:${e.status}`);
+const keysOf = async (lists: ListsRepository, id: string) => (await lists.get(id))!.entries.map(e => e.cardKey);
+const bar = (n: number) => screen.queryByRole('region', { name: copy.bulk.selectedCards(n) });
+
+describe('List review: selecting cards (table)', () => {
+  it('has a checkbox for every card and one to select all', async () => {
+    await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    expect(screen.getAllByRole('checkbox')).toHaveLength(6);
+    expect(screen.getByRole('checkbox', { name: copy.bulk.selectAllCards })).toBeTruthy();
+  });
+
+  it('shows the quick actions, and no selection bar until something is selected', async () => {
+    await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    expect(screen.getByText(copy.bulk.quickActions)).toBeTruthy();
+    for (const label of [copy.bulk.markOwned, copy.bulk.markNeeded, copy.bulk.selectByBinder]) expect(screen.getByRole('button', { name: label })).toBeTruthy();
+    expect(screen.queryByRole('region')).toBeNull();
+  });
+
+  it('says how many cards are selected, with the four actions, and Clear selection empties it', async () => {
+    await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    pick("Ajani's Pridemate", 'Soul Warden', 'Command Tower');
+    const region = screen.getByRole('region', { name: copy.bulk.selectedCards(3) });
+    expect(within(region).getByText(copy.bulk.selectedCards(3))).toBeTruthy();
+    for (const label of [copy.bulk.setStatus, copy.bulk.copyToAnotherList]) expect(within(region).getByRole('button', { name: label })).toBeTruthy();
+    expect(within(region).getByRole('button', { name: copy.bulk.removeFromList })).toBeTruthy();
+    fireEvent.click(within(region).getByRole('button', { name: copy.bulk.clearSelection }));
+    expect(bar(3)).toBeNull();
+    expect(checkbox('Soul Warden').checked).toBe(false);
+  });
+
+  it('says "1 card selected" for one', async () => {
+    await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    pick('Soul Warden');
+    expect(bar(1)).toBeTruthy();
+    expect(copy.bulk.selectedCards(1)).toBe('1 card selected');
+  });
+
+  it('the box in the header selects every card, then none', async () => {
+    await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    const all = screen.getByRole('checkbox', { name: copy.bulk.selectAllCards });
+    fireEvent.click(all);
+    expect(bar(5)).toBeTruthy();
+    fireEvent.click(all);
+    expect(bar(5)).toBeNull();
+  });
+
+  it('select all selects what is shown, and actions leave the hidden cards alone', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    await dataArrived("Ajani's Pridemate", '$0.25');
+    await dataArrived('Lightning Greaves', '$18.50');
+    await dataArrived('Arcane Signet', '$2.00');
+    await dataArrived('Command Tower', '$0.35');
+    await dataArrived('Soul Warden', '$0.30');
+    fireEvent.change(screen.getByLabelText(copy.filters.price.label), { target: { value: 'under_1' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: copy.bulk.selectAllCards }));
+    expect(bar(3)).toBeTruthy();
+    press(copy.bulk.setStatus);
+    choose(/^Proxy/);
+    expect(await screen.findByText(copy.bulk.statusSet(3, 'Proxy'))).toBeTruthy();
+    expect(await statusesOf(lists)).toEqual(["Ajani's Pridemate:proxy", 'Soul Warden:proxy', 'Command Tower:proxy', 'Lightning Greaves:needed', 'Arcane Signet:needed']);
+  });
+
+  it('a card selected and then hidden by a filter is not counted or acted on', async () => {
+    await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    pick("Ajani's Pridemate");
+    expect(bar(1)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(copy.review.search.label), { target: { value: 'tower' } });
+    expect(bar(1)).toBeNull();
+    fireEvent.change(screen.getByLabelText(copy.review.search.label), { target: { value: '' } });
+    expect(bar(1)).toBeTruthy();
+  });
+
+  it('Select by binder selects that binder\'s cards, and says how many there are', async () => {
+    await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    await dataArrived('Soul Warden', 'FDN 24');
+    await dataArrived('Command Tower', 'FDC 352');
+    press(copy.bulk.selectByBinder);
+    const items = screen.getAllByRole('menuitem').map(i => i.textContent);
+    expect(items).toContain(copy.bulk.binderOption('Foundations', 2));
+    expect(items).toContain(copy.bulk.binderOption('Commander box', 2));
+    choose(copy.bulk.binderOption('Commander box', 2));
+    expect(bar(2)).toBeTruthy();
+    expect(checkbox('Command Tower').checked).toBe(true);
+    expect(checkbox('Arcane Signet').checked).toBe(true);
+    expect(checkbox('Soul Warden').checked).toBe(false);
+  });
+
+  it('Select by binder is off until card data says where cards go', async () => {
+    await setup(FIVE, { saved: [], hold: true });
+    await screen.findByRole('table');
+    expect((screen.getByRole('button', { name: copy.bulk.selectByBinder }) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+describe('List review: bulk status', () => {
+  it('sets the status of the selected cards, saves it, updates the counts and says so with Undo', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    pick("Ajani's Pridemate", 'Soul Warden');
+    press(copy.bulk.setStatus);
+    const menu = screen.getByRole('menu');
+    for (const hint of Object.values(copy.statusHint)) expect(within(menu).getByText(hint)).toBeTruthy();
+    choose(/^In collection/);
+    expect(await screen.findByText(copy.bulk.statusSet(2, 'In collection'))).toBeTruthy();
+    expect(await statusesOf(lists)).toEqual(["Ajani's Pridemate:in_collection", 'Soul Warden:in_collection', 'Command Tower:needed', 'Lightning Greaves:needed', 'Arcane Signet:needed']);
+    expect(await screen.findByText(copy.review.summary(5, 3, '$21'))).toBeTruthy();
+    expect(bar(2)).toBeNull();
+  });
+
+  it('Undo puts every status back, and Updated too', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED, lists: [spec(FIVE, { updated: new Date(T0.getTime() - 5 * 24 * 3600 * 1000) })] });
+    await screen.findByRole('table');
+    const before = await lists.get('a');
+    pick("Ajani's Pridemate", 'Soul Warden');
+    press(copy.bulk.setStatus);
+    choose(/^Ordered/);
+    await screen.findByText(copy.bulk.statusSet(2, 'Ordered'));
+    expect((await lists.get('a'))!.updatedAt).toBe(T0.toISOString());
+    fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
+    await waitFor(async () => expect(await lists.get('a')).toEqual(before));
+    expect(await screen.findByRole('button', { name: "Status of Ajani's Pridemate: Needed" })).toBeTruthy();
+  });
+
+  it('Mark all as owned sets every card to In collection, and Undo brings them back', async () => {
+    const { lists } = await setup([["Ajani's Pridemate"], ['Soul Warden', 1, 'proxy'], ['Command Tower']], { saved: ['ajani', 'warden', 'tower'] });
+    await screen.findByRole('table');
+    press(copy.bulk.markOwned);
+    expect(await screen.findByText(copy.bulk.statusSet(3, 'In collection'))).toBeTruthy();
+    expect(await statusesOf(lists)).toEqual(["Ajani's Pridemate:in_collection", 'Soul Warden:in_collection', 'Command Tower:in_collection']);
+    expect(await screen.findByText(copy.review.summary(3, 0, null))).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
+    await waitFor(async () => expect(await statusesOf(lists)).toEqual(["Ajani's Pridemate:needed", 'Soul Warden:proxy', 'Command Tower:needed']));
+  });
+
+  it('Mark all as needed does nothing, and leaves Updated alone, when every card is already needed', async () => {
+    const { lists } = await setup([["Ajani's Pridemate"], ['Soul Warden']], { saved: ['ajani', 'warden'] });
+    await screen.findByRole('table');
+    press(copy.bulk.markNeeded);
+    await act(async () => { await new Promise(r => setTimeout(r, 100)); });
+    expect(screen.queryByRole('button', { name: copy.common.undo })).toBeNull();
+    expect((await lists.get('a'))!.updatedAt).toBe(T0.toISOString());
+  });
+
+  it('Mark all as needed counts only the cards that changed, and puts them back with Undo', async () => {
+    const { lists } = await setup([["Ajani's Pridemate", 1, 'in_collection'], ['Soul Warden']], { saved: ['ajani', 'warden'] });
+    await screen.findByRole('table');
+    press(copy.bulk.markNeeded);
+    expect(await screen.findByText(copy.bulk.statusSet(1, 'Needed'))).toBeTruthy();
+    expect(await statusesOf(lists)).toEqual(["Ajani's Pridemate:needed", 'Soul Warden:needed']);
+    fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
+    await waitFor(async () => expect(await statusesOf(lists)).toEqual(["Ajani's Pridemate:in_collection", 'Soul Warden:needed']));
+    press(copy.bulk.markOwned);
+    expect(await screen.findByText(copy.bulk.statusSet(1, 'In collection'))).toBeTruthy();
+  });
+});
+
+describe('List review: bulk remove', () => {
+  it('removes the selected cards, says so, and Undo brings them back exactly as they were', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    const before = await lists.get('a');
+    pick('Soul Warden', 'Arcane Signet');
+    press(copy.bulk.removeFromList);
+    expect(await screen.findByText(copy.bulk.removed(2, 'Lifegain Commander'))).toBeTruthy();
+    expect(await keysOf(lists, 'a')).toEqual(["ajani's pridemate", 'command tower', 'lightning greaves']);
+    expect(names()).toEqual(["Ajani's Pridemate", 'Command Tower', 'Lightning Greaves']);
+    expect(await screen.findByText(/^3 cards · 3 still needed/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
+    await waitFor(async () => expect(await lists.get('a')).toEqual(before));
+    await waitFor(() => expect(names()).toHaveLength(5));
+  });
+
+  it('can remove every card, and Undo restores them', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED });
+    await screen.findByRole('table');
+    fireEvent.click(screen.getByRole('checkbox', { name: copy.bulk.selectAllCards }));
+    press(copy.bulk.removeFromList);
+    expect(await screen.findByText(copy.listView.emptyList)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
+    expect(await screen.findByRole('table')).toBeTruthy();
+    expect(await keysOf(lists, 'a')).toHaveLength(5);
+  });
+});
+
+describe('List review: bulk copy to another list', () => {
+  const copyTo = (target: string) => { press(copy.bulk.copyToAnotherList); choose(target); };
+
+  it('offers the other lists, not this one', async () => {
+    await setup(FIVE, { saved: FIVE_SAVED, lists: [spec(FIVE), ZOMBIES] });
+    await screen.findByRole('table');
+    pick('Soul Warden');
+    press(copy.bulk.copyToAnotherList);
+    const names = screen.getAllByRole('menuitem').map(i => i.textContent);
+    expect(names).toContain('Zombie Tribal');
+    expect(names).toContain('Wishlist');
+    expect(names).not.toContain('Lifegain Commander');
+  });
+
+  it('copies the cards: new ones are added, one already there gains its copies, and this list is unchanged', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED, lists: [spec(FIVE), ZOMBIES] });
+    await screen.findByRole('table');
+    pick("Ajani's Pridemate", 'Command Tower');
+    copyTo('Zombie Tribal');
+    expect(await screen.findByText(copy.bulk.copied(2, 'Zombie Tribal'))).toBeTruthy();
+    const zombies = (await lists.get('b'))!;
+    expect(zombies.entries.map(e => [e.cardKey, e.quantity])).toEqual([['command tower', 2], ["ajani's pridemate", 1]]);
+    expect(await keysOf(lists, 'a')).toHaveLength(5);
+    expect(bar(2)).toBeNull();
+  });
+
+  it('Undo takes the copies back out of the other list', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED, lists: [spec(FIVE), ZOMBIES] });
+    await screen.findByRole('table');
+    const before = await lists.get('b');
+    pick("Ajani's Pridemate", 'Command Tower');
+    copyTo('Zombie Tribal');
+    await screen.findByText(copy.bulk.copied(2, 'Zombie Tribal'));
+    fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
+    await waitFor(async () => expect(await lists.get('b')).toEqual(before));
+    expect(await keysOf(lists, 'a')).toHaveLength(5);
+  });
+
+  const filler = (n: number): Spec['cards'] => Array.from({ length: n }, (_, i) => [`Filler ${i}`] as [string]);
+
+  it('says how many did not fit under 250, and still copies the ones that did', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED, lists: [spec(FIVE), { ...ZOMBIES, cards: filler(249) }] });
+    await screen.findByRole('table');
+    pick("Ajani's Pridemate", 'Soul Warden', 'Command Tower');
+    copyTo('Zombie Tribal');
+    expect(await screen.findByText(copy.bulk.copiedSomeDidNotFit(1, 'Zombie Tribal', 2, 250))).toBeTruthy();
+    expect(await keysOf(lists, 'b')).toHaveLength(250);
+  });
+
+  it('says so when nothing fit, changes nothing, and offers no Undo', async () => {
+    const { lists } = await setup(FIVE, { saved: FIVE_SAVED, lists: [spec(FIVE), { ...ZOMBIES, cards: filler(250) }] });
+    await screen.findByRole('table');
+    const before = await lists.get('b');
+    pick('Soul Warden');
+    copyTo('Zombie Tribal');
+    expect(await screen.findByText(copy.bulk.copiedNone('Zombie Tribal', 250))).toBeTruthy();
+    expect(screen.queryByRole('button', { name: copy.common.undo })).toBeNull();
+    expect(await lists.get('b')).toEqual(before);
+  });
+});
+
+describe('List review: selecting on a phone', () => {
+  const phoneSetup = async (options: Options = {}) => {
+    setWidth(375);
+    const result = await setup(FIVE, { saved: FIVE_SAVED, ...options });
+    await screen.findByRole('button', { name: "Status of Ajani's Pridemate: Needed" });
+    return result;
+  };
+  const tapRow = (name: string) => fireEvent.click(screen.getByText(name));
+
+  it('has a Select button, and no checkboxes or table until it is tapped', async () => {
+    await phoneSetup();
+    expect(screen.getByRole('button', { name: copy.bulk.select })).toBeTruthy();
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    expect(screen.queryByText(copy.bulk.quickActions)).toBeNull();
+  });
+
+  it('Select shows the header with the count, the hint, checkboxes and the bottom bar', async () => {
+    await phoneSetup();
+    press(copy.bulk.select);
+    expect(screen.getByRole('button', { name: copy.bulk.exitSelect })).toBeTruthy();
+    expect(screen.getByText(copy.bulk.selectedShort(0))).toBeTruthy();
+    expect(screen.getByText(copy.bulk.selectHint)).toBeTruthy();
+    expect(screen.getAllByRole('checkbox')).toHaveLength(5);
+    for (const label of [copy.bulk.setStatus, copy.bulk.copyToList, copy.bulk.remove]) expect((screen.getByRole('button', { name: label }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: copy.bulk.select })).toBeNull();
+  });
+
+  it('tapping a row toggles it and the count follows', async () => {
+    await phoneSetup();
+    press(copy.bulk.select);
+    tapRow('Soul Warden');
+    tapRow('Command Tower');
+    expect(screen.getByText(copy.bulk.selectedShort(2))).toBeTruthy();
+    expect(screen.queryByText(copy.bulk.selectHint)).toBeNull();
+    expect(checkbox('Soul Warden').checked).toBe(true);
+    tapRow('Soul Warden');
+    expect(screen.getByText(copy.bulk.selectedShort(1))).toBeTruthy();
+  });
+
+  it('Select all selects what is shown, then becomes Select none', async () => {
+    await phoneSetup();
+    fireEvent.change(screen.getByLabelText(copy.review.search.label), { target: { value: 'ar' } });
+    const shownCount = 2;   // Arcane Signet and Soul Warden
+    press(copy.bulk.select);
+    press(copy.bulk.selectAll);
+    expect(screen.getByText(copy.bulk.selectedShort(shownCount))).toBeTruthy();
+    press(copy.bulk.deselectAll);
+    expect(screen.getByText(copy.bulk.selectedShort(0))).toBeTruthy();
+  });
+
+  it('the close button leaves select mode and clears the selection', async () => {
+    await phoneSetup();
+    press(copy.bulk.select);
+    tapRow('Soul Warden');
+    press(copy.bulk.exitSelect);
+    expect(screen.getByRole('button', { name: copy.bulk.select })).toBeTruthy();
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    press(copy.bulk.select);
+    expect(screen.getByText(copy.bulk.selectedShort(0))).toBeTruthy();
+  });
+
+  it('holding a row down starts select mode with that card chosen', async () => {
+    await phoneSetup();
+    fireEvent.pointerDown(screen.getByText('Soul Warden'));
+    await act(async () => { await new Promise(r => setTimeout(r, 600)); });
+    expect(screen.getByText(copy.bulk.selectedShort(1))).toBeTruthy();
+    expect(checkbox('Soul Warden').checked).toBe(true);
+  });
+
+  it('Set status opens the five statuses as a bottom sheet, and changes the cards', async () => {
+    const { lists } = await phoneSetup();
+    press(copy.bulk.select);
+    tapRow('Soul Warden');
+    tapRow('Command Tower');
+    press(copy.bulk.setStatus);
+    const sheet = screen.getByRole('dialog', { name: copy.bulk.setStatus });
+    expect(within(sheet).getByText(copy.statusHint.proxy)).toBeTruthy();
+    fireEvent.click(within(sheet).getByRole('menuitem', { name: /^Proxy/ }));
+    expect(await screen.findByText(copy.bulk.statusSet(2, 'Proxy'))).toBeTruthy();
+    expect(await statusesOf(lists)).toContain('Soul Warden:proxy');
+    expect(screen.getByRole('button', { name: copy.bulk.select })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
+    await waitFor(async () => expect(await statusesOf(lists)).not.toContain('Soul Warden:proxy'));
+  });
+
+  it('Copy to list lets the player pick a list in a bottom sheet', async () => {
+    const { lists } = await phoneSetup({ lists: [spec(FIVE), ZOMBIES] });
+    press(copy.bulk.select);
+    tapRow('Soul Warden');
+    press(copy.bulk.copyToList);
+    const sheet = screen.getByRole('dialog', { name: copy.bulk.copyToListTitle });
+    fireEvent.click(within(sheet).getByRole('menuitem', { name: 'Zombie Tribal' }));
+    expect(await screen.findByText(copy.bulk.copied(1, 'Zombie Tribal'))).toBeTruthy();
+    expect(await keysOf(lists, 'b')).toEqual(['command tower', 'soul warden']);
+  });
+
+  it('Remove takes the selected cards off, with Undo', async () => {
+    const { lists } = await phoneSetup();
+    press(copy.bulk.select);
+    tapRow('Soul Warden');
+    press(copy.bulk.remove);
+    expect(await screen.findByText(copy.bulk.removed(1, 'Lifegain Commander'))).toBeTruthy();
+    expect(await keysOf(lists, 'a')).toHaveLength(4);
+    expect(screen.queryByText('Soul Warden')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
+    await waitFor(async () => expect(await keysOf(lists, 'a')).toHaveLength(5));
+    expect(await screen.findByText('Soul Warden')).toBeTruthy();
   });
 });
