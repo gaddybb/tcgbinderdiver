@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- Storage seam in `src/storage`: an `AppStorage` interface with an IndexedDB implementation (via `idb`) and an in-memory one. `createStorage` falls back to memory when IndexedDB is unavailable, and `persistent` tells the UI which one it got. Both pass the same contract tests.
 - Decklist parser in `src/core/parse`: `parseDecklist` reads Moxfield, Archidekt, EDHREC and MTGO text (counts, set codes, collector numbers, foil tags, `#tags`, headers, sideboard and maybeboard sections) and `combineEntries` merges duplicate lines under the section toggles.
 - Engine: `reopenStop` brings a finished stop's unfound cards back and keeps the frozen stop order. `Plan` now carries `order` and `left` to support it.
 - Engine: `pullVerdict` labels plan stops "Worth a pull", "Buy online" or "Show staff" from `PullSettings` (default 2 copies or $10, in `pullSettings.ts`). It never changes routing.
