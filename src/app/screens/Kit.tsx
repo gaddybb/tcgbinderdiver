@@ -5,9 +5,10 @@ import type { ReactNode } from 'react';
 import { copy } from '../copy/en';
 import { useLayout } from '../layout/useLayout';
 import {
-  Banner, BinderPicker, Button, CardThumb, CardTile, Checkbox, Chip, ColorFilter, Dialog, DialogPanel, GameAnchor, Input,
-  ListCard, ListRow, Logo, Menu, MenuList, OddsLabel, ProgressBar, PullVerdict, QuantityBadge, Radio, Rank, Select, Sheet,
-  SheetPanel, SkeletonRow, StandaloneLink, StatusLabel, StepIndicator, Stepper, Switch, TabBar, ToastView, TourTip, useToast,
+  Banner, BinderPicker, Button, CardThumb, CardTile, Checkbox, Chip, ColorFilter, Dialog, DialogPanel, EmptyState, GameAnchor, Input,
+  ListCard, ListRow, Logo, Menu, MenuList, OddsLabel, PageHeader, ProgressBar, PullVerdict, QuantityBadge, Radio, Rank, Select,
+  Sheet, SheetPanel, SkeletonRow, StandaloneLink, StatusLabel, StepIndicator, Stepper, SummaryBar, Switch, TabBar, ToastView,
+  TourTip, useToast,
 } from '../components';
 import type { ColorCategory } from '../components';
 import { CARD_STATUSES } from '../../core/status';
@@ -61,6 +62,7 @@ export function Kit() {
   const [stepper, setStepper] = useState(1);
   const [inNext, setInNext] = useState(true);
   const [binder, setBinder] = useState('0');
+  const [renameValue, setRenameValue] = useState<string>(s.renameValue);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [found, setFound] = useState([0, 1, 1, 4]);
@@ -75,6 +77,7 @@ export function Kit() {
   ];
 
   const menuItems = s.menuItems.map((label, i) => ({ label, onSelect: noop, danger: i === s.menuItems.length - 1 }));
+  const hintedItems = menuItems.map((item, i) => ({ ...item, hint: s.menuHints[i] || undefined }));
 
   return (
     <>
@@ -267,6 +270,26 @@ export function Kit() {
             />
           </ul>
         </Group>
+        <Group title={k.groupsHeading.listCardRename}>
+          <ul className={styles.list}>
+            <ListCard
+              kindLabel={s.listKind}
+              title={s.renameValue}
+              to="/kit"
+              summary={s.listSummary}
+              thumbs={[]}
+              inNextDive
+              onInNextDiveChange={noop}
+              menu={<Menu label={copy.common.moreFor(s.renameValue)} items={menuItems} sheetTitle={s.menuSheetTitle} />}
+              rename={{ value: renameValue, onChange: setRenameValue, onSave: noop, onCancel: noop }}
+            />
+          </ul>
+        </Group>
+        <Group title={k.groupsHeading.summaryBar}>
+          <div className={styles.stack}>
+            <SummaryBar title={s.summaryTitle} detail={s.summaryDetail} action={<Button>{s.summaryAction}</Button>} />
+          </div>
+        </Group>
         <Group title={k.groupsHeading.setChip}>
           <Chip onRemove={noop} removeLabel={`${copy.common.remove} ${s.setChip}`}>{s.setChip}</Chip>
         </Group>
@@ -284,6 +307,11 @@ export function Kit() {
           <ToastView message={s.toastMessage} onAction={noop} />
           <Button variant="secondary" onClick={() => toast.show({ message: s.toastMessage, onAction: noop })}>{s.toastLive}</Button>
         </Group>
+        <Group title={k.groupsHeading.emptyState}>
+          <div className={styles.stack}>
+            <EmptyState title={s.emptyTitle} actions={<Button>{s.emptyAction}</Button>}>{s.emptyText}</EmptyState>
+          </div>
+        </Group>
         <Group title={k.groupsHeading.skeleton}>
           <SkeletonRow label={s.skeletonLabel} />
         </Group>
@@ -292,6 +320,11 @@ export function Kit() {
       <Section id="overlays" title={k.sections.overlays}>
         <Group title={k.groupsHeading.menu}>
           <MenuList label={s.menuLabel} items={menuItems} />
+        </Group>
+        <Group title={k.groupsHeading.menuSheet}>
+          <SheetPanel title={s.menuSheetTitle}>
+            <MenuList label={s.menuLabel} items={hintedItems} showHints tabbable />
+          </SheetPanel>
         </Group>
         <Group title={k.groupsHeading.sheet}>
           <SheetPanel title={s.sheetTitle}>{s.sheetBody}</SheetPanel>
@@ -312,6 +345,11 @@ export function Kit() {
       </Section>
 
       <Section id="navigation" title={k.sections.navigation}>
+        <Group title={k.groupsHeading.pageHeader}>
+          <div className={styles.stack}>
+            <PageHeader level={3} title={s.pageTitle} subtitle={s.pageSubtitle} actions={<Button>{s.pageAction}</Button>} />
+          </div>
+        </Group>
         <Group title={k.groupsHeading.tabBar}>
           <TabBar
             current="dive"

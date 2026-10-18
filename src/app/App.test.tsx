@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App } from './App';
+import { MemoryStorage } from '../storage';
 import { copy } from './copy/en';
 
 const goTo = (path: string) => window.history.replaceState(null, '', path);
@@ -9,27 +10,27 @@ afterEach(() => goTo('/'));
 
 describe('App routes', () => {
   it('shows Home at /', () => {
-    render(<App />);
+    render(<App storage={new MemoryStorage()} />);
     expect(screen.getByRole('heading', { level: 1, name: copy.app.name })).toBeTruthy();
     expect(screen.getByRole('link', { name: copy.home.kitLink })).toBeTruthy();
   });
 
   it('shows the kit at /kit', () => {
     goTo('/kit');
-    render(<App />);
+    render(<App storage={new MemoryStorage()} />);
     expect(screen.getByRole('heading', { level: 1, name: copy.kit.title })).toBeTruthy();
   });
 
   it('shows "not found" for any other path, with a way back', () => {
     goTo('/nope');
-    render(<App />);
+    render(<App storage={new MemoryStorage()} />);
     expect(screen.getByRole('heading', { name: copy.notFound.title })).toBeTruthy();
     fireEvent.click(screen.getByRole('link', { name: copy.notFound.back }));
     expect(screen.getByRole('heading', { level: 1, name: copy.app.name })).toBeTruthy();
   });
 
   it('moves between pages without a reload', () => {
-    render(<App />);
+    render(<App storage={new MemoryStorage()} />);
     fireEvent.click(screen.getByRole('link', { name: copy.home.kitLink }));
     expect(window.location.pathname).toBe('/kit');
     expect(screen.getByRole('heading', { level: 1, name: copy.kit.title })).toBeTruthy();
@@ -39,13 +40,13 @@ describe('App routes', () => {
 
   it.each(['/', '/kit', '/nope'])('has the Fan Content disclaimer and the Scryfall credit on %s', path => {
     goTo(path);
-    render(<App />);
+    render(<App storage={new MemoryStorage()} />);
     expect(screen.getByTestId('fan-content-disclaimer').textContent).toBe(copy.footer.fanContentDisclaimer);
     expect(screen.getByRole('link', { name: copy.footer.scryfallCredit })).toBeTruthy();
   });
 
   it('follows the back button', () => {
-    render(<App />);
+    render(<App storage={new MemoryStorage()} />);
     fireEvent.click(screen.getByRole('link', { name: copy.home.kitLink }));
     act(() => { goTo('/'); window.dispatchEvent(new PopStateEvent('popstate')); });
     expect(screen.getByRole('heading', { level: 1, name: copy.app.name })).toBeTruthy();
@@ -53,7 +54,7 @@ describe('App routes', () => {
 });
 
 describe('Kit gallery', () => {
-  const renderKit = () => { goTo('/kit'); return render(<App />); };
+  const renderKit = () => { goTo('/kit'); return render(<App storage={new MemoryStorage()} />); };
 
   it('has a section for every part of board 8', () => {
     renderKit();
@@ -140,6 +141,16 @@ describe('Kit gallery', () => {
       const named = (field as HTMLInputElement).labels?.length || field.getAttribute('aria-label');
       expect(named, field.outerHTML).toBeTruthy();
     }
+  });
+
+  it('shows the My lists pieces: header, next dive bar, empty state, a list card being renamed and the menu as a phone sheet', () => {
+    renderKit();
+    const k = copy.kit.sample;
+    expect(screen.getByRole('heading', { level: 3, name: k.pageTitle })).toBeTruthy();
+    expect(screen.getByText(k.summaryTitle)).toBeTruthy();
+    expect(screen.getByRole('heading', { name: k.emptyTitle })).toBeTruthy();
+    expect(screen.getByDisplayValue(k.renameValue)).toBeTruthy();
+    expect(screen.getByText(k.menuHints[1])).toBeTruthy();
   });
 
   it('has exactly one h1', () => {

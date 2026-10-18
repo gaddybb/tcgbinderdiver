@@ -15,7 +15,7 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 - [ ] Sample deck: a small built-in set of popular decks, one picked at random; skips import, opens the plan with a banner (Paste my own list, Try another).
 
 ### Managing lists and cards
-- [ ] My lists page: list cards with In next dive switches, next-dive summary, Paste a new list. List menu: Rename (inline), Duplicate, Copy as text, Delete (with confirmation). One wishlist always exists (Clear wishlist instead of Delete).
+- [x] My lists page: list cards with In next dive switches, next-dive summary, Paste a new list. List menu: Rename (inline), Duplicate, Copy as text, Delete (with confirmation). One wishlist always exists (Clear wishlist instead of Delete).
 - [ ] Card status menu and bulk actions (select mode: Set status, Copy to list, Remove; quick actions Mark all owned or needed, Select by binder).
 - [ ] Card detail: big image, quantity, status, Look here first, Also try by odds, all printings with odds; opens from lists and from the store (with a Found button).
 - [ ] Quantity per card per list; the same card on several lists shows as one card in the store with copies found, Found +1, undo, and a per-list split in card detail.
