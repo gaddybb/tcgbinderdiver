@@ -168,6 +168,15 @@ describe('Store dive: a binder', () => {
     expect(names[0]).toBe('Zombie Thing');
   });
 
+  it('does not offer Needed first in the store, where every card is needed', async () => {
+    await setup();
+    await onFoundations();
+    press(t.sortAndFilter);
+    const options = [...screen.getByLabelText(t.sort.label).querySelectorAll('option')].map(o => o.textContent);
+    expect(options).not.toContain(copy.review.sort.status);
+    expect(options[0]).toBe(t.sort.binder);
+  });
+
   it('says so when the filters hide every card', async () => {
     await setup();
     await onFoundations();

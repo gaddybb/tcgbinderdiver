@@ -66,7 +66,7 @@ function ReviewBody({ list }: { list: CardList }) {
   const phone = layout === 'phone';
   const wide = layout !== 'phone';
 
-  const [sort, setSort] = useState<SortMode>('alphabetical');
+  const [sort, setSort] = useState<SortMode>('status');
   const [query, setQuery] = useState('');
   const [price, setPrice] = useState<PriceFilter>('any');
   const [colors, setColors] = useState<ColorCategory[]>([]);
@@ -118,6 +118,7 @@ function ReviewBody({ list }: { list: CardList }) {
     collectorNumber: r.target?.kind === 'stop' ? r.target.collectorNumber : null,
     color: r.edge,
     setCode: r.target?.kind === 'stop' ? r.target.setCode : null,
+    status: r.entry.status,
   }), connector.sortOrder);
 
   const unknown = list.entries.filter(e => data.notFound.has(e.cardKey));

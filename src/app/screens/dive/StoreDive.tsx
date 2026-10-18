@@ -223,7 +223,7 @@ export function StoreDive() {
                 <div className={styles.filterRow}>
                   <Select label={t.sort.label} value={sort} onChange={e => setSort(e.target.value as DiveSort)}>
                     <option value="binder">{t.sort.binder}</option>
-                    {SORT_MODES.map(mode => <option key={mode} value={mode}>{copy.review.sort[mode]}</option>)}
+                    {SORT_MODES.filter(mode => mode !== 'status').map(mode => <option key={mode} value={mode}>{copy.review.sort[mode]}</option>)}
                   </Select>
                   <Select label={copy.filters.price.label} value={price} onChange={e => setPrice(e.target.value as PriceFilter)}>
                     {PRICE_FILTERS.map(band => <option key={band} value={band}>{copy.filters.price[band]}</option>)}

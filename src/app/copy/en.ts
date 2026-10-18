@@ -540,6 +540,7 @@ export const en = {
     columns: { image: 'Image', card: 'Card', status: 'Status', target: 'Target binder', set: 'Set and #', price: 'Avg online' },
     sort: {
       label: 'Sort',
+      status: 'Needed first',
       alphabetical: 'Alphabetical',
       price_desc: 'Price, high to low',
       collector_number: 'Collector number',

@@ -323,10 +323,24 @@ describe('List review: sort and search', () => {
     expect(names()).toEqual(["Ajani's Pridemate", 'Command Tower', 'Lightning Greaves', 'Soul Warden']);
   });
 
-  it('offers the five sorts from the design', async () => {
+  it('offers Needed first and the five sorts from the design', async () => {
     await setup(FOUR, { saved });
     const select = await screen.findByLabelText(copy.review.sort.label);
-    expect([...select.querySelectorAll('option')].map(o => o.textContent)).toEqual(['Alphabetical', 'Price, high to low', 'Collector number', 'Color', 'Set']);
+    expect([...select.querySelectorAll('option')].map(o => o.textContent)).toEqual(['Needed first', 'Alphabetical', 'Price, high to low', 'Collector number', 'Color', 'Set']);
+  });
+
+  it('starts on Needed first: cards still needed come before owned and ordered ones, each group A to Z', async () => {
+    await setup([['Soul Warden', 1, 'in_collection'], ["Ajani's Pridemate"], ['Command Tower', 1, 'ordered'], ['Lightning Greaves']], { saved: ['ajani', 'warden', 'tower', 'greaves'] });
+    await dataArrived("Ajani's Pridemate", 'FDN 135');
+    expect((screen.getByLabelText(copy.review.sort.label) as HTMLSelectElement).value).toBe('status');
+    expect(names()).toEqual(["Ajani's Pridemate", 'Lightning Greaves', 'Soul Warden', 'Command Tower']);
+  });
+
+  it('goes back to plain A to Z when Alphabetical is chosen', async () => {
+    await setup([['Soul Warden', 1, 'in_collection'], ["Ajani's Pridemate"], ['Command Tower', 1, 'ordered']], { saved: ['ajani', 'warden', 'tower'] });
+    await dataArrived("Ajani's Pridemate", 'FDN 135');
+    fireEvent.change(screen.getByLabelText(copy.review.sort.label), { target: { value: 'alphabetical' } });
+    expect(names()).toEqual(["Ajani's Pridemate", 'Command Tower', 'Soul Warden']);
   });
 
   it('sorts by price, dearest first', async () => {
