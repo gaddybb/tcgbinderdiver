@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- Faster first load of a list's card data: printings are fetched four cards at a time instead of one (request starts are still spaced 100 ms apart, so Scryfall's rate limit holds), and basic lands no longer fetch their hundreds of printings. Basics are still saved with their picture and type, with an empty printings list. `loadCards` takes `includeBasics` (off) and `concurrency` options; the engine exports `isBasicLand`.
+
 ### Added
 - List review (`/lists/:id`): a list's cards with their picture, status, the binder to look in, the printing found there (set and number) and a typical online price, as a table on tablet and desktop and as rows on a phone. Change a card's status from a menu (a bottom sheet on a phone) with an Undo, sort by name, price, collector number or color, and search by name. Replaces the plain list view.
 - Card data on the device: card names are looked up on Scryfall and every paper printing fetched (paced, with progress, Try again if Scryfall can not be reached, and a note for names it does not know). Saved cards open instantly and are refreshed after a week. `planLists` runs the routing engine over a list to give each card its target binder; `sortCards` sorts by name, price, collector number or color; `typicalOnline` is the median printing price.

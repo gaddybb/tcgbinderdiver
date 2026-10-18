@@ -35,7 +35,7 @@ export function ageYears(releasedAt: string, now: Date): number {
   return Math.max(0, (now.getTime() - t) / YEAR_MS);
 }
 
-function isBasicLand(typeLine: string): boolean {
+export function isBasicLand(typeLine: string): boolean {
   const front = typeLine.split(' // ')[0];
   return /\bBasic\b/.test(front) && /\bLand\b/.test(front);
 }
