@@ -12,7 +12,7 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 - [ ] Fix names: several matches grouped under "Needs your pick" (tabs on desktop, 1-of-N pager on phone); not-found names use live card-name autocomplete; spellings fixed automatically show with Undo.
 - [x] Per-card status at import: Needed, In collection, Ordered, Proxy, Out of deck, with Set all to and Reset to needed.
 - [x] Limits and errors: 250 cards per list (split in two or keep first 250), empty paste, no card names found, Scryfall trouble with retry, resume banners on My lists if a lookup was interrupted.
-- [ ] Sample deck: a small built-in set of popular decks, one picked at random; skips import, opens the plan with a banner (Paste my own list, Try another).
+- [x] Sample deck: a small built-in set of popular decks, one picked at random; skips import, opens the plan with a banner (Paste my own list, Try another).
 
 ### Managing lists and cards
 - [x] My lists page: list cards with In next dive switches, next-dive summary, Paste a new list. List menu: Rename (inline), Duplicate, Copy as text, Delete (with confirmation). One wishlist always exists (Clear wishlist instead of Delete).
@@ -33,7 +33,7 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 - [x] Store dive on desktop (sidebar), tablet and phone: stop dropdown with previous and next, list toggles, sort and filter (color, price, collector number, A to Z), card image tiles with Found, progress counted in copies.
 - [x] One Finish binder action: unfound copies move to each card's next stop; stop order stays frozen all trip; Reopen a finished stop from the picker.
 - [x] Show-staff stops (Display case, Ask an associate): list sorted A to Z, big names, Found or Not available per card, "likely in value binders / bulk boxes" hints, big-text view to hand over the phone. Not available cards go to Buy the rest.
-- [ ] End trip confirmation; trip summary; Buy the rest (copy leftover list in TCGplayer Mass Entry format); nearby stores with a map; Back to my lists; Start a new trip (resets stops).
+- [x] End trip confirmation; trip summary; Buy the rest (copy leftover list in TCGplayer Mass Entry format); nearby stores with a map; Back to my lists; Start a new trip (resets stops).
 - [x] QR hand-off from desktop to phone: the list travels inside the link until accounts exist.
 
 ### Pages, states and trust
