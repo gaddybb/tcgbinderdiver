@@ -13,13 +13,13 @@ function setup(handler: Parameters<typeof scripted>[0], options: ConstructorPara
 const rejection = async (p: Promise<unknown>) => { try { await p; } catch (e) { return e as ScryfallError; } throw new Error('did not reject'); };
 
 describe('ScryfallClient headers', () => {
-  it('sends Accept and User-Agent on a GET', async () => {
+  it('sends Accept, and no custom User-Agent, on a GET', async () => {
     const { client, calls } = setup(() => json({ ok: true }));
     await client.get('/cards/named?exact=Sol+Ring');
     expect(calls[0].url).toBe('https://api.scryfall.com/cards/named?exact=Sol+Ring');
     expect(calls[0].method).toBe('GET');
     expect(calls[0].headers.Accept).toContain('application/json');
-    expect(calls[0].headers['User-Agent']).toBe('BinderDiver/0.1');
+    expect(Object.keys(calls[0].headers).map(h => h.toLowerCase())).not.toContain('user-agent');
   });
 
   it('sends a JSON body and Content-Type on a POST', async () => {
