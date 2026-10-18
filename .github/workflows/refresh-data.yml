@@ -1,0 +1,40 @@
+name: Refresh card data
+
+# Scryfall publishes new bulk data (and prices) every 12 to 24 hours. This rebuilds the site with the latest and deploys it.
+# Needs two repository secrets, added by the owner in GitHub (Settings, Secrets and variables, Actions):
+#   CLOUDFLARE_API_TOKEN   a token that can edit Workers
+#   CLOUDFLARE_ACCOUNT_ID  the Cloudflare account id
+# Without them the deploy step fails and the site simply keeps its last data.
+
+on:
+  schedule:
+    - cron: '30 14 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+        env:
+          CARD_DATA: '1'
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

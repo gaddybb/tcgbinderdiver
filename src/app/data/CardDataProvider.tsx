@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { loadCards } from '../../connectors/loadCards';
 import type { LoadProgress, WantedCard } from '../../connectors/loadCards';
 import { createBulkConnector, loadCatalog } from '../../connectors/bulk';
+import type { BulkConnector, CatalogInfo } from '../../connectors/bulk';
 import { ScryfallConnector } from '../../connectors/scryfall';
 import type { CardRecord } from '../../core/cards';
 import type { GameConnector } from '../../core/connector';
@@ -40,6 +41,20 @@ export function useConnector(): GameConnector {
   const ctx = useContext(Context);
   if (!ctx) throw new Error('useConnector needs a CardDataProvider above it.');
   return ctx.connector;
+}
+
+const isBulk = (c: GameConnector): c is GameConnector & Pick<BulkConnector, 'catalogInfo'> => 'catalogInfo' in c;
+
+// Which card catalog the prices come from, when the app is using one (null while loading, or when the live API is in use).
+export function useCatalogInfo(): CatalogInfo | null {
+  const connector = useConnector();
+  const [state, setState] = useState<{ source: GameConnector; info: CatalogInfo | null } | null>(null);
+  useEffect(() => {
+    let current = true;
+    if (isBulk(connector)) void connector.catalogInfo().then(info => { if (current) setState({ source: connector, info }); });
+    return () => { current = false; };
+  }, [connector]);
+  return state?.source === connector ? state.info : null;
 }
 
 export type CardDataStatus = 'loading' | 'ready' | 'error';

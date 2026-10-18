@@ -11,6 +11,11 @@ export function joinNames(names: readonly string[]): string {
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
+// "Oct 18, 2026" from a timestamp, in the reader's own locale.
+export function formatDate(iso: string): string {
+  return dateFormat.format(new Date(iso));
+}
+
 export function describeUpdated(age: UpdatedAge): string {
   const words = copy.myLists.updated;
   switch (age.kind) {
