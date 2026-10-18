@@ -4,7 +4,7 @@ export const FLAGS = {
   savedStores: false,    // v2: per-store profiles
   accounts: false,       // v3: Supabase sign-in and sync
   analytics: false,      // v1, later PR: GA4 behind consent
-  storeMap: false,       // v1, later: nearby stores with a map
+  storeMap: true,        // v1: nearby stores, as a Google Maps search that opens in a new tab
 } as const;
 
 export type Flag = keyof typeof FLAGS;

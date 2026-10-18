@@ -7,6 +7,7 @@ import { startTrip } from '../../../core/trip';
 import type { Trip } from '../../../core/trip';
 import { CardsRepository, MemoryStorage } from '../../../storage';
 import { App } from '../../App';
+import { NEARBY_STORES_URL } from '../../links';
 import { copy } from '../../copy/en';
 import { T0, makeList } from '../../testkit';
 import type { Spec } from '../../testkit';
@@ -408,6 +409,21 @@ describe('Ending the trip', () => {
     await waitFor(() => expect(copied).toBe('1 Soul Warden\n2 Cultivate'));
     expect(await screen.findByText(copy.tripEnd.buy.copied)).toBeTruthy();
     Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+  });
+
+  it('offers to find game stores nearby, opening a Google Maps search in a new tab and nothing else', async () => {
+    const opened: unknown[][] = [];
+    const original = window.open;
+    window.open = ((...args: unknown[]) => { opened.push(args); return null; }) as typeof window.open;
+    try {
+      await setup({ trip: { ...startTrip('t', T0, ['a']), endedAt: T0.toISOString() }, path: '/trip' });
+      expect(await screen.findByText(copy.tripEnd.stores.detail)).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: copy.tripEnd.stores.action }));
+      expect(opened).toEqual([[NEARBY_STORES_URL, '_blank', 'noopener,noreferrer']]);
+      expect(NEARBY_STORES_URL.startsWith('https://www.google.com/maps/search/')).toBe(true);
+    } finally {
+      window.open = original;
+    }
   });
 
   it('Start a new trip clears the old one and goes to the dive plan', async () => {
