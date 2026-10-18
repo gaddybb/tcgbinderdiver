@@ -30,3 +30,6 @@ export function listSummaryLine(list: CardList, now: Date): string {
   const count = list.kind === 'wishlist' ? copy.myLists.wishlistSummary(cards) : copy.myLists.deckSummary(needed, cards);
   return `${count} · ${describeUpdated(updatedAge(list, now))}`;
 }
+
+// For example $0.25. A card with no known price shows a dash.
+export const formatUsd = (amount: number | null): string => (amount === null ? '—' : `$${amount.toFixed(2)}`);

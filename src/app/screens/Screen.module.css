@@ -15,3 +15,6 @@
   grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--size-list-card)), 1fr));
 }
 .plain { list-style: none; margin: 0; padding: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; }
+.controls > * { flex: 1 1 12rem; }
+.rowEnd { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }

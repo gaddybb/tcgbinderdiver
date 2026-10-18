@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import { Home } from './screens/Home';
 import { Kit } from './screens/Kit';
-import { ListView } from './screens/ListView';
+import { ListReview } from './screens/ListReview';
 import { MyLists } from './screens/MyLists';
 import { NotFound } from './screens/NotFound';
 
@@ -13,7 +13,7 @@ const ROUTES: readonly { pattern: string; screen: Screen }[] = [
   { pattern: '/', screen: Home },
   { pattern: '/kit', screen: Kit },
   { pattern: '/lists', screen: MyLists },
-  { pattern: '/lists/:id', screen: ListView },
+  { pattern: '/lists/:id', screen: ListReview },
 ];
 
 const segments = (path: string): string[] => path.split('/').filter(Boolean);

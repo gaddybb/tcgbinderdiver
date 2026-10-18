@@ -5,12 +5,13 @@ import type { ReactNode } from 'react';
 import { copy } from '../copy/en';
 import { useLayout } from '../layout/useLayout';
 import {
-  Banner, BinderPicker, Button, CardThumb, CardTile, Checkbox, Chip, ColorFilter, Dialog, DialogPanel, EmptyState, GameAnchor, Input,
+  Banner, BinderPicker, Button, CardTable, CardThumb, CardTile, Checkbox, Chip, ColorFilter, Dialog, DialogPanel, EmptyState, GameAnchor, Input,
   ListCard, ListRow, Logo, Menu, MenuList, OddsLabel, PageHeader, ProgressBar, PullVerdict, QuantityBadge, Radio, Rank, Select,
-  Sheet, SheetPanel, SkeletonRow, StandaloneLink, StatusLabel, StepIndicator, Stepper, SummaryBar, Switch, TabBar, ToastView,
+  Sheet, SheetPanel, SkeletonRow, StandaloneLink, StatusLabel, StatusPicker, StepIndicator, Stepper, SummaryBar, Switch, TabBar, ToastView,
   TourTip, useToast,
 } from '../components';
 import type { ColorCategory } from '../components';
+import type { CardStatus } from '../../core/status';
 import { CARD_STATUSES } from '../../core/status';
 import styles from './Kit.module.css';
 
@@ -63,6 +64,7 @@ export function Kit() {
   const [inNext, setInNext] = useState(true);
   const [binder, setBinder] = useState('0');
   const [renameValue, setRenameValue] = useState<string>(s.renameValue);
+  const [pickedStatus, setPickedStatus] = useState<CardStatus>('needed');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [found, setFound] = useState([0, 1, 1, 4]);
@@ -288,6 +290,20 @@ export function Kit() {
         <Group title={k.groupsHeading.summaryBar}>
           <div className={styles.stack}>
             <SummaryBar title={s.summaryTitle} detail={s.summaryDetail} action={<Button>{s.summaryAction}</Button>} />
+          </div>
+        </Group>
+        <Group title={k.groupsHeading.statusPicker}>
+          <StatusPicker cardName={s.cardName1} status={pickedStatus} onChange={setPickedStatus} />
+        </Group>
+        <Group title={k.groupsHeading.cardTable}>
+          <div className={styles.stack}>
+            <CardTable
+              labels={{ table: copy.review.tableLabel(s.listTitle), ...copy.review.columns }}
+              rows={[
+                { key: 'a', thumb: <CardThumb edge="White" src={CARD_IMAGE} />, name: s.cardName1, quantity: 1, status: <StatusPicker cardName={s.cardName1} status="needed" onChange={noop} />, target: s.cardSet, setLabel: s.cardNumber1, price: s.price1 },
+                { key: 'b', thumb: <CardThumb edge="Green" src={CARD_IMAGE} />, name: s.cardName3, quantity: 4, status: <StatusPicker cardName={s.cardName3} status="in_collection" onChange={noop} />, target: s.cardSet, setLabel: s.cardNumber3, price: s.price3 },
+              ]}
+            />
           </div>
         </Group>
         <Group title={k.groupsHeading.setChip}>

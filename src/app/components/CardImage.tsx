@@ -31,7 +31,12 @@ export function CardImage({ name, src, edge, dim }: CardImageProps) {
   );
 }
 
-// A small version for rows and list cards: the colour edge and a card-shaped block, no picture.
-export function CardThumb({ edge, size = 'md' }: { edge: ColorCategory; size?: 'md' | 'lg' }) {
-  return <span aria-hidden="true" className={cx(styles.box, styles.thumb, size === 'lg' && styles.thumbLg, edgeClass[edge])} />;
+// A small version for rows and list cards: the colour edge and a card-shaped block, with the picture when there is one.
+export function CardThumb({ edge, size = 'md', src }: { edge: ColorCategory; size?: 'md' | 'lg'; src?: string | null }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <span aria-hidden="true" className={cx(styles.box, styles.thumb, size === 'lg' && styles.thumbLg, edgeClass[edge])}>
+      {src && !failed && <img src={src} alt="" loading="lazy" className={styles.img} onError={() => setFailed(true)} />}
+    </span>
+  );
 }
