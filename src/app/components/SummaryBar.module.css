@@ -15,7 +15,7 @@
 .action { flex: 0 0 auto; }
 .sticky {
   position: sticky;
-  bottom: var(--space-3);
+  bottom: calc(var(--space-3) + var(--tabbar-offset, 0rem));
   z-index: var(--z-menu);
   box-shadow: var(--shadow-menu);
 }

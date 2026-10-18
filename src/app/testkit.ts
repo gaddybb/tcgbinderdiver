@@ -1,4 +1,5 @@
 // Test helpers for screens: dated lists made from a short description. Not imported by app code.
+import type { CardStatus } from '../core/status';
 import { addEntries, createList, setEntryStatus } from '../core/lists';
 import type { CardList } from '../core/lists';
 
@@ -12,7 +13,7 @@ export type Spec = {
   created?: Date;
   updated?: Date;
   on?: boolean;
-  cards?: [name: string, quantity?: number, status?: 'needed' | 'proxy' | 'in_collection'][];
+  cards?: [name: string, quantity?: number, status?: CardStatus][];
 };
 
 // A card's key is its lower-cased name, as the temporary paste box makes it.

@@ -37,10 +37,10 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 - [ ] QR hand-off from desktop to phone: the list travels inside the link until accounts exist.
 
 ### Pages, states and trust
-- [ ] Home with game theming (Magic only live; others "coming"), walkthrough with FAQ, first-time tour (welcome plus three tips, replayable), About, Support (Ko-fi), Privacy.
+- [x] Home with game theming (Magic only live; others "coming"), walkthrough with FAQ, first-time tour (welcome plus three tips, replayable), About, Support (Ko-fi), Privacy.
 - [ ] App states: first visit, loading, nothing left to find, no binders left, offline, card data unavailable, image missing, install prompt (once, after first trip), cookie choice.
 - [ ] Offline: a loaded plan and dive keep working from saved data.
-- [ ] Footer on every page with the verbatim Fan Content disclaimer and Scryfall credit.
+- [x] Footer on every page with the verbatim Fan Content disclaimer and Scryfall credit.
 - [ ] GA4 through Tag Manager behind consent. Events: list pasted, plan viewed, stop finished (with found and unfound counts per stop type), card found, Buy the rest tapped. No card names or lists leave the device.
 
 ## Decisions (settled)

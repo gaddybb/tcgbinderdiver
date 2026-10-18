@@ -13,7 +13,7 @@
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .bottom {
   position: sticky;
-  bottom: var(--space-3);
+  bottom: calc(var(--space-3) + var(--tabbar-offset, 0rem));
   z-index: var(--z-menu);
   box-shadow: var(--shadow-menu);
   justify-content: center;

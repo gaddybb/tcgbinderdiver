@@ -1022,3 +1022,17 @@ describe('List review: refreshing card data', () => {
     expect(text(tableRow('Forest'))).not.toContain(copy.review.target.noBinder);
   });
 });
+
+describe('List review: nothing left to find', () => {
+  it('says every card is accounted for, with how they are marked, when none is still needed', async () => {
+    await setup([["Ajani's Pridemate", 1, 'in_collection'], ['Soul Warden', 1, 'in_collection'], ['Command Tower', 1, 'ordered']], { saved: ['ajani', 'warden', 'tower'] });
+    expect(await screen.findByText(copy.allAccounted.title)).toBeTruthy();
+    expect(screen.getByText(copy.allAccounted.detail(3, '2 in collection, 1 ordered'))).toBeTruthy();
+  });
+
+  it('says nothing of the kind while a card is still needed', async () => {
+    await setup([["Ajani's Pridemate"], ['Soul Warden', 1, 'in_collection']], { saved: ['ajani', 'warden'] });
+    await dataArrived("Ajani's Pridemate", 'FDN 135');
+    expect(screen.queryByText(copy.allAccounted.title)).toBeNull();
+  });
+});

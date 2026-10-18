@@ -1,0 +1,59 @@
+.header { border-bottom: var(--border-thin) solid var(--color-divider); background: var(--color-ground); }
+.bar {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+.brand { display: inline-flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); color: var(--color-text); text-decoration: none; }
+.name { font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-card-title); }
+.links { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  border-bottom: var(--border-thick) solid transparent;
+}
+.link[aria-current='page'] { border-bottom-color: var(--color-brass); }
+.outline, .primary { padding: 0 var(--space-4); border-radius: var(--radius-md); font-weight: var(--weight-bold); }
+.outline { border: var(--border-thin) solid var(--color-border-strong); }
+.primary { background: var(--color-accent); color: var(--color-on-accent); }
+.primary[aria-current='page'] { border-bottom-color: transparent; box-shadow: 0 0 0 var(--border-medium) var(--color-brass); }
+.game { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-text-muted); }
+.select {
+  font: inherit;
+  min-height: var(--tap-min);
+  color: var(--color-text);
+  background: var(--color-floor1);
+  border: var(--border-thin) solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+}
+.phoneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: var(--border-thin) solid var(--color-divider);
+  background: var(--color-ground);
+}
+.menu {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: var(--border-thin) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: var(--weight-bold);
+}
+
+/* The tab bar sits along the bottom of a phone screen; the app's page makes room for it (see App.module.css). */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-menu); padding: var(--space-2) var(--space-3); background: var(--color-deep); }

@@ -11,3 +11,6 @@
   padding: var(--space-6) var(--space-4);
   box-sizing: border-box;
 }
+/* On a phone the tab bar is fixed along the bottom: leave room for it, and tell sticky bars and toasts to sit above it. */
+.shellPhone { --tabbar-offset: calc(var(--tap-min) + var(--space-5)); }
+.mainPhone { padding-bottom: calc(var(--space-6) + var(--tabbar-offset)); }
