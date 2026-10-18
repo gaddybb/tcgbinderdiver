@@ -34,3 +34,5 @@
 }
 .check { width: 1%; padding-right: 0; }
 .row.selected td, .row.selected th { background: var(--color-floor1); }
+.open { display: flex; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+.openName { font: inherit; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }

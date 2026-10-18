@@ -20,18 +20,23 @@ interface ListRowProps {
   trailing?: ReactNode;    // a price, or a PullVerdict
   select?: RowSelect;      // while choosing cards: a checkbox in front, and the whole row toggles it
   onLongPress?: () => void;   // holding the row down (when not already choosing)
+  onOpen?: () => void;        // opens card detail: the picture and the title become buttons
+  openLabel?: string;         // "Open Sol Ring", read aloud
 }
 
 // One row in a list: a card on a phone list, or a binder in the dive plan.
-export function ListRow({ lead, title, subtitle, trailing, select, onLongPress }: ListRowProps) {
+export function ListRow({ lead, title, subtitle, trailing, select, onLongPress, onOpen, openLabel }: ListRowProps) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const held = useRef(false);   // a long press just fired: the click that ends it must not also open the card
+  const open = () => { if (held.current) { held.current = false; return; } onOpen?.(); };
   const cancel = () => { if (timer.current) { clearTimeout(timer.current); timer.current = null; } };
   const longPress = onLongPress && !select
     ? {
         onPointerDown: (event: PointerEvent) => {
-          if ((event.target as HTMLElement).closest('button, a, input')) return;
+          if ((event.target as HTMLElement).closest('button:not([data-open]), a, input')) return;
           cancel();
-          timer.current = setTimeout(() => { timer.current = null; onLongPress(); }, LONG_PRESS_MS);
+          held.current = false;
+          timer.current = setTimeout(() => { timer.current = null; held.current = true; onLongPress(); }, LONG_PRESS_MS);
         },
         onPointerUp: cancel,
         onPointerLeave: cancel,
@@ -46,9 +51,15 @@ export function ListRow({ lead, title, subtitle, trailing, select, onLongPress }
   return (
     <li className={cx(styles.row, select && styles.selectable, select?.checked && styles.selected)} onClick={toggle} {...longPress}>
       {select && <div className={styles.lead}><Checkbox hideLabel label={select.label} checked={select.checked} onChange={select.onChange} /></div>}
-      {lead && <div className={styles.lead}>{lead}</div>}
+      {lead && (
+        <div className={styles.lead}>
+          {onOpen ? <button type="button" tabIndex={-1} aria-hidden="true" className={styles.open} data-open onClick={open}>{lead}</button> : lead}
+        </div>
+      )}
       <div className={styles.body}>
-        <div className={styles.title}>{title}</div>
+        <div className={styles.title}>
+          {onOpen ? <button type="button" className={styles.openTitle} data-open aria-label={openLabel} onClick={open}>{title}</button> : title}
+        </div>
         {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
       </div>
       {trailing && <div className={styles.trailing}>{trailing}</div>}

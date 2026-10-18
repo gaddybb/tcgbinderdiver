@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
-  WISHLIST_ID, addEntries, clearEntries, copyEntries, removeEntries, renameList, setEntriesStatus, setEntryStatus,
+  WISHLIST_ID, addEntries, clearEntries, copyEntries, removeEntries, renameList, setEntriesStatus, setEntryQuantity, setEntryStatus,
   setInNextDive as withInNextDive,
 } from '../../core/lists';
 import type { CardList, IncomingEntry } from '../../core/lists';
@@ -34,6 +34,7 @@ export interface ListsApi {
   clearWishlist: () => Promise<void>;
   setInNextDive: (id: string, on: boolean) => Promise<void>;
   setStatus: (listId: string, cardKey: string, status: CardStatus) => Promise<void>;
+  setQuantity: (listId: string, cardKey: string, quantity: number) => Promise<void>;
   // Bulk actions on a list's cards. They return undefined when a list is gone.
   setStatuses: (listId: string, cardKeys: readonly string[], status: CardStatus) => Promise<BulkStatusResult | undefined>;
   removeCards: (listId: string, cardKeys: readonly string[]) => Promise<BulkRemoveResult | undefined>;
@@ -143,6 +144,7 @@ export function ListsProvider({ children, clock = () => new Date(), makeId }: Li
       clearWishlist: () => edit(WISHLIST_ID, list => clearEntries(list, now())),
       setInNextDive: (id, on) => edit(id, list => withInNextDive(list, on)),
       setStatus: (listId, cardKey, status) => edit(listId, list => setEntryStatus(list, cardKey, status, now())),
+      setQuantity: (listId, cardKey, quantity) => edit(listId, list => setEntryQuantity(list, cardKey, quantity, now())),
 
       async setStatuses(listId, cardKeys, status) {
         const previous = await repo.get(listId);

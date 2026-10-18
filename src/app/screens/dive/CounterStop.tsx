@@ -31,6 +31,7 @@ interface CounterStopProps {
   onFound: (part: NeededAcrossLists) => void;
   onUndo: (part: NeededAcrossLists) => void;
   onNotAvailable: (key: string) => void;
+  onOpen: (key: string, keys: string[]) => void;   // opens card detail, with the cards to walk through
   onDone: () => void;
 }
 
@@ -49,7 +50,7 @@ interface Row {
 
 type View = 'gallery' | 'table';
 
-export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass, onFound, onUndo, onNotAvailable, onDone }: CounterStopProps) {
+export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass, onFound, onUndo, onNotAvailable, onOpen, onDone }: CounterStopProps) {
   const phone = useLayout() === 'phone';
   const [big, setBig] = useState(false);
   const [view, setView] = usePreference<View>('counter-view', 'gallery');
@@ -108,6 +109,7 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
               onFound={() => onFound(row.part)}
               onUndo={() => onUndo(row.part)}
               onNotAvailable={() => onNotAvailable(row.key)}
+              onOpen={() => onOpen(row.key, rows.map(r => r.key))}
             />
           ))}
         </ul>

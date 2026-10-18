@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { copy } from '../copy/en';
 import { cx } from '../cx';
 import { Checkbox } from './Checkbox';
 import { QuantityBadge } from './QuantityBadge';
@@ -13,6 +14,7 @@ export interface CardTableRow {
   target: string;        // the binder to look in, in words
   setLabel: string;      // "FDN 135"
   price: string;         // already formatted
+  onOpen?: () => void;   // opens card detail: the picture and the name become buttons
 }
 
 export interface CardTableLabels {
@@ -69,9 +71,11 @@ export function CardTable({ rows, labels, selection }: CardTableProps) {
                   <Checkbox hideLabel label={selection.rowLabel(row.name)} checked={selection.selected.has(row.key)} onChange={() => selection.onToggle(row.key)} />
                 </td>
               )}
-              <td className={styles.thumb}>{row.thumb}</td>
+              <td className={styles.thumb}>
+                {row.onOpen ? <button type="button" tabIndex={-1} aria-hidden="true" className={styles.open} onClick={row.onOpen}>{row.thumb}</button> : row.thumb}
+              </td>
               <th scope="row" className={styles.name}>
-                {row.name}
+                {row.onOpen ? <button type="button" className={styles.openName} aria-label={copy.cardTile.openCard(row.name)} onClick={row.onOpen}>{row.name}</button> : row.name}
                 {row.quantity > 1 && <span className={styles.badge}><QuantityBadge quantity={row.quantity} /></span>}
               </th>
               <td>{row.status}</td>

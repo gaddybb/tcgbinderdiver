@@ -7,8 +7,8 @@ import type { PlanStop } from '../../../core/engine/engine';
 import { SORT_MODES, sortCards } from '../../../core/sort';
 import type { SortMode } from '../../../core/sort';
 import {
-  finishBinder, finishedStops, foundCopies, markFound, markNotAvailable, reopenBinder, setListOn,
-  stopLabel, tripSummary, undoFound,
+  finishBinder, finishedStops, foundCopies, markFound, markFoundOn, markNotAvailable, reopenBinder, setListOn,
+  stopLabel, tripSummary, undoFound, undoFoundOn,
 } from '../../../core/trip';
 import {
   Banner, Button, CardTile, ColorFilter, Chip, Dialog, EmptyState, isColorCategory, PageHeader, ProgressBar, PullVerdict, Select, SkeletonRow,
@@ -24,6 +24,7 @@ import type { CardRecord } from '../../../core/cards';
 import { formatUsd } from '../../format';
 import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
+import { StoreCardDetail } from '../detail/StoreCardDetail';
 import screen from '../Screen.module.css';
 import { BasicsNote } from './BasicsNote';
 import { TourDock, useTourDone } from '../tour/TourDock';
@@ -52,6 +53,7 @@ export function StoreDive() {
   const [price, setPrice] = useState<PriceFilter>('any');
   const [colors, setColors] = useState<ColorCategory[]>([]);
   const [ending, setEnding] = useState(false);
+  const [detail, setDetail] = useState<{ key: string; keys: string[] } | null>(null);   // the card shown in card detail, and the cards to walk through
 
   const ended = trip?.endedAt !== undefined;
   useEffect(() => { if (ended) navigate('/trip', { replace: true }); }, [ended]);
@@ -247,6 +249,7 @@ export function StoreDive() {
                     found={foundCopies(trip, e.part)}
                     onFound={() => { analytics.track('card_found', { stop_type: current.stop.kind }); update(tr => markFound(tr, e.part)); }}
                     onUndo={() => update(tr => undoFound(tr, e.part))}
+                    onOpen={() => setDetail({ key: e.key, keys: shown.map(s => s.key) })}
                   />
                 ))}
               </ul>
@@ -270,11 +273,28 @@ export function StoreDive() {
             onFound={part => { analytics.track('card_found', { stop_type: current.stop.kind }); update(tr => markFound(tr, part)); }}
             onUndo={part => update(tr => undoFound(tr, part))}
             onNotAvailable={key => update(tr => markNotAvailable(tr, key))}
+            onOpen={(key, keys) => setDetail({ key, keys })}
             onDone={() => finish(current, copy.storeDive.counter.doneToast)}
           />
         )}
       </div>
-      {tour.done === false && <TourDock onDone={tour.markDone} />}
+      {tour.done === false && !detail && <TourDock onDone={tour.markDone} />}
+      {detail && (
+        <StoreCardDetail
+          stop={current}
+          cardKey={detail.key}
+          keys={detail.keys}
+          records={data.records}
+          parts={cards.parts}
+          trip={trip}
+          onOpen={key => setDetail({ ...detail, key })}
+          onClose={() => setDetail(null)}
+          onFound={part => { analytics.track('card_found', { stop_type: current.stop.kind }); update(tr => markFound(tr, part)); }}
+          onUndo={part => update(tr => undoFound(tr, part))}
+          onFoundOn={(part, listId) => { analytics.track('card_found', { stop_type: current.stop.kind }); update(tr => markFoundOn(tr, part, listId)); }}
+          onUndoOn={(part, listId) => update(tr => undoFoundOn(tr, part, listId))}
+        />
+      )}
       {endDialog}
     </>
   );
