@@ -6,12 +6,12 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 ## v1 features to build
 
 ### Lists and import
-- [ ] Paste import for Moxfield, Archidekt and EDHREC text. Parse `1 Sol Ring`, `2x Sol Ring (CMM) 400 *F* #tag`: take count and name, drop set codes, collector numbers, foil tags and `#tags`. Skip blank lines and section headers.
-- [ ] Four import steps: Name it, Look up cards, Fix names, What you own. Wishlist import has three (no What you own) and skips cards already on the wishlist.
-- [ ] Step 1 asks where cards go: New deck (named) or Wishlist (no name field). Sideboard and maybeboard sections are off by default with a toggle each. Duplicate lines combine into one entry with a quantity.
+- [x] Paste import for Moxfield, Archidekt and EDHREC text. Parse `1 Sol Ring`, `2x Sol Ring (CMM) 400 *F* #tag`: take count and name, drop set codes, collector numbers, foil tags and `#tags`. Skip blank lines and section headers.
+- [x] Four import steps: Name it, Look up cards, Fix names, What you own. Wishlist import has three (no What you own) and skips cards already on the wishlist.
+- [x] Step 1 asks where cards go: New deck (named) or Wishlist (no name field). Sideboard and maybeboard sections are off by default with a toggle each. Duplicate lines combine into one entry with a quantity.
 - [ ] Fix names: several matches grouped under "Needs your pick" (tabs on desktop, 1-of-N pager on phone); not-found names use live card-name autocomplete; spellings fixed automatically show with Undo.
-- [ ] Per-card status at import: Needed, In collection, Ordered, Proxy, Out of deck, with Set all to and Reset to needed.
-- [ ] Limits and errors: 250 cards per list (split in two or keep first 250), empty paste, no card names found, Scryfall trouble with retry, resume banners on My lists if a lookup was interrupted.
+- [x] Per-card status at import: Needed, In collection, Ordered, Proxy, Out of deck, with Set all to and Reset to needed.
+- [x] Limits and errors: 250 cards per list (split in two or keep first 250), empty paste, no card names found, Scryfall trouble with retry, resume banners on My lists if a lookup was interrupted.
 - [ ] Sample deck: a small built-in set of popular decks, one picked at random; skips import, opens the plan with a banner (Paste my own list, Try another).
 
 ### Managing lists and cards

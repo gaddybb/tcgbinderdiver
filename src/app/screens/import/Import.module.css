@@ -1,0 +1,39 @@
+.flow { display: flex; flex-direction: column; gap: var(--space-5); }
+.lead { margin: 0; color: var(--color-text-muted); }
+.heading { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-lg); }
+.subheading { margin: 0; font-size: var(--text-md); font-weight: var(--weight-bold); }
+.group { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-thin) solid var(--color-divider);
+  border-radius: var(--radius-card);
+}
+.note { margin: 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+.sections { display: flex; flex-direction: column; gap: var(--space-2); }
+.sectionRow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); min-height: var(--tap-min); }
+.sectionNote { font-size: var(--text-sm); color: var(--color-text-muted); }
+.examples { margin: 0; padding-left: var(--space-5); font-family: var(--font-body); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.actionsEnd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.choices { display: flex; flex-direction: column; gap: var(--space-1); }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  min-height: var(--tap-min);
+  padding: var(--space-2) 0;
+  border-bottom: var(--border-thin) solid var(--color-divider);
+}
+.rowText { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.rowName { font-weight: var(--weight-bold); }
+.rowSub { font-size: var(--text-sm); color: var(--color-text-muted); }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.suggestions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.counts { margin: 0; font-weight: var(--weight-bold); }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }

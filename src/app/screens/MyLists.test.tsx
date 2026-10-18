@@ -76,108 +76,31 @@ describe('My lists: first visit', () => {
 });
 
 describe('My lists: pasting a list', () => {
-  const open = async () => fireEvent.click(await screen.findByRole('button', { name: copy.myLists.pasteNew }));
-  const add = () => fireEvent.click(screen.getByRole('button', { name: copy.pasteDialog.add }));
-
-  it('opens a dialog from the page button and from the empty state', async () => {
+  it('opens the import flow from the page button and from the empty state', async () => {
     setup();
     fireEvent.click(await screen.findByRole('button', { name: copy.myLists.empty.action }));
-    expect(screen.getByRole('dialog', { name: copy.pasteDialog.title })).toBeTruthy();
+    expect(window.location.pathname).toBe('/import');
   });
 
-  it('makes a deck from the pasted text, combining repeats and ignoring set codes and foil tags', async () => {
-    const { repo } = setup();
-    await open();
-    type(copy.pasteDialog.nameLabel, 'Lifegain Commander');
-    type(copy.pasteDialog.textLabel, '1 Sol Ring\n2x Arcane Signet (ELD) 331 *F*\n1 sol ring #ramp');
-    add();
-
-    const deckCard = await screen.findByRole('link', { name: 'Lifegain Commander' });
-    expect(within(deckCard.closest('li') as HTMLElement).getByText('2 needed of 2 · Updated today')).toBeTruthy();
-    expect(screen.queryByRole('dialog')).toBeNull();
-
-    const [deck] = (await repo.all()).filter(l => l.kind === 'deck');
-    expect(deck.entries.map(e => [e.name, e.quantity, e.status])).toEqual([['Sol Ring', 2, 'needed'], ['Arcane Signet', 2, 'needed']]);
-    expect(deck.entries[0].tags).toEqual(['ramp']);
-    expect(deck.inNextDive).toBe(true);
+  it('opens the import flow from the page button when there are lists', async () => {
+    setup(TWO_DECKS_AND_WISHLIST);
+    fireEvent.click(await screen.findByRole('button', { name: copy.myLists.pasteNew }));
+    expect(window.location.pathname).toBe('/import');
   });
 
-  it('leaves out sideboard and maybeboard cards', async () => {
-    const { repo } = setup();
-    await open();
-    type(copy.pasteDialog.nameLabel, 'Deck');
-    type(copy.pasteDialog.textLabel, '1 Sol Ring\nSideboard\n1 Negate\nMaybeboard\n1 Mana Drain');
-    add();
-    await screen.findByRole('link', { name: 'Deck' });
-    expect((await repo.all()).find(l => l.kind === 'deck')!.entries.map(e => e.name)).toEqual(['Sol Ring']);
-  });
-
-  it('asks for a name', async () => {
-    const { repo } = setup();
-    await open();
-    type(copy.pasteDialog.textLabel, '1 Sol Ring');
-    add();
-    expect(screen.getByText(copy.pasteDialog.nameMissing)).toBeTruthy();
-    expect(screen.getByRole('dialog')).toBeTruthy();
-    expect((await repo.all()).filter(l => l.kind === 'deck')).toEqual([]);
-  });
-
-  it('says when the box is empty', async () => {
-    setup();
-    await open();
-    type(copy.pasteDialog.nameLabel, 'Deck');
-    add();
-    expect(screen.getByText(copy.pasteDialog.empty)).toBeTruthy();
-  });
-
-  it('says when it can not find a card name', async () => {
-    const { repo } = setup();
-    await open();
-    type(copy.pasteDialog.nameLabel, 'Deck');
-    type(copy.pasteDialog.textLabel, 'Commander\nDeck\nSideboard');
-    add();
-    expect(screen.getByText(copy.pasteDialog.noNames)).toBeTruthy();
-    expect((await repo.all()).filter(l => l.kind === 'deck')).toEqual([]);
-  });
-
-  it('keeps the first 250 cards and says so', async () => {
-    const { repo } = setup();
-    await open();
-    type(copy.pasteDialog.nameLabel, 'Big');
-    type(copy.pasteDialog.textLabel, Array.from({ length: 300 }, (_, i) => `1 Card ${i}`).join('\n'));
-    add();
-    expect(await screen.findByText(copy.myLists.toast.keptFirst(250, 300))).toBeTruthy();
-    expect((await repo.all()).find(l => l.kind === 'deck')!.entries).toHaveLength(250);
-  });
-
-  it('cancel closes it without adding anything, and the box is empty next time', async () => {
-    const { repo } = setup();
-    await open();
-    type(copy.pasteDialog.nameLabel, 'Draft');
-    type(copy.pasteDialog.textLabel, '1 Sol Ring');
-    fireEvent.click(screen.getByRole('button', { name: copy.common.cancel }));
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect((await repo.all()).filter(l => l.kind === 'deck')).toEqual([]);
-    await open();
-    expect((screen.getByLabelText(copy.pasteDialog.textLabel) as HTMLTextAreaElement).value).toBe('');
-    expect((screen.getByLabelText(copy.pasteDialog.nameLabel) as HTMLInputElement).value).toBe('');
-  });
-
-  it('can add to the wishlist instead, which needs no name, and skips cards already on it', async () => {
-    const { repo } = setup();
-    await open();
-    fireEvent.click(screen.getByLabelText(copy.pasteDialog.wishlist));
-    expect(screen.queryByLabelText(copy.pasteDialog.nameLabel)).toBeNull();
-    type(copy.pasteDialog.textLabel, '1 Sol Ring\n1 Mana Crypt');
-    fireEvent.click(screen.getByRole('button', { name: copy.pasteDialog.addToWishlist }));
-    const wishlistCard = (await screen.findByRole('link', { name: 'Wishlist' })).closest('li') as HTMLElement;
-    expect(within(wishlistCard).getByText('2 cards · Updated today')).toBeTruthy();
-
-    await open();
-    fireEvent.click(screen.getByLabelText(copy.pasteDialog.wishlist));
-    type(copy.pasteDialog.textLabel, '3 Sol Ring\n1 Mana Drain');
-    fireEvent.click(screen.getByRole('button', { name: copy.pasteDialog.addToWishlist }));
-    await waitFor(async () => expect((await repo.get(WISHLIST_ID))!.entries.map(e => [e.name, e.quantity])).toEqual([['Sol Ring', 1], ['Mana Crypt', 1], ['Mana Drain', 1]]));
+  it('offers to resume an import that was not finished, and can discard it', async () => {
+    const storage = new MemoryStorage();
+    (storage as { persistent: boolean }).persistent = true;
+    await storage.put('settings', 'import-draft', {
+      target: 'deck', name: 'Lifegain Commander', text: '1 Sol Ring\n1 Cultivate', include: { sideboard: false, maybeboard: false },
+      limitChoice: 'split', done: 1, total: 2, savedAt: T0.toISOString(),
+    });
+    render(<App storage={storage} clock={() => T0} />);
+    expect(await screen.findByText(copy.resume.title('Lifegain Commander'))).toBeTruthy();
+    expect(screen.getByText(copy.resume.detail(1, 2))).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.resume.discard }));
+    await waitFor(() => expect(screen.queryByText(copy.resume.title('Lifegain Commander'))).toBeNull());
+    expect(await storage.get('settings', 'import-draft')).toBeUndefined();
   });
 });
 
@@ -287,7 +210,7 @@ describe('My lists: renaming on the card', () => {
     await openMenu('Zombie Tribal', copy.myLists.menu.rename);
     type(copy.listCard.nameLabel, '   ');
     fireEvent.keyDown(screen.getByLabelText(copy.listCard.nameLabel), { key: 'Enter' });
-    expect(screen.getByText(copy.pasteDialog.nameMissing)).toBeTruthy();
+    expect(screen.getByText(copy.importFlow.nameMissing)).toBeTruthy();
     expect(screen.getByLabelText(copy.listCard.nameLabel)).toBeTruthy();
     expect((await repo.get('b'))!.name).toBe('Zombie Tribal');
   });

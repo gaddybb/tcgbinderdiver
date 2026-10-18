@@ -98,7 +98,15 @@ describe('resolveLines', () => {
   it('picking a candidate chooses that card and keeps quantity and tags', () => {
     const picked = pickCandidate(resolveLines(entriesOf('2 Archangel #angels'), [], fuzzy), 'archangel', '4');
     expect(picked[0]).toMatchObject({ state: 'chosen', quantity: 2, tags: ['angels'], card: { name: 'Archangel Avacyn' } });
-    expect(picked[0].candidates).toBeUndefined();
+    expect(picked[0].candidates).toHaveLength(2);
+    expect(pickCandidate(picked, 'archangel', '3')[0].card?.name).toBe('Archangel of Thune');   // changing their mind
+  });
+
+  it('undo on a card typed in for a missing name sends it back, but not a pick among matches', () => {
+    const chosen = chooseCard(lines, 'zuran orb tribal', card('9', 'Zuran Orb'));
+    expect(undoFix(chosen, 'zuran orb tribal')[3].state).toBe('missing');
+    const picked = pickCandidate(lines, 'archangel', '3');
+    expect(undoFix(picked, 'archangel')[2].state).toBe('chosen');
   });
 
   it('ignores a pick that is not one of the candidates', () => {

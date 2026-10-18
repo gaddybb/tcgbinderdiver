@@ -1,5 +1,5 @@
 // A GameConnector that knows a few cards and never touches the network, for tests. Not imported by app code.
-import type { CardSummary, GameConnector, LookupOptions, NameLookup } from '../core/connector';
+import type { CardSummary, FuzzyResult, GameConnector, LookupOptions, NameLookup } from '../core/connector';
 import { pr } from '../core/engine/fixtures';
 import type { Printing } from '../core/engine/engine';
 import { MAGIC_SORT_ORDER, ScryfallError, sortCategory } from './scryfall';
@@ -16,6 +16,7 @@ export interface FakeOptions {
   failPrintingsFor?: string[];
   failLookup?: boolean;
   abortOnLookup?: boolean;
+  fuzzy?: Record<string, FuzzyResult>;   // answers for names that are not exact, by the name as asked
 }
 
 export function fakeSummary(card: FakeCard): CardSummary {
@@ -64,8 +65,8 @@ export function fakeConnector(known: readonly (string | FakeCard)[], options: Fa
       await opts?.onBatch?.(result);
       return result;
     },
-    async fuzzy() { return { status: 'none' }; },
-    async autocomplete() { return []; },
+    async fuzzy(name: string): Promise<FuzzyResult> { return options.fuzzy?.[name] ?? { status: 'none' }; },
+    async autocomplete(query: string) { return cards.map(c => c.name).filter(n => n.toLowerCase().startsWith(query.trim().toLowerCase())); },
     async printings(card: CardSummary): Promise<Printing[]> {
       calls.printings.push(card.name);
       if (state.failPrintingsFor.includes(card.name)) throw new ScryfallError('server', 'oops', 503);

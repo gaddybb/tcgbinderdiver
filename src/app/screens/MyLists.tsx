@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { copyAsText, isValidListName, nextDiveSummary, WISHLIST_ID } from '../../core/lists';
 import type { CardList } from '../../core/lists';
 import {
@@ -8,9 +8,13 @@ import type { MenuItem } from '../components';
 import { copyText } from '../clipboard';
 import { copy } from '../copy/en';
 import { useLists } from '../data/ListsProvider';
+import { useStorage } from '../data/StorageProvider';
 import { joinNames, listSummaryLine } from '../format';
 import { useLayout } from '../layout/useLayout';
-import { PasteDialog } from './PasteDialog';
+import { navigate } from '../router';
+import { checkPaste } from '../../core/import';
+import { clearDraft, loadDraft } from './import/draft';
+import type { ImportDraft } from './import/draft';
 import styles from './Screen.module.css';
 
 const t = copy.myLists;
@@ -22,10 +26,20 @@ export function MyLists() {
   const toast = useToast();
   const phone = useLayout() === 'phone';
 
-  const [pasteOpen, setPasteOpen] = useState(false);
+  const storage = useStorage();
+  const [draft, setDraft] = useState<ImportDraft | null>(null);
   const [renaming, setRenaming] = useState<{ id: string; value: string; error?: string } | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [limit, setLimit] = useState(false);
+
+  // An import that was started and not finished (the lookup stopped, or the player left).
+  useEffect(() => {
+    let current = true;
+    void loadDraft(storage).then(saved => { if (current) setDraft(saved ?? null); });
+    return () => { current = false; };
+  }, [storage]);
+  const unfinished = draft && checkPaste(draft.text, draft.include).status === 'ready' ? draft : null;
+  const paste = () => navigate('/import');
 
   const now = lists.now();
   const summary = nextDiveSummary(lists.lists);
@@ -34,7 +48,7 @@ export function MyLists() {
 
   const saveRename = async () => {
     if (!renaming) return;
-    if (!isValidListName(renaming.value)) { setRenaming({ ...renaming, error: copy.pasteDialog.nameMissing }); return; }
+    if (!isValidListName(renaming.value)) { setRenaming({ ...renaming, error: copy.importFlow.nameMissing }); return; }
     await lists.rename(renaming.id, renaming.value);
     setRenaming(null);
   };
@@ -76,15 +90,29 @@ export function MyLists() {
       <PageHeader
         title={t.title}
         subtitle={phone ? t.subtitlePhone : t.subtitle}
-        actions={<Button onClick={() => setPasteOpen(true)}>{phone ? t.pasteNewPhone : t.pasteNew}</Button>}
+        actions={<Button onClick={paste}>{phone ? t.pasteNewPhone : t.pasteNew}</Button>}
       />
 
       <div className={styles.stack}>
         {!lists.persistent && <Banner tone="warning" title={copy.storage.notSavedTitle}>{copy.storage.notSavedDetail}</Banner>}
         {limit && <Banner tone="error" title={t.limitReached.title}>{t.limitReached.detail}</Banner>}
+        {unfinished && (
+          <Banner
+            tone="info"
+            title={copy.resume.title(unfinished.name || copy.resume.unnamedWishlist)}
+            actions={
+              <>
+                <Button variant="secondary" onClick={() => navigate('/import?resume=1')}>{copy.resume.action}</Button>
+                <Button variant="text" onClick={async () => { await clearDraft(storage); setDraft(null); }}>{copy.resume.discard}</Button>
+              </>
+            }
+          >
+            {copy.resume.detail(unfinished.done, unfinished.total)}
+          </Banner>
+        )}
 
         {!lists.ready ? <SkeletonRow /> : !hasContent ? (
-          <EmptyState title={t.empty.title} actions={<Button onClick={() => setPasteOpen(true)}>{t.empty.action}</Button>}>
+          <EmptyState title={t.empty.title} actions={<Button onClick={paste}>{t.empty.action}</Button>}>
             {t.empty.text}
           </EmptyState>
         ) : (
@@ -116,8 +144,6 @@ export function MyLists() {
           </>
         )}
       </div>
-
-      <PasteDialog open={pasteOpen} onClose={() => setPasteOpen(false)} onLimitReached={() => setLimit(true)} />
 
       <Dialog
         open={confirm !== null}

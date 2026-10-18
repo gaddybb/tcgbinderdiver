@@ -40,7 +40,7 @@ const replace = (lines: readonly ImportLine[], key: string, change: (line: Impor
 export function pickCandidate(lines: readonly ImportLine[], key: string, cardId: string): ImportLine[] {
   return replace(lines, key, l => {
     const card = l.candidates?.find(c => c.id === cardId);
-    return card ? { key: l.key, requested: l.requested, quantity: l.quantity, tags: l.tags, state: 'chosen', card } : l;
+    return card ? { ...l, state: 'chosen', card } : l;   // the candidates stay, so the player can change their mind
   });
 }
 
@@ -49,9 +49,10 @@ export function chooseCard(lines: readonly ImportLine[], key: string, card: Card
   return replace(lines, key, l => ({ key: l.key, requested: l.requested, quantity: l.quantity, tags: l.tags, state: 'chosen', card }));
 }
 
-// Undo on a spelling that was fixed: back to the pasted name, which now needs the player's help.
+// Undo on a spelling that was fixed, or on a card typed in for a name that was not found: back to the pasted name, which
+// needs the player's help. (A pick among several matches is changed by picking again.)
 export function undoFix(lines: readonly ImportLine[], key: string): ImportLine[] {
-  return replace(lines, key, l => (l.state === 'fixed'
+  return replace(lines, key, l => (l.state === 'fixed' || (l.state === 'chosen' && !l.candidates)
     ? { key: l.key, requested: l.requested, quantity: l.quantity, tags: l.tags, state: 'missing' }
     : l));
 }
