@@ -1,0 +1,57 @@
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+}
+.step:last-child { flex: 0 0 auto; }
+.compact { flex: 0 0 auto; }
+.marker {
+  width: var(--size-step);
+  height: var(--size-step);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: var(--border-medium) solid var(--color-border-strong);
+}
+.done .marker, .current .marker {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border: 0;
+}
+.name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.current .name { font-weight: var(--weight-bold); color: var(--color-text); }
+.line {
+  flex: 1 1 auto;
+  min-width: var(--space-3);
+  height: var(--border-thick);
+  background: var(--color-step-line);
+}
+.done .line { background: var(--color-accent); }
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

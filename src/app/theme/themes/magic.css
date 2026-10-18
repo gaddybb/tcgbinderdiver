@@ -1,4 +1,5 @@
-/* Magic theme: blues. Only live game in v1. Other games get their own file with the same variable names. */
+/* Magic theme: blues. Only live game in v1. Other games get their own file with the same variable names.
+   Set as data-game on <html> (index.html), so the page background and every component pick it up. */
 [data-game='magic'] {
   --color-ground: #172a35;
   --color-deep: #12212a;

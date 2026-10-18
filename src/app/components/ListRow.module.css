@@ -1,0 +1,19 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: var(--border-thin) solid var(--color-divider);
+}
+.lead { flex: 0 0 auto; display: flex; align-items: center; }
+.body { flex: 1 1 auto; min-width: 0; }
+.title { font-weight: var(--weight-bold); font-size: var(--text-body-sm); }
+.subtitle { font-size: var(--text-caption); color: var(--color-text-muted); }
+.trailing { flex: 0 0 auto; font-weight: var(--weight-bold); }
+.rank {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-h4);
+  color: var(--color-accent);
+  min-width: var(--space-5);
+}

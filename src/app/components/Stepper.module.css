@@ -1,0 +1,24 @@
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: var(--border-thin) solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+.value {
+  min-width: 1.75rem;
+  text-align: center;
+  font-weight: var(--weight-bold);
+}
+.step {
+  font: inherit;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex: 0 0 auto;
+  border-radius: var(--radius-md);
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--text-h4);
+  cursor: pointer;
+}
+.step:disabled { color: var(--color-disabled); cursor: not-allowed; }

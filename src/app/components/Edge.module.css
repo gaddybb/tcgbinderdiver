@@ -1,0 +1,8 @@
+.white { --edge: var(--color-edge-white); }
+.blue { --edge: var(--color-edge-blue); }
+.black { --edge: var(--color-edge-black); }
+.red { --edge: var(--color-edge-red); }
+.green { --edge: var(--color-edge-green); }
+.multicolor { --edge: var(--color-edge-multicolor); }
+.colorless { --edge: var(--color-edge-colorless); }
+.land { --edge: var(--color-edge-land); }

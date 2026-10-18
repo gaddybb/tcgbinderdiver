@@ -1,0 +1,6 @@
+/* A link on its own line is a tap target, so it is at least 44 px tall. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+}

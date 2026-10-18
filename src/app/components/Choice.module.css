@@ -1,0 +1,12 @@
+.choice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+.input {
+  width: var(--size-control);
+  height: var(--size-control);
+  accent-color: var(--color-accent);
+}

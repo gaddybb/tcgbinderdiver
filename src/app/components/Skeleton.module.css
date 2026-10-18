@@ -1,0 +1,6 @@
+.row { display: flex; gap: var(--space-3); width: 100%; }
+.block { display: block; border-radius: var(--radius-sm); background: var(--color-floor2); }
+.thumb { width: 2.25rem; aspect-ratio: var(--card-ratio); border-radius: var(--radius-xs); flex: 0 0 auto; }
+.lines { flex: 1 1 auto; display: flex; flex-direction: column; gap: 0.375rem; }
+.long { width: 60%; height: 0.875rem; }
+.short { width: 35%; height: 0.625rem; }

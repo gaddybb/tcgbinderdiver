@@ -1,41 +1,117 @@
 /* Shared design tokens. Components use only these variables: no hex values, font names or pixel sizes.
-   Values are placeholders from reference/design/mockups/UIKit.html until the visual design pass. */
+   Values are placeholders from reference/design/mockups/UIKit.html until the visual design pass.
+   Per-game colors (ground, accent and so on) live in themes/<game>.css with the same variable names. */
 :root {
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Karla', system-ui, sans-serif;
 
+  /* Type scale */
   --text-xs: 0.75rem;
+  --text-caption: 0.8125rem;
   --text-sm: 0.875rem;
+  --text-body-sm: 0.9375rem;
   --text-md: 1rem;
   --text-lg: 1.0625rem;
+  --text-title: 1.125rem;
+  --text-h4: 1.25rem;
+  --text-h3: 1.375rem;
+  --text-card-title: 1.5rem;
   --text-xl: 1.75rem;
+  --text-h1: 2.5rem;
+  --text-display: 3.75rem;
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-bold: 700;
   --weight-display: 800;
+  --tracking-label: 0.12em;
 
+  /* Spacing */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
   --space-5: 1.5rem;
   --space-6: 2rem;
+  --space-7: 3rem;
 
+  /* Shape */
+  --radius-xs: 0.25rem;
   --radius-sm: 0.375rem;
+  --radius-card: 0.5rem;
   --radius-md: 0.625rem;
   --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-sheet: 1.25rem;
   --radius-pill: 999px;
+  --border-thin: 1px;
+  --border-medium: 1.5px;
+  --border-thick: 2px;
+  --border-edge: 6px;      /* colour edge on a full card tile */
+  --border-edge-sm: 3px;   /* and on a thumbnail */
 
-  --tap-min: 2.75rem; /* 44 px minimum tap target */
+  /* Sizes */
+  --tap-min: 2.75rem;      /* 44 px minimum tap target */
+  --size-button: 3rem;
+  --size-button-lg: 3.25rem;
+  --size-chip: 2.75rem;        /* 44 px: the board draws chips at 40 px, the accessibility baseline wins */
+  --size-picker: 3.25rem;
+  --size-color-filter-w: 2.75rem;
+  --size-switch-w: 2.75rem;
+  --size-switch-h: 1.625rem;
+  --size-switch-knob: 1.25rem;
+  --size-switch-inset: 0.1875rem;
+  --size-control: 1.25rem;     /* radio and checkbox */
+  --size-dot: 0.5rem;
+  --size-step: 1.75rem;
+  --size-tile-w: 9.375rem;
+  --size-thumb-w: 2.5rem;
+  --size-thumb-w-lg: 2.75rem;
+  --size-menu-w: 13.75rem;
+  --size-sheet-handle-w: 2.75rem;
+  --size-sheet-handle-h: 0.3125rem;
+  --size-dialog-w: 21.25rem;
+  --size-tip-w: 18.75rem;
+  --size-input-narrow: 4rem;
+  --size-kit-column: 16rem;
   --content-max: 70rem;
+  --card-ratio: 5 / 7;
+  --z-menu: 20;
+  --z-overlay: 30;
+  --z-toast: 40;
 
-  /* Fixed across games */
+  /* Colour that is the same in every game */
   --color-text: #f1f3f2;
   --color-text-muted: #c3cccc;
-  --color-brass: #c8a96a;
+  --color-on-accent: #14191c;
+  --color-on-danger: #1c0d0a;
+  --color-disabled: #8a9494;
+  --color-placeholder: #9aa5a5;
+  --color-tab: #dde3e3;
+  --color-paper: #f1f3f2;          /* toast and tour tip background */
+  --color-on-paper: #14191c;
   --color-error: #e2a08f;
   --color-warning: #e8c35e;
+  --color-brass: #c8a96a;
+  --color-brass-mid: #a98d55;
+  --color-brass-dark: #8e7442;
   --color-divider: rgba(230, 236, 236, 0.16);
+  --color-border-strong: rgba(230, 236, 236, 0.4);
+  --color-border-overlay: rgba(230, 236, 236, 0.28);
+  --color-step-line: rgba(230, 236, 236, 0.2);
+  --color-handle: rgba(230, 236, 236, 0.3);
+  --color-scrim: rgba(0, 0, 0, 0.55);
+  --shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-toast: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  /* Card colour edge, by store-sort category */
+  --color-edge-white: #e9e2c8;
+  --color-edge-blue: #6fa8d6;
+  --color-edge-black: #8a7f8c;
+  --color-edge-red: #d77a5a;
+  --color-edge-green: #6fa37a;
+  --color-edge-multicolor: #e8c35e;
+  --color-edge-colorless: #a7aeae;
+  --color-edge-land: #a08a62;
 }
 
 @media (prefers-reduced-motion: reduce) {

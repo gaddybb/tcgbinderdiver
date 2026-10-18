@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- UI kit: one component per kit item (Button, Chip, Switch, Input, Select, Stepper, Checkbox, Radio, ColorFilter, StatusLabel, PullVerdict, OddsLabel, QuantityBadge, ProgressBar, StepIndicator, CardTile, ListRow, ListCard, Skeleton, Banner, Toast, Menu, Sheet, Dialog, TourTip, TabBar, BinderPicker, Logo, GameAnchor), all built on design tokens and the copy module.
+- Kit gallery at `/kit`: every component in every state, mirroring board 8 of the design reference.
+- A small hand-rolled router (`usePath`, `navigate`, `Link`), the `useLayout` hook (phone, tablet, desktop from one set of breakpoints), and a Not found page.
+- Tests that guard the rules: no hex colors, font names, pixel sizes or media queries in components, and every control size at the 44 px tap minimum.
 - Scryfall connector in `src/connectors/scryfall` behind a `GameConnector` interface in `src/core/connector.ts`: name lookup in batches of 75 by front-face name, typo-tolerant fuzzy lookup with candidates for ambiguous names, autocomplete, paginated paper printings mapped to the engine's `Printing`, a sets list cached for 7 days, and the store sort category (Magic: color). Requests are paced about 100 ms apart, retry 429 and 5xx with backoff, and send Accept and User-Agent headers.
 - `resumableLookup`: a name lookup that saves progress after every batch, so an interrupted import resumes with only the missing names.
 - Storage seam in `src/storage`: an `AppStorage` interface with an IndexedDB implementation (via `idb`) and an in-memory one. `createStorage` falls back to memory when IndexedDB is unavailable, and `persistent` tells the UI which one it got. Both pass the same contract tests.
