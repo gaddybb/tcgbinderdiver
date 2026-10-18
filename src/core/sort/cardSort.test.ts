@@ -7,8 +7,8 @@ const card = (name: string, price: number | null = 1, collectorNumber: string | 
 const names = (items: SortKeys[], mode: Parameters<typeof sortCards>[1]) => sortCards(items, mode, k => k as SortKeys, ORDER).map(i => (i as SortKeys).name);
 
 describe('sort modes', () => {
-  it('has the five the design lists', () => {
-    expect(SORT_MODES).toEqual(['alphabetical', 'price_desc', 'collector_number', 'color', 'set']);
+  it('has Needed first, then the five the design lists', () => {
+    expect(SORT_MODES).toEqual(['status', 'alphabetical', 'price_desc', 'collector_number', 'color', 'set']);
   });
 });
 
@@ -58,6 +58,20 @@ describe('color', () => {
   });
   it('puts an unknown category after the known ones', () => {
     expect(names([card('Odd', 1, '1', 'Sparkly'), card('Land', 1, '1', 'Land')], 'color')).toEqual(['Land', 'Odd']);
+  });
+});
+
+describe('status (Needed first)', () => {
+  const withStatus = (name: string, status?: SortKeys['status']): SortKeys => ({ ...card(name), status });
+  it('puts needed cards first, then the other statuses in their usual order, each group A to Z', () => {
+    const items = [
+      withStatus('Zed', 'out_of_deck'), withStatus('Bolt', 'in_collection'), withStatus('Yak', 'needed'), withStatus('Ajani', 'needed'),
+      withStatus('Opt', 'proxy'), withStatus('Cult', 'ordered'), withStatus('Arcane', 'in_collection'),
+    ];
+    expect(names(items, 'status')).toEqual(['Ajani', 'Yak', 'Arcane', 'Bolt', 'Cult', 'Opt', 'Zed']);
+  });
+  it('counts a card with no status as needed', () => {
+    expect(names([withStatus('B', 'in_collection'), withStatus('A')], 'status')).toEqual(['A', 'B']);
   });
 });
 

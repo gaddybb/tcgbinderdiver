@@ -1,6 +1,9 @@
 // Sorting for card lists. Pure and stable: cards that compare equal keep their order.
-export type SortMode = 'alphabetical' | 'price_desc' | 'collector_number' | 'color' | 'set';
-export const SORT_MODES: readonly SortMode[] = ['alphabetical', 'price_desc', 'collector_number', 'color', 'set'];
+import { CARD_STATUSES } from '../status';
+import type { CardStatus } from '../status';
+
+export type SortMode = 'status' | 'alphabetical' | 'price_desc' | 'collector_number' | 'color' | 'set';
+export const SORT_MODES: readonly SortMode[] = ['status', 'alphabetical', 'price_desc', 'collector_number', 'color', 'set'];
 
 export interface SortKeys {
   name: string;
@@ -8,6 +11,7 @@ export interface SortKeys {
   collectorNumber: string | null;       // null sorts last
   color: string;                        // a store-sort category such as "White" or "Land"
   setCode?: string | null;              // the set of the printing shown, for Set order; null or missing sorts last
+  status?: CardStatus;                  // for Needed first; missing counts as needed
 }
 
 const byName = (a: SortKeys, b: SortKeys): number => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
@@ -24,6 +28,9 @@ export function compareCollectorNumbers(a: string | null, b: string | null): num
   if (pb) return 1;
   return a.localeCompare(b);
 }
+
+// Needed first, then the other statuses in the order they are listed everywhere else.
+const statusRank = (status: CardStatus | undefined): number => CARD_STATUSES.indexOf(status ?? 'needed');
 
 const compareSets = (a: string | null, b: string | null): number => {
   if (a === b) return 0;
@@ -45,6 +52,8 @@ export function sortCards<T>(items: readonly T[], mode: SortMode, keys: (item: T
         return b.price - a.price || byName(a, b);
       case 'collector_number':
         return compareCollectorNumbers(a.collectorNumber, b.collectorNumber) || byName(a, b);
+      case 'status':
+        return statusRank(a.status) - statusRank(b.status) || byName(a, b);
       case 'set':
         return compareSets(a.setCode ?? null, b.setCode ?? null) || compareCollectorNumbers(a.collectorNumber, b.collectorNumber) || byName(a, b);
       case 'color':
