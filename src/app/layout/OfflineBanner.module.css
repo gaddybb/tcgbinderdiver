@@ -1,0 +1,1 @@
+.bar { max-width: var(--content-max); margin: var(--space-3) auto 0; padding: 0 var(--space-4); box-sizing: border-box; width: 100%; }

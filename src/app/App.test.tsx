@@ -11,8 +11,8 @@ afterEach(() => goTo('/'));
 describe('App routes', () => {
   it('shows Home at /', () => {
     render(<App storage={new MemoryStorage()} />);
-    expect(screen.getByRole('heading', { level: 1, name: copy.app.name })).toBeTruthy();
-    expect(screen.getByRole('link', { name: copy.home.kitLink })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: copy.homePage.title })).toBeTruthy();
+    expect(screen.getByRole('link', { name: copy.footerLinks.kit })).toBeTruthy();
   });
 
   it('shows the kit at /kit', () => {
@@ -26,12 +26,12 @@ describe('App routes', () => {
     render(<App storage={new MemoryStorage()} />);
     expect(screen.getByRole('heading', { name: copy.notFound.title })).toBeTruthy();
     fireEvent.click(screen.getByRole('link', { name: copy.notFound.back }));
-    expect(screen.getByRole('heading', { level: 1, name: copy.app.name })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: copy.homePage.title })).toBeTruthy();
   });
 
   it('moves between pages without a reload', () => {
     render(<App storage={new MemoryStorage()} />);
-    fireEvent.click(screen.getByRole('link', { name: copy.home.kitLink }));
+    fireEvent.click(screen.getByRole('link', { name: copy.footerLinks.kit }));
     expect(window.location.pathname).toBe('/kit');
     expect(screen.getByRole('heading', { level: 1, name: copy.kit.title })).toBeTruthy();
     fireEvent.click(screen.getByRole('link', { name: copy.kit.backHome }));
@@ -47,9 +47,9 @@ describe('App routes', () => {
 
   it('follows the back button', () => {
     render(<App storage={new MemoryStorage()} />);
-    fireEvent.click(screen.getByRole('link', { name: copy.home.kitLink }));
+    fireEvent.click(screen.getByRole('link', { name: copy.footerLinks.kit }));
     act(() => { goTo('/'); window.dispatchEvent(new PopStateEvent('popstate')); });
-    expect(screen.getByRole('heading', { level: 1, name: copy.app.name })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: copy.homePage.title })).toBeTruthy();
   });
 });
 

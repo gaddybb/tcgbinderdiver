@@ -9,6 +9,8 @@ import { Kit } from './screens/Kit';
 import { ListReview } from './screens/ListReview';
 import { MyLists } from './screens/MyLists';
 import { NotFound } from './screens/NotFound';
+import { About, More, Privacy, Support } from './screens/pages/TextPages';
+import { Walkthrough } from './screens/pages/Walkthrough';
 
 export type Params = Record<string, string>;
 export type Screen = ComponentType<{ params: Params }>;
@@ -23,6 +25,11 @@ const ROUTES: readonly { pattern: string; screen: Screen }[] = [
   { pattern: '/groups', screen: BinderGroups },
   { pattern: '/dive', screen: StoreDive },
   { pattern: '/trip', screen: TripSummary },
+  { pattern: '/walkthrough', screen: Walkthrough },
+  { pattern: '/support', screen: Support },
+  { pattern: '/about', screen: About },
+  { pattern: '/privacy', screen: Privacy },
+  { pattern: '/more', screen: More },
   { pattern: '/lists/:id', screen: ListReview },
 ];
 

@@ -15,6 +15,7 @@ import { useLists } from '../../data/ListsProvider';
 import { useStorage } from '../../data/StorageProvider';
 import { navigate } from '../../router';
 import { clearDraft, loadDraft, saveDraft } from './draft';
+import { clearImportText, peekImportText } from './handoff';
 import type { ImportDraft } from './draft';
 import { FixStep } from './FixStep';
 import { LookupStep } from './LookupStep';
@@ -39,7 +40,8 @@ export function ImportFlow() {
 
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
   const [resuming, setResuming] = useState(params.get('resume') === '1');
-  const [form, setForm] = useState<NameForm>(() => emptyForm(params.get('target') === 'wishlist'));
+  const [form, setForm] = useState<NameForm>(() => ({ ...emptyForm(params.get('target') === 'wishlist'), text: peekImportText() }));
+  useEffect(() => { clearImportText(); }, []);
   const [step, setStep] = useState<Step>('name');
   const [attempted, setAttempted] = useState(false);
   const [nameError, setNameError] = useState(false);

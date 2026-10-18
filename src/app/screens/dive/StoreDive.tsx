@@ -25,6 +25,7 @@ import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
 import screen from '../Screen.module.css';
 import { BasicsNote } from './BasicsNote';
+import { TourDock, useTourDone } from '../tour/TourDock';
 import { CounterStop } from './CounterStop';
 import styles from './StoreDive.module.css';
 import { useTripPlan } from './useTripPlan';
@@ -41,6 +42,7 @@ export function StoreDive() {
   const store = useStoreSettings();
   const { ready, trip, lists, data, cards, plan, update } = useTripPlan();
   const { end } = useTrip();
+  const tour = useTourDone();
 
   const [selected, setSelected] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -260,6 +262,7 @@ export function StoreDive() {
           />
         )}
       </div>
+      {tour.done === false && <TourDock onDone={tour.markDone} />}
       {endDialog}
     </>
   );

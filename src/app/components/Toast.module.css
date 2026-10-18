@@ -26,7 +26,7 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: var(--space-4);
+  bottom: calc(var(--space-4) + var(--tabbar-offset, 0rem));
   display: flex;
   justify-content: center;
   padding: 0 var(--space-4);

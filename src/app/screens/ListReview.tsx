@@ -120,6 +120,11 @@ function ReviewBody({ list }: { list: CardList }) {
 
   const unknown = list.entries.filter(e => data.notFound.has(e.cardKey));
   const counts = listCounts(list);
+  const accounted = CARD_STATUSES.filter(s => s !== 'needed')
+    .map(s => ({ s, n: list.entries.filter(e => e.status === s).length }))
+    .filter(x => x.n > 0)
+    .map(x => `${x.n} ${copy.status[x.s].toLowerCase()}`)
+    .join(', ');
   const onlineTotal = rows
     .filter(r => r.entry.status === 'needed' && r.price !== null)
     .reduce((sum, r) => sum + r.entry.quantity * (r.price ?? 0), 0);
@@ -241,6 +246,11 @@ function ReviewBody({ list }: { list: CardList }) {
         {data.status === 'error' && (
           <Banner tone="error" title={t.error.title} actions={<Button variant="secondary" onClick={data.retry}>{t.error.retry}</Button>}>
             {t.error.detail}
+          </Banner>
+        )}
+        {counts.cards > 0 && counts.needed === 0 && (
+          <Banner tone="info" title={copy.allAccounted.title} actions={<Button variant="secondary" onClick={() => navigate('/import')}>{t.pasteAnother}</Button>}>
+            {copy.allAccounted.detail(counts.cards, accounted)}
           </Banner>
         )}
         {unknown.length > 0 && (
