@@ -318,10 +318,10 @@ describe('List review: sort and search', () => {
     expect(names()).toEqual(["Ajani's Pridemate", 'Command Tower', 'Lightning Greaves', 'Soul Warden']);
   });
 
-  it('offers the four sorts from the design', async () => {
+  it('offers the five sorts from the design', async () => {
     await setup(FOUR, { saved });
     const select = await screen.findByLabelText(copy.review.sort.label);
-    expect([...select.querySelectorAll('option')].map(o => o.textContent)).toEqual(['Alphabetical', 'Price, high to low', 'Collector number', 'Color']);
+    expect([...select.querySelectorAll('option')].map(o => o.textContent)).toEqual(['Alphabetical', 'Price, high to low', 'Collector number', 'Color', 'Set']);
   });
 
   it('sorts by price, dearest first', async () => {

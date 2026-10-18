@@ -3,9 +3,10 @@ import { useMemo, useState } from 'react';
 import { V1_STORE } from '../../../core/engine/engine';
 import type { StopKind } from '../../../core/engine/engine';
 import { diveStops, groupByKind, totalCards } from '../../../core/store';
-import { Banner, Button, EmptyState, ListRow, PageHeader, PullVerdict, Rank, SkeletonRow, StandaloneLink, SummaryBar } from '../../components';
+import { Banner, Button, Dialog, EmptyState, ListRow, PageHeader, PullVerdict, Rank, SkeletonRow, StandaloneLink, SummaryBar } from '../../components';
 import { copy } from '../../copy/en';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
+import { useTrip } from '../../data/TripProvider';
 import { formatUsd, joinNames } from '../../format';
 import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
@@ -32,6 +33,9 @@ export function DivePlan() {
   const dive = useDive();
   const store = useStoreSettings();
   const [panel, setPanel] = useState(false);
+  const [confirmNew, setConfirmNew] = useState(false);
+  const tripApi = useTrip();
+  const active = tripApi.trip !== null && tripApi.trip.endedAt === undefined;
 
   const stops = useMemo(() => diveStops(dive.listPlan.plan, store.settings.pull), [dive.listPlan.plan, store.settings.pull]);
   const groups = groupByKind(stops);
@@ -41,11 +45,21 @@ export function DivePlan() {
   const contributing = dive.lists.filter(l => l.entries.some(e => e.status === 'needed'));
   const loading = dive.data.status === 'loading' && dive.data.progress.total > 0;
 
+  const startTrip = () => {
+    tripApi.start(contributing.map(l => l.id));
+    navigate('/dive');
+  };
+
   const summaryBar = (
     <SummaryBar
       sticky={phone}
       title={t.listsUsed(joinNames(contributing.map(l => l.name)))}
-      action={<Button disabled title={t.startDiveSoon}>{t.startDive}</Button>}
+      action={active ? (
+        <span className={styles.toolbar}>
+          <Button onClick={() => navigate('/dive')}>{t.resumeDive}</Button>
+          <Button variant="text" onClick={() => setConfirmNew(true)}>{t.newTrip}</Button>
+        </span>
+      ) : <Button disabled={total === 0} onClick={startTrip}>{t.startDive}</Button>}
     />
   );
 
@@ -116,6 +130,20 @@ export function DivePlan() {
       </div>
 
       <PullSettingsPanel open={panel} onClose={() => setPanel(false)} stops={stops} />
+
+      <Dialog
+        open={confirmNew}
+        onClose={() => setConfirmNew(false)}
+        title={t.newTripDialog.title}
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmNew(false)}>{t.newTripDialog.keep}</Button>
+            <Button onClick={() => { setConfirmNew(false); startTrip(); }}>{t.newTripDialog.start}</Button>
+          </>
+        }
+      >
+        {t.newTripDialog.body}
+      </Dialog>
     </>
   );
 }

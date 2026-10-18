@@ -1,12 +1,13 @@
 // Sorting for card lists. Pure and stable: cards that compare equal keep their order.
-export type SortMode = 'alphabetical' | 'price_desc' | 'collector_number' | 'color';
-export const SORT_MODES: readonly SortMode[] = ['alphabetical', 'price_desc', 'collector_number', 'color'];
+export type SortMode = 'alphabetical' | 'price_desc' | 'collector_number' | 'color' | 'set';
+export const SORT_MODES: readonly SortMode[] = ['alphabetical', 'price_desc', 'collector_number', 'color', 'set'];
 
 export interface SortKeys {
   name: string;
   price: number | null;                 // null (unknown) sorts last
   collectorNumber: string | null;       // null sorts last
   color: string;                        // a store-sort category such as "White" or "Land"
+  setCode?: string | null;              // the set of the printing shown, for Set order; null or missing sorts last
 }
 
 const byName = (a: SortKeys, b: SortKeys): number => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
@@ -24,6 +25,13 @@ export function compareCollectorNumbers(a: string | null, b: string | null): num
   return a.localeCompare(b);
 }
 
+const compareSets = (a: string | null, b: string | null): number => {
+  if (a === b) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return a.localeCompare(b);
+};
+
 export function sortCards<T>(items: readonly T[], mode: SortMode, keys: (item: T) => SortKeys, colorOrder: readonly string[]): T[] {
   const colorRank = (color: string) => { const i = colorOrder.indexOf(color); return i === -1 ? colorOrder.length : i; };
   const compare = (a: SortKeys, b: SortKeys): number => {
@@ -37,6 +45,8 @@ export function sortCards<T>(items: readonly T[], mode: SortMode, keys: (item: T
         return b.price - a.price || byName(a, b);
       case 'collector_number':
         return compareCollectorNumbers(a.collectorNumber, b.collectorNumber) || byName(a, b);
+      case 'set':
+        return compareSets(a.setCode ?? null, b.setCode ?? null) || compareCollectorNumbers(a.collectorNumber, b.collectorNumber) || byName(a, b);
       case 'color':
         return colorRank(a.color) - colorRank(b.color) || compareCollectorNumbers(a.collectorNumber, b.collectorNumber) || byName(a, b);
     }

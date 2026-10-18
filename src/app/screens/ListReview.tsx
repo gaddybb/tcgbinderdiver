@@ -103,6 +103,7 @@ function ReviewBody({ list }: { list: CardList }) {
     price: r.price,
     collectorNumber: r.target?.kind === 'stop' ? r.target.collectorNumber : null,
     color: r.edge,
+    setCode: r.target?.kind === 'stop' ? r.target.setCode : null,
   }), connector.sortOrder);
 
   const counts = listCounts(list);

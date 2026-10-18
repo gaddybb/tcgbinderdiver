@@ -7,8 +7,8 @@ const card = (name: string, price: number | null = 1, collectorNumber: string | 
 const names = (items: SortKeys[], mode: Parameters<typeof sortCards>[1]) => sortCards(items, mode, k => k as SortKeys, ORDER).map(i => (i as SortKeys).name);
 
 describe('sort modes', () => {
-  it('has the four the design lists', () => {
-    expect(SORT_MODES).toEqual(['alphabetical', 'price_desc', 'collector_number', 'color']);
+  it('has the five the design lists', () => {
+    expect(SORT_MODES).toEqual(['alphabetical', 'price_desc', 'collector_number', 'color', 'set']);
   });
 });
 
@@ -58,6 +58,17 @@ describe('color', () => {
   });
   it('puts an unknown category after the known ones', () => {
     expect(names([card('Odd', 1, '1', 'Sparkly'), card('Land', 1, '1', 'Land')], 'color')).toEqual(['Land', 'Odd']);
+  });
+});
+
+describe('set', () => {
+  const inSet = (name: string, setCode: string | null, number: string | null): SortKeys => ({ ...card(name, 1, number), setCode });
+  it('groups by set code, then collector number, then name', () => {
+    const items = [inSet('Z', 'fdn', '24'), inSet('Y', 'cmm', '400'), inSet('X', 'fdn', '9'), inSet('W', 'cmm', '9'), inSet('V', 'fdn', '9')];
+    expect(names(items, 'set')).toEqual(['W', 'Y', 'V', 'X', 'Z']);
+  });
+  it('puts cards without a set last', () => {
+    expect(names([inSet('None', null, null), inSet('Has', 'fdn', '1'), { ...card('Missing') }], 'set')).toEqual(['Has', 'Missing', 'None']);
   });
 });
 

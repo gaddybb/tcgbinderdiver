@@ -3,6 +3,7 @@ import { CardDataProvider } from './data/CardDataProvider';
 import { ListsProvider } from './data/ListsProvider';
 import { StorageProvider } from './data/StorageProvider';
 import { StoreSettingsProvider } from './data/StoreSettingsProvider';
+import { TripProvider } from './data/TripProvider';
 import { Footer } from './layout/Footer';
 import { matchRoute } from './routes';
 import { usePath } from './router';
@@ -27,9 +28,11 @@ export function App({ storage, clock, connector }: AppProps = {}) {
           <StorageProvider storage={storage}>
             <ListsProvider clock={clock}>
               <StoreSettingsProvider>
-                <CardDataProvider connector={connector}>
-                  <Screen params={params} />
-                </CardDataProvider>
+                <TripProvider>
+                  <CardDataProvider connector={connector}>
+                    <Screen params={params} />
+                  </CardDataProvider>
+                </TripProvider>
               </StoreSettingsProvider>
             </ListsProvider>
           </StorageProvider>
