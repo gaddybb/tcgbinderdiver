@@ -17,7 +17,8 @@ const c = t.counter;
 const recent = (setCode: string, setName: string, over: Partial<Parameters<typeof pr>[0]> = {}): Printing =>
   pr({ setCode, setName, setType: 'core', releasedAt: '2026-06-01', usd: '1.00', ...over });
 
-const CARDS: Record<string, { name: string; printings: Printing[] }> = {
+const CARDS: Record<string, { name: string; typeLine?: string; printings: Printing[] }> = {
+  forest: { name: 'Forest', typeLine: 'Basic Land — Forest', printings: [recent('fdn', 'Foundations', { collectorNumber: '280', usd: '0.10' })] },
   ajani: { name: "Ajani's Pridemate", printings: [recent('fdn', 'Foundations', { collectorNumber: '135' })] },
   warden: { name: 'Soul Warden', printings: [recent('fdn', 'Foundations', { collectorNumber: '24' })] },
   cultivate: { name: 'Cultivate', printings: [recent('fdn', 'Foundations', { collectorNumber: '214' }), pr({ setCode: 'cmm', setName: 'Commander Masters', setType: 'commander', usd: '0.50', collectorNumber: '1' })] },
@@ -39,7 +40,7 @@ async function setup(options: Options = {}) {
   if (options.trip !== null) await storage.put('trips', 'current', options.trip ?? startTrip('t1', T0, ['a', 'b']));
   const repo = new CardsRepository(storage);
   for (const card of Object.values(CARDS)) {
-    await repo.put({ key: card.name.toLowerCase(), summary: fakeSummary({ name: card.name }), printings: card.printings, fetchedAt: T0.toISOString() });
+    await repo.put({ key: card.name.toLowerCase(), summary: fakeSummary({ name: card.name, typeLine: card.typeLine }), printings: card.printings, fetchedAt: T0.toISOString() });
   }
   window.history.replaceState(null, '', options.path ?? '/dive');
   const view = render(<App storage={storage} clock={() => T0} connector={fakeConnector([]).connector} />);
@@ -276,6 +277,84 @@ describe('Store dive: a counter stop', () => {
     press(c.done);
     expect(await screen.findByText(c.doneToast('Display case'))).toBeTruthy();
     await waitFor(async () => expect((await savedTrip(storage)).events.map(e => e.stopId)).toEqual(['case']));
+  });
+});
+
+describe('Store dive: the table view at a counter', () => {
+  const toTable = async () => {
+    await setup();
+    await onFoundations();
+    fireEvent.change(picker(), { target: { value: 'ask' } });
+    await screen.findByRole('heading', { name: 'Ask an associate' });
+    fireEvent.click(screen.getByRole('button', { name: c.view.table }));
+  };
+
+  it('offers Gallery and Table, with the gallery first, and Big text beside them', async () => {
+    await setup();
+    await onFoundations();
+    fireEvent.change(picker(), { target: { value: 'ask' } });
+    await screen.findByRole('heading', { name: 'Ask an associate' });
+    const group = screen.getByRole('group', { name: c.view.label });
+    expect(within(group).getByRole('button', { name: c.view.gallery }).getAttribute('aria-pressed')).toBe('true');
+    expect(within(group).getByRole('button', { name: c.view.table }).getAttribute('aria-pressed')).toBe('false');
+    expect(screen.getByRole('button', { name: c.bigText })).toBeTruthy();
+  });
+
+  it('shows the cards as rows with the name large, the printing, price and the hint', async () => {
+    await toTable();
+    expect(screen.getByRole('button', { name: c.view.table }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText(/Old Set · OLD 7 · \$0\.30 · likely in bulk boxes/)).toBeTruthy();
+  });
+
+  it('Found, Undo and Not available work in rows', async () => {
+    await toTable();
+    fireEvent.click(screen.getByRole('button', { name: 'Old Bulk: Found' }));
+    expect(screen.getByRole('button', { name: `Old Bulk: ${c.foundUndo}` })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: `Old Bulk: ${c.foundUndo}` }));
+    fireEvent.click(screen.getByRole('button', { name: c.notAvailableLabel('Old Bulk') }));
+    expect(screen.getByText(c.notAvailable)).toBeTruthy();
+  });
+
+  it('goes back to the gallery', async () => {
+    await toTable();
+    fireEvent.click(screen.getByRole('button', { name: c.view.gallery }));
+    expect(screen.getByRole('button', { name: copy.cardTile.found })).toBeTruthy();
+  });
+
+  it('a card wanted several times shows Found +1 and how many are found', async () => {
+    await setup({ lists: [{ ...DECK, cards: [['Lightning Greaves', 2]] }], trip: { ...startTrip('t', T0, ['a']), found: { 'lightning greaves': { a: 1 } } } });
+    await screen.findByRole('heading', { name: 'Display case' });
+    fireEvent.click(screen.getByRole('button', { name: c.view.table }));
+    expect(screen.getByText(c.foundCount(1, 2), { exact: false })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: `Lightning Greaves: ${copy.cardTile.foundPlusOne}` }));
+    expect(screen.getByRole('button', { name: `Lightning Greaves: ${c.foundUndo}` })).toBeTruthy();
+  });
+});
+
+describe('Store dive: basic lands', () => {
+  const FOREST_DECK: Spec = { id: 'a', name: 'Lifegain', cards: [['Forest', 3], ['Soul Warden']] };
+
+  it('says basic lands are left off the hunt, with a button to include them', async () => {
+    const { storage } = await setup({ lists: [FOREST_DECK], trip: startTrip('t', T0, ['a']) });
+    expect(await screen.findByText(copy.basicsNote.title(1))).toBeTruthy();
+    expect(screen.queryByText('Forest', { selector: 'div' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: copy.basicsNote.action }));
+    await waitFor(() => expect(screen.queryByText(copy.basicsNote.title(1))).toBeNull());
+    expect(tile('Forest').textContent).toContain('FDN 280');
+    await waitFor(async () => expect((await storage.get<{ includeBasicLands: boolean }>('settings', 'store-settings'))!.includeBasicLands).toBe(true));
+  });
+
+  it('says nothing when the list has no basic lands', async () => {
+    await setup();
+    await onFoundations();
+    expect(screen.queryByText(copy.basicsNote.action)).toBeNull();
+  });
+
+  it('shows the same note on the dive plan', async () => {
+    await setup({ lists: [FOREST_DECK], trip: null, path: '/plan' });
+    expect(await screen.findByText(copy.basicsNote.title(1))).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.basicsNote.action }));
+    await waitFor(() => expect(screen.queryByText(copy.basicsNote.title(1))).toBeNull());
   });
 });
 

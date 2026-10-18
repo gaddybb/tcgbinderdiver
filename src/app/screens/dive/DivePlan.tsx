@@ -12,6 +12,7 @@ import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
 import screen from '../Screen.module.css';
 import styles from './Dive.module.css';
+import { BasicsNote } from './BasicsNote';
 import { PullSettingsPanel } from './PullSettingsPanel';
 import { startDive } from './startDive';
 import { useDive } from './useDive';
@@ -87,6 +88,8 @@ export function DivePlan() {
                 {t.error.detail}
               </Banner>
             )}
+
+            <BasicsNote count={dive.listPlan.plan.skipped.length} />
 
             {dive.neededCount === 0 ? (
               <EmptyState title={t.nothingNeeded.title}>{t.nothingNeeded.text}</EmptyState>

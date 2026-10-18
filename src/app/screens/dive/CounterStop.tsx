@@ -1,5 +1,6 @@
-// A counter place (Display case, Ask an associate, Value binders): staff look, so the cards are in the same gallery as a
-// binder, A to Z, with where they usually are kept, and a way to say the staff did not have one.
+// A counter place (Display case, Ask an associate, Value binders): staff look, so the cards are A to Z with where they are
+// usually kept, and a way to say the staff did not have one. Shown as a gallery (the same tiles as a binder), or as a table
+// of rows with big names, which is easier to read out to an associate.
 import { useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { PlanStop } from '../../../core/engine/engine';
@@ -7,10 +8,11 @@ import type { NeededAcrossLists } from '../../../core/lists';
 import type { CardRecord } from '../../../core/cards';
 import { foundCopies, remainingCopies } from '../../../core/trip';
 import type { Trip } from '../../../core/trip';
-import { Button, CardTile, SummaryBar } from '../../components';
+import { Button, CardThumb, CardTile, Chip, SummaryBar } from '../../components';
 import type { ColorCategory } from '../../components';
 import { isColorCategory } from '../../components';
 import { copy } from '../../copy/en';
+import { cx } from '../../cx';
 import { useModal } from '../../components/useModal';
 import { formatUsd } from '../../format';
 import { useLayout } from '../../layout/useLayout';
@@ -40,12 +42,16 @@ interface Row {
   part: NeededAcrossLists;
   edge: ColorCategory;
   image: string | null;
+  thumb: string | null;
   sub: string;
 }
+
+type View = 'gallery' | 'table';
 
 export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass, onFound, onUndo, onNotAvailable, onDone }: CounterStopProps) {
   const phone = useLayout() === 'phone';
   const [big, setBig] = useState(false);
+  const [view, setView] = useState<View>('gallery');
 
   const rows: Row[] = stop.cards
     .flatMap(({ key, candidate }) => {
@@ -60,6 +66,7 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
         key, name: record.summary.name, setLabel, price: formatUsd(candidate.price), hint, part, sub,
         edge: (isColorCategory(category) ? category : 'Colorless') as ColorCategory,
         image: record.summary.imageNormal ?? record.summary.imageSmall,
+        thumb: record.summary.imageSmall,
       }];
     })
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
@@ -69,30 +76,75 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
     <div className={styles.rows}>
       <div className={styles.metaRow}>
         <span><strong>{t.cards(stop.cards.length)}</strong> <span className={styles.note}>· {copy.storeDive.sortedAz}</span></span>
-        <Button variant="secondary" onClick={() => setBig(true)}>{t.bigText}</Button>
+        <span className={styles.viewTools}>
+          <span role="group" aria-label={t.view.label} className={styles.chips}>
+            <Chip pressed={view === 'gallery'} onPress={() => setView('gallery')}>{t.view.gallery}</Chip>
+            <Chip pressed={view === 'table'} onPress={() => setView('table')}>{t.view.table}</Chip>
+          </span>
+          <Button variant="text" aria-label={t.bigText} onClick={() => setBig(true)}>
+            <span aria-hidden="true" className={styles.bigGlyph}>Aa</span>
+            <span aria-hidden="true">{t.bigTextShort}</span>
+          </Button>
+        </span>
       </div>
 
-      <ul className={gridClass}>
-        {rows.map(row => (
-          <CardTile
-            key={row.key}
-            fluid
-            name={row.name}
-            setLabel={row.setLabel}
-            price={row.price}
-            lists={row.part.parts.map(p => p.listName).join(', ')}
-            hint={row.hint}
-            imageUrl={row.image}
-            edge={row.edge}
-            quantity={row.part.copies}
-            found={foundCopies(trip, row.part)}
-            notAvailable={trip.notAvailable.includes(row.key)}
-            onFound={() => onFound(row.part)}
-            onUndo={() => onUndo(row.part)}
-            onNotAvailable={() => onNotAvailable(row.key)}
-          />
-        ))}
-      </ul>
+      {view === 'gallery' ? (
+        <ul className={gridClass}>
+          {rows.map(row => (
+            <CardTile
+              key={row.key}
+              fluid
+              name={row.name}
+              setLabel={row.setLabel}
+              price={row.price}
+              lists={row.part.parts.map(p => p.listName).join(', ')}
+              hint={row.hint}
+              imageUrl={row.image}
+              edge={row.edge}
+              quantity={row.part.copies}
+              found={foundCopies(trip, row.part)}
+              notAvailable={trip.notAvailable.includes(row.key)}
+              onFound={() => onFound(row.part)}
+              onUndo={() => onUndo(row.part)}
+              onNotAvailable={() => onNotAvailable(row.key)}
+            />
+          ))}
+        </ul>
+      ) : (
+        <ul className={styles.rows}>
+          {rows.map(row => {
+            const have = foundCopies(trip, row.part);
+            const found = remainingCopies(trip, row.part) <= 0;
+            const gone = trip.notAvailable.includes(row.key);
+            return (
+              <li key={row.key} className={cx(styles.counterRow, (found || gone) && styles.counterRowGone)}>
+                <CardThumb edge={row.edge} src={row.thumb} />
+                <div className={styles.counterText}>
+                  <div className={styles.counterName}>{row.name}{row.part.copies > 1 && ` ×${row.part.copies}`}</div>
+                  <div className={styles.counterSub}>{row.sub}{have > 0 && !found && ` · ${t.foundCount(have, row.part.copies)}`}</div>
+                </div>
+                <div className={styles.counterActions}>
+                  {found ? (
+                    <Button variant="secondary" aria-pressed aria-label={`${row.name}: ${t.foundUndo}`} onClick={() => onUndo(row.part)}>{t.foundUndo}</Button>
+                  ) : (
+                    <>
+                      {gone
+                        ? <span className={styles.note}>{t.notAvailable}</span>
+                        : <Button variant="secondary" aria-label={t.notAvailableLabel(row.name)} onClick={() => onNotAvailable(row.key)}>{t.notAvailable}</Button>}
+                      {have > 0 && (
+                        <Button variant="icon" aria-label={copy.cardTile.undoOne(row.name)} onClick={() => onUndo(row.part)}>−</Button>
+                      )}
+                      <Button aria-label={`${row.name}: ${row.part.copies > 1 ? copy.cardTile.foundPlusOne : t.found}`} onClick={() => onFound(row.part)}>
+                        {row.part.copies > 1 ? copy.cardTile.foundPlusOne : t.found}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <SummaryBar
         sticky={phone}

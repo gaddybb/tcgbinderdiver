@@ -24,6 +24,7 @@ import { formatUsd } from '../../format';
 import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
 import screen from '../Screen.module.css';
+import { BasicsNote } from './BasicsNote';
 import { CounterStop } from './CounterStop';
 import styles from './StoreDive.module.css';
 import { useTripPlan } from './useTripPlan';
@@ -157,6 +158,7 @@ export function StoreDive() {
       {header}
       <div className={screen.stack}>
         {loading && <Banner tone="info" title={t.loading(data.progress.done, data.progress.total)} />}
+        <BasicsNote count={plan.skipped.length} />
 
         <div className={styles.picker}>
           <Button variant="icon" aria-label={t.previous} disabled={index <= 0} onClick={() => go(stops[index - 1]?.stop.id)}>‹</Button>
