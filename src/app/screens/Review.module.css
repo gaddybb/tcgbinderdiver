@@ -1,0 +1,16 @@
+.layout { display: flex; flex-direction: column; gap: var(--space-5); }
+.layoutWide { display: grid; grid-template-columns: minmax(0, 1fr) var(--size-aside); gap: var(--space-5); align-items: start; }
+.main { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: var(--border-thin) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: var(--weight-bold);
+}
+.tab[aria-current='page'] { background: var(--color-brass); color: var(--color-on-accent); border-color: transparent; }

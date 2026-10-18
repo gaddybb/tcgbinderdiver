@@ -22,6 +22,10 @@ import { useLists } from '../data/ListsProvider';
 import { useStoreSettings } from '../data/StoreSettingsProvider';
 import { formatDate, formatUsd } from '../format';
 import { useLayout } from '../layout/useLayout';
+import { Link, navigate } from '../router';
+import { DivePanel } from './dive/DivePanel';
+import { neededCards } from './dive/planData';
+import review from './Review.module.css';
 import styles from './Screen.module.css';
 
 const t = copy.review;
@@ -57,7 +61,9 @@ function ReviewBody({ list }: { list: CardList }) {
   const lists = useLists();
   const toast = useToast();
   const connector = useConnector();
-  const phone = useLayout() === 'phone';
+  const layout = useLayout();
+  const phone = layout === 'phone';
+  const wide = layout !== 'phone';
 
   const [sort, setSort] = useState<SortMode>('alphabetical');
   const [query, setQuery] = useState('');
@@ -66,7 +72,12 @@ function ReviewBody({ list }: { list: CardList }) {
   const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
   const [selecting, setSelecting] = useState(false);     // phone only: the table always has checkboxes
 
-  const cards = useMemo(() => list.entries.map(e => ({ cardKey: e.cardKey, name: e.name })), [list.entries]);
+  // This list's cards, plus the cards other lists in the next dive still need, so the dive plan beside it has its data too.
+  const cards = useMemo(() => {
+    const byKey = new Map(list.entries.map(e => [e.cardKey, { cardKey: e.cardKey, name: e.name }]));
+    for (const c of neededCards(lists.lists.filter(l => l.inNextDive))) if (!byKey.has(c.cardKey)) byKey.set(c.cardKey, c);
+    return [...byKey.values()];
+  }, [list.entries, lists.lists]);
   const data = useCardData(cards, lists.now);
   const catalog = useCatalogInfo();
   const store = useStoreSettings();
@@ -83,6 +94,7 @@ function ReviewBody({ list }: { list: CardList }) {
     const category = record ? connector.sortCategory(record.summary) : 'Colorless';
     let targetText: string = copy.review.target.none;
     if (data.notFound.has(entry.cardKey)) targetText = t.target.notFound;
+    else if (entry.status !== 'needed') targetText = t.target.nothing;
     else if (target?.kind === 'stop') targetText = target.stopLabel;
     else if (target?.kind === 'no_binder') targetText = t.target.noBinder;
     else if (target?.kind === 'skipped_basic') targetText = t.target.basicLand;
@@ -103,8 +115,10 @@ function ReviewBody({ list }: { list: CardList }) {
     price: r.price,
     collectorNumber: r.target?.kind === 'stop' ? r.target.collectorNumber : null,
     color: r.edge,
+    setCode: r.target?.kind === 'stop' ? r.target.setCode : null,
   }), connector.sortOrder);
 
+  const unknown = list.entries.filter(e => data.notFound.has(e.cardKey));
   const counts = listCounts(list);
   const onlineTotal = rows
     .filter(r => r.entry.status === 'needed' && r.price !== null)
@@ -202,11 +216,21 @@ function ReviewBody({ list }: { list: CardList }) {
       <PageHeader
         title={list.name}
         subtitle={phone ? t.summaryPhone(counts.needed, online) : t.summary(counts.cards, counts.needed, online)}
+        actions={<Button variant="secondary" onClick={() => navigate('/import')}>{t.pasteAnother}</Button>}
       />
 
       <div className={styles.stack}>
         <StandaloneLink to="/lists">{copy.listView.back}</StandaloneLink>
 
+        <nav aria-label={t.tabsLabel} className={review.tabs}>
+          {lists.lists.map(l => (
+            <Link key={l.id} to={`/lists/${l.id}`} className={review.tab} aria-current={l.id === list.id ? 'page' : undefined}>{l.name}</Link>
+          ))}
+        </nav>
+
+        <div className={wide ? review.layoutWide : review.layout}>
+        {phone && <DivePanel compact records={data.records} />}
+        <div className={review.main}>
         {data.status === 'loading' && data.progress.total > 0 && (
           <Banner tone="info" title={t.loading.title(list.name)}>{t.loading.detail(data.progress.done, data.progress.total)}</Banner>
         )}
@@ -215,12 +239,9 @@ function ReviewBody({ list }: { list: CardList }) {
             {t.error.detail}
           </Banner>
         )}
-        {data.notFound.size > 0 && (
-          <Banner
-            tone="warning"
-            title={t.notFoundBanner.title(data.notFound.size)}
-          >
-            {t.notFoundBanner.detail(list.entries.filter(e => data.notFound.has(e.cardKey)).map(e => e.name).join(', '))}
+        {unknown.length > 0 && (
+          <Banner tone="warning" title={t.notFoundBanner.title(unknown.length)}>
+            {t.notFoundBanner.detail(unknown.map(e => e.name).join(', '))}
           </Banner>
         )}
 
@@ -294,6 +315,9 @@ function ReviewBody({ list }: { list: CardList }) {
             {phone && selecting && <SelectionBar placement="bottom" ariaLabel={b.selectedCards(picked.length)} label={b.selectedCards(picked.length)} actions={actions} />}
           </>
         )}
+        </div>
+        {!phone && <DivePanel compact={false} records={data.records} />}
+        </div>
       </div>
     </>
   );

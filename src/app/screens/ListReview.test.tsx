@@ -25,13 +25,14 @@ const CARDS: Record<string, FakeCard> = {
 
 const spec = (cards: Spec['cards'], over: Partial<Spec> = {}): Spec => ({ id: 'a', name: 'Lifegain Commander', created: T0, cards, ...over });
 
-interface Options { saved?: (keyof typeof CARDS)[]; fetchedAt?: Date; hold?: boolean; failLookup?: boolean; path?: string; lists?: Spec[]; catalog?: { builtAt: string; scryfallUpdatedAt: string; offline: boolean } }
+interface Options { settings?: unknown; saved?: (keyof typeof CARDS)[]; fetchedAt?: Date; hold?: boolean; failLookup?: boolean; path?: string; lists?: Spec[]; catalog?: { builtAt: string; scryfallUpdatedAt: string; offline: boolean } }
 
 async function setup(cards: Spec['cards'], options: Options = {}) {
   const storage = new MemoryStorage();
   (storage as { persistent: boolean }).persistent = true;
   const lists = options.lists ?? [spec(cards)];
   for (const s of lists) { const list = makeList(s); await storage.put('lists', list.id, list); }
+  if (options.settings) await storage.put('settings', 'store-settings', options.settings);
   const repo = new CardsRepository(storage);
   for (const key of options.saved ?? []) {
     const card = CARDS[key];
@@ -318,10 +319,10 @@ describe('List review: sort and search', () => {
     expect(names()).toEqual(["Ajani's Pridemate", 'Command Tower', 'Lightning Greaves', 'Soul Warden']);
   });
 
-  it('offers the four sorts from the design', async () => {
+  it('offers the five sorts from the design', async () => {
     await setup(FOUR, { saved });
     const select = await screen.findByLabelText(copy.review.sort.label);
-    expect([...select.querySelectorAll('option')].map(o => o.textContent)).toEqual(['Alphabetical', 'Price, high to low', 'Collector number', 'Color']);
+    expect([...select.querySelectorAll('option')].map(o => o.textContent)).toEqual(['Alphabetical', 'Price, high to low', 'Collector number', 'Color', 'Set']);
   });
 
   it('sorts by price, dearest first', async () => {
@@ -554,7 +555,7 @@ describe('List review: selecting cards (table)', () => {
     await screen.findByRole('table');
     expect(screen.getByText(copy.bulk.quickActions)).toBeTruthy();
     for (const label of [copy.bulk.markOwned, copy.bulk.markNeeded, copy.bulk.selectByBinder]) expect(screen.getByRole('button', { name: label })).toBeTruthy();
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region', { name: /selected/i })).toBeNull();
   });
 
   it('says how many cards are selected, with the four actions, and Clear selection empties it', async () => {
@@ -897,5 +898,99 @@ describe('List review: selecting on a phone', () => {
     fireEvent.click(screen.getByRole('button', { name: copy.common.undo }));
     await waitFor(async () => expect(await keysOf(lists, 'a')).toHaveLength(5));
     expect(await screen.findByText('Soul Warden')).toBeTruthy();
+  });
+});
+
+describe('List review: tabs, the dive plan and the binder groups beside the list', () => {
+  const TWO: Spec[] = [spec([["Ajani's Pridemate"], ['Soul Warden'], ['Command Tower', 1, 'in_collection']]), { id: 'b', name: 'Zombie Tribal', cards: [['Lightning Greaves']] }];
+  const panel = () => screen.getByRole('complementary', { name: copy.divePanel.title });
+  const SETTINGS = { pull: { worthPullMinCards: 2, worthPullMinUsd: 10 }, includeBasicLands: false };
+
+  it('shows a tab for each list, marks this one, and opens another', async () => {
+    await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'tower', 'greaves'] });
+    const tabs = await screen.findByRole('navigation', { name: copy.review.tabsLabel });
+    const links = within(tabs).getAllByRole('link');
+    expect(links.map(a => a.textContent)).toEqual(['Lifegain Commander', 'Zombie Tribal', 'Wishlist']);
+    expect(links[0].getAttribute('aria-current')).toBe('page');
+    fireEvent.click(links[1]);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Zombie Tribal' })).toBeTruthy();
+  });
+
+  it('has Paste another list, which opens the import', async () => {
+    await setup(undefined, { lists: TWO, saved: ['ajani'] });
+    fireEvent.click(await screen.findByRole('button', { name: copy.review.pasteAnother }));
+    expect(window.location.pathname).toBe('/import');
+  });
+
+  it('says Nothing to find for a card that is not needed', async () => {
+    await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'tower'] });
+    await waitFor(() => expect(text(tableRow('Command Tower'))).toContain(copy.review.target.nothing));
+  });
+
+  it('shows the dive plan: the stops with their verdicts, for the lists turned on', async () => {
+    await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'tower', 'greaves'] });
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    await waitFor(() => expect(within(aside).getByText('Foundations')).toBeTruthy());
+    const foundations = within(aside).getByText('Foundations').closest('li') as HTMLElement;
+    expect(foundations.textContent).toContain('2 cards');
+    expect(foundations.textContent).toContain(copy.verdict.worth_a_pull);
+    expect(within(aside).getByText('Display case').closest('li')!.textContent).toContain(copy.verdict.show_staff);
+  });
+
+  it('has a switch for each list in this dive, and turning one off changes the plan and is saved', async () => {
+    const { lists } = await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'tower', 'greaves'] });
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    await waitFor(() => expect(within(aside).getByText('Display case')).toBeTruthy());
+    expect(within(aside).getByRole('switch', { name: copy.divePanel.listLabel('Lifegain Commander', 2) })).toBeTruthy();
+    fireEvent.click(within(aside).getByRole('switch', { name: copy.divePanel.listLabel('Zombie Tribal', 1) }));
+    await waitFor(() => expect(within(panel()).queryByText('Display case')).toBeNull());
+    expect((await lists.get('b'))!.inNextDive).toBe(false);
+  });
+
+  it('says how many cards have no binder, and links to the plan', async () => {
+    await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'greaves'], settings: { ...SETTINGS, binderGroups: [], notCarried: ['rna'] } });
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    fireEvent.click(await within(aside).findByRole('button', { name: copy.divePanel.noBinder(1) }));
+    expect(window.location.pathname).toBe('/plan');
+  });
+
+  it('shows the binder groups in one line each, and Edit opens the editor', async () => {
+    await setup(undefined, {
+      lists: TWO, saved: ['ajani', 'warden', 'tower'],
+      settings: { ...SETTINGS, binderGroups: [{ id: 'g', name: 'Commander Box', setCodes: ['fdc', 'cmm'] }], notCarried: ['khm'] },
+    });
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    await waitFor(() => expect(within(aside).getByText(copy.divePanel.groupLine('CMM', 'Commander Box'), { exact: false })).toBeTruthy());
+    expect(within(aside).getByText(copy.divePanel.groupLine('KHM', copy.groups.notCarried.title))).toBeTruthy();
+    fireEvent.click(within(aside).getByRole('button', { name: copy.divePanel.editGroups }));
+    expect(window.location.pathname).toBe('/groups');
+  });
+
+  it('starts a store dive from the plan, with the lists that have cards', async () => {
+    const { storage } = await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'greaves'] });
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    const start = await within(aside).findByRole('button', { name: copy.dive.startDive });
+    await waitFor(() => expect((start as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(start);
+    expect(window.location.pathname).toBe('/dive');
+    expect((await storage.get<{ listIds: string[] }>('trips', 'current'))!.listIds).toEqual(['a', 'b']);
+  });
+
+  it('on a phone the plan opens and closes above the cards', async () => {
+    setWidth(375);
+    await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'greaves'] });
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    expect(within(aside).queryByText(copy.divePanel.listsTitle)).toBeNull();
+    fireEvent.click(within(aside).getByRole('button', { name: copy.divePanel.show }));
+    expect(within(aside).getByText(copy.divePanel.listsTitle)).toBeTruthy();
+    fireEvent.click(within(aside).getByRole('button', { name: copy.divePanel.hide }));
+    expect(within(aside).queryByText(copy.divePanel.listsTitle)).toBeNull();
+  });
+
+  it('sorts by set', async () => {
+    await setup(undefined, { lists: [spec([['Command Tower'], ["Ajani's Pridemate"], ['Soul Warden']])], saved: ['tower', 'ajani', 'warden'] });
+    await dataArrived('Command Tower', 'FDC');
+    fireEvent.change(screen.getByLabelText(copy.review.sort.label), { target: { value: 'set' } });
+    expect(names()).toEqual(['Command Tower', 'Soul Warden', "Ajani's Pridemate"]);   // fdc, then fdn by number
   });
 });

@@ -1,6 +1,8 @@
 import type { ComponentType } from 'react';
 import { BinderGroups } from './screens/dive/BinderGroups';
 import { DivePlan } from './screens/dive/DivePlan';
+import { StoreDive } from './screens/dive/StoreDive';
+import { TripSummary } from './screens/dive/TripSummary';
 import { Home } from './screens/Home';
 import { ImportFlow } from './screens/import/ImportFlow';
 import { Kit } from './screens/Kit';
@@ -19,6 +21,8 @@ const ROUTES: readonly { pattern: string; screen: Screen }[] = [
   { pattern: '/import', screen: ImportFlow },
   { pattern: '/plan', screen: DivePlan },
   { pattern: '/groups', screen: BinderGroups },
+  { pattern: '/dive', screen: StoreDive },
+  { pattern: '/trip', screen: TripSummary },
   { pattern: '/lists/:id', screen: ListReview },
 ];
 

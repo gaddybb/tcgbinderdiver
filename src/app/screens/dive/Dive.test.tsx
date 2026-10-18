@@ -103,9 +103,32 @@ describe('Dive plan', () => {
     expect(window.location.pathname).toBe('/groups');
   });
 
-  it('leaves Start store dive off until the store dive exists', async () => {
-    await setup({ lists: [DECK] });
+  it('starts a trip from Start store dive and opens the store dive', async () => {
+    const { storage } = await setup({ lists: [DECK, deck('b', 'Zombies', [['Duskmourn Thing']], false)] });
     await screen.findByText(t.subtitle(6, 3));
+    press(t.startDive);
+    expect(window.location.pathname).toBe('/dive');
+    const trip = await storage.get<{ listIds: string[] }>('trips', 'current');
+    expect(trip!.listIds).toEqual(['a']);
+  });
+
+  it('offers Resume and a confirmed new trip when a trip is in progress', async () => {
+    const { storage } = await setup({ lists: [DECK] });
+    await screen.findByText(t.subtitle(6, 3));
+    press(t.startDive);
+    window.history.replaceState(null, '', '/plan');
+    act(() => { window.dispatchEvent(new Event('popstate')); });
+    expect(await screen.findByRole('button', { name: t.resumeDive })).toBeTruthy();
+    press(t.newTrip);
+    expect(screen.getByRole('dialog', { name: t.newTripDialog.title })).toBeTruthy();
+    press(t.newTripDialog.start);
+    expect(window.location.pathname).toBe('/dive');
+    expect(await storage.get('trips', 'current')).toBeDefined();
+  });
+
+  it('keeps Start store dive off when there is nothing to find', async () => {
+    await setup({ lists: [{ ...DECK, cards: [['Sol Ring', 1, 'in_collection']] }] });
+    await screen.findByRole('heading', { name: t.nothingNeeded.title });
     expect((screen.getByRole('button', { name: t.startDive }) as HTMLButtonElement).disabled).toBe(true);
   });
 
