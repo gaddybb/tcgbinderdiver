@@ -66,7 +66,9 @@ interface Storage { get; put; delete; list }   // per collection; IndexedDB now,
    card records saved on the device, loading with progress and retry, the engine run over a list to give each card its
    target binder, and the review table with images, prices, sort, search and per-card status change.
 10. Bulk actions and filters on the review (select mode, set status, copy to list, remove, price and color filters), and
-    card detail (needs the "odds" levels, which the spec does not define yet).
+    card detail (needs the "odds" levels, which the spec does not define yet). Also from the owner: on the list review,
+    desktop rows show a larger card image on hover (and on keyboard focus); phone shows larger thumbnails, with
+    tap-to-enlarge if needed. Function over form for now.
 11. Import flow (4 steps, wishlist variant, fix names, problem states). Replaces the temporary paste box.
 12. Dive plan, pull settings, binder groups, no-binder cards.
 13. Trip core and store dive: flip stops (Found +1, Finish binder, frozen order, Reopen).
