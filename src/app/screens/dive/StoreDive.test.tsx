@@ -202,12 +202,12 @@ describe('Store dive: a counter stop', () => {
     await screen.findByRole('heading', { name: 'Display case' });
   };
 
-  it('shows the name large with the printing, price and the staff label, and no tiles', async () => {
+  it('shows the card as a tile in the same gallery, with the printing, price and the staff label', async () => {
     await toDisplayCase();
     expect(screen.getByText(copy.verdict.show_staff)).toBeTruthy();
-    expect(screen.getByText('Lightning Greaves')).toBeTruthy();
-    expect(screen.getByText(/Ravnica Allegiance · RNA 9 · \$18\.50/)).toBeTruthy();
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    const card = tile('Lightning Greaves');
+    expect(card.textContent).toContain('RNA 9');
+    expect(card.textContent).toContain('$18.50');
     expect(screen.getByText(c.cards(1))).toBeTruthy();
   });
 
@@ -227,16 +227,16 @@ describe('Store dive: a counter stop', () => {
     expect(screen.getByRole('button', { name: c.foundUndo })).toBeTruthy();
   });
 
-  it('does not call a card found when only some copies are: it says how many, and Found finds the rest', async () => {
+  it('does not call a card found when only some copies are: it says how many, and Found +1 finds the rest', async () => {
     const { storage } = await setup({
       lists: [{ ...DECK, cards: [['Lightning Greaves', 2]] }],
       trip: { ...startTrip('t', T0, ['a']), found: { 'lightning greaves': { a: 1 } } },
     });
     await screen.findByRole('heading', { name: 'Display case' });
-    expect(screen.getByText(c.partial(1, 2), { exact: false })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: c.foundUndo })).toBeNull();
-    press(c.found);
-    expect(screen.getByRole('button', { name: c.foundUndo })).toBeTruthy();
+    expect(screen.getByText(copy.progress.copiesOf(1, 2))).toBeTruthy();
+    expect(screen.queryByRole('button', { name: copy.cardTile.foundUndo })).toBeNull();
+    press(copy.cardTile.foundPlusOne);
+    expect(screen.getByText(copy.cardTile.allFound(2))).toBeTruthy();
     await waitFor(async () => expect((await savedTrip(storage)).found['lightning greaves']).toEqual({ a: 2 }));
   });
 
@@ -262,7 +262,9 @@ describe('Store dive: a counter stop', () => {
     await onFoundations();
     fireEvent.change(picker(), { target: { value: 'ask' } });
     await screen.findByRole('heading', { name: 'Ask an associate' });
-    expect(screen.getByText(/Old Set · OLD 7 · \$0\.30 · likely in bulk boxes/)).toBeTruthy();
+    const card = tile('Old Bulk');
+    expect(card.textContent).toContain('OLD 7');
+    expect(card.textContent).toContain(c.hint['bulk boxes']);
     expect(screen.getByText(copy.storeDive.sortedAz, { exact: false })).toBeTruthy();
   });
 

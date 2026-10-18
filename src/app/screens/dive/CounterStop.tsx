@@ -1,4 +1,5 @@
-// A counter stop (Display case, Ask an associate, Value binders): staff look, so the list is A to Z with big names.
+// A counter place (Display case, Ask an associate, Value binders): staff look, so the cards are in the same gallery as a
+// binder, A to Z, with where they usually are kept, and a way to say the staff did not have one.
 import { useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { PlanStop } from '../../../core/engine/engine';
@@ -6,11 +7,10 @@ import type { NeededAcrossLists } from '../../../core/lists';
 import type { CardRecord } from '../../../core/cards';
 import { foundCopies, remainingCopies } from '../../../core/trip';
 import type { Trip } from '../../../core/trip';
-import { Button, CardThumb, SummaryBar } from '../../components';
+import { Button, CardTile, SummaryBar } from '../../components';
 import type { ColorCategory } from '../../components';
 import { isColorCategory } from '../../components';
 import { copy } from '../../copy/en';
-import { cx } from '../../cx';
 import { useModal } from '../../components/useModal';
 import { formatUsd } from '../../format';
 import { useLayout } from '../../layout/useLayout';
@@ -24,6 +24,7 @@ interface CounterStopProps {
   parts: ReadonlyMap<string, NeededAcrossLists>;
   records: ReadonlyMap<string, CardRecord>;
   categoryOf: (record: CardRecord) => string;
+  gridClass: string;
   onFound: (part: NeededAcrossLists) => void;
   onUndo: (part: NeededAcrossLists) => void;
   onNotAvailable: (key: string) => void;
@@ -33,13 +34,16 @@ interface CounterStopProps {
 interface Row {
   key: string;
   name: string;
-  sub: string;
+  setLabel: string;
+  price: string;
+  hint: string;
   part: NeededAcrossLists;
   edge: ColorCategory;
   image: string | null;
+  sub: string;
 }
 
-export function CounterStop({ stop, trip, parts, records, categoryOf, onFound, onUndo, onNotAvailable, onDone }: CounterStopProps) {
+export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass, onFound, onUndo, onNotAvailable, onDone }: CounterStopProps) {
   const phone = useLayout() === 'phone';
   const [big, setBig] = useState(false);
 
@@ -49,9 +53,14 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, onFound, o
       const record = records.get(key);
       if (!part || !record) return [];
       const category = categoryOf(record);
-      const hint = candidate.hint ? t.hint[candidate.hint] : undefined;
-      const sub = [candidate.printing.setName, `${candidate.printing.setCode.toUpperCase()} ${candidate.printing.collectorNumber}`, formatUsd(candidate.price), hint].filter(Boolean).join(' · ');
-      return [{ key, name: record.summary.name, sub, part, edge: isColorCategory(category) ? category : 'Colorless', image: record.summary.imageSmall }];
+      const hint = candidate.hint ? t.hint[candidate.hint] : '';
+      const setLabel = `${candidate.printing.setCode.toUpperCase()} ${candidate.printing.collectorNumber}`;
+      const sub = [candidate.printing.setName, setLabel, formatUsd(candidate.price), hint].filter(Boolean).join(' · ');
+      return [{
+        key, name: record.summary.name, setLabel, price: formatUsd(candidate.price), hint, part, sub,
+        edge: (isColorCategory(category) ? category : 'Colorless') as ColorCategory,
+        image: record.summary.imageNormal ?? record.summary.imageSmall,
+      }];
     })
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
   const waiting = rows.filter(r => remainingCopies(trip, r.part) > 0 && !trip.notAvailable.includes(r.key));
@@ -63,36 +72,26 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, onFound, o
         <Button variant="secondary" onClick={() => setBig(true)}>{t.bigText}</Button>
       </div>
 
-      <ul className={styles.rows}>
-        {rows.map(row => {
-          const have = foundCopies(trip, row.part);
-          const found = remainingCopies(trip, row.part) <= 0;
-          const gone = trip.notAvailable.includes(row.key);
-          return (
-            <li key={row.key} className={cx(styles.counterRow, (found || gone) && styles.counterRowGone)}>
-              <CardThumb edge={row.edge} src={row.image} />
-              <div className={styles.counterText}>
-                <div className={styles.counterName}>{row.name}{row.part.copies > 1 && ` ×${row.part.copies}`}</div>
-                <div className={styles.counterSub}>{row.sub}{have > 0 && !found && ` · ${t.partial(have, row.part.copies)}`}</div>
-              </div>
-              <div className={styles.counterActions}>
-                {found ? (
-                  <Button variant="secondary" aria-pressed onClick={() => onUndo(row.part)}>{t.foundUndo}</Button>
-                ) : gone ? (
-                  <>
-                    <span className={styles.note}>{t.notAvailable}</span>
-                    <Button onClick={() => onFound(row.part)}>{t.found}</Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="secondary" aria-label={t.notAvailableLabel(row.name)} onClick={() => onNotAvailable(row.key)}>{t.notAvailable}</Button>
-                    <Button onClick={() => onFound(row.part)}>{t.found}</Button>
-                  </>
-                )}
-              </div>
-            </li>
-          );
-        })}
+      <ul className={gridClass}>
+        {rows.map(row => (
+          <CardTile
+            key={row.key}
+            fluid
+            name={row.name}
+            setLabel={row.setLabel}
+            price={row.price}
+            lists={row.part.parts.map(p => p.listName).join(', ')}
+            hint={row.hint}
+            imageUrl={row.image}
+            edge={row.edge}
+            quantity={row.part.copies}
+            found={foundCopies(trip, row.part)}
+            notAvailable={trip.notAvailable.includes(row.key)}
+            onFound={() => onFound(row.part)}
+            onUndo={() => onUndo(row.part)}
+            onNotAvailable={() => onNotAvailable(row.key)}
+          />
+        ))}
       </ul>
 
       <SummaryBar
@@ -102,11 +101,7 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, onFound, o
         action={<Button onClick={onDone}>{t.done}</Button>}
       />
 
-      <BigText
-        open={big}
-        onClose={() => setBig(false)}
-        items={waiting.map(r => ({ key: r.key, name: r.name, sub: r.sub }))}
-      />
+      <BigText open={big} onClose={() => setBig(false)} items={waiting.map(r => ({ key: r.key, name: r.name, sub: r.sub }))} />
     </div>
   );
 }

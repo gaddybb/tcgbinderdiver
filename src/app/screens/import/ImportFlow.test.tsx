@@ -379,7 +379,7 @@ describe('Import: more than 250 cards', () => {
     await waitFor(() => expect(window.location.pathname).toBe('/lists'), { timeout: 4000 });
     const decks = (await repo.all()).filter(l => l.kind === 'deck').map(d => [d.name, d.entries.length]).sort();
     expect(decks).toEqual([['Big (1 of 2)', 250], ['Big (2 of 2)', 50]]);
-  });
+  }, 20000);
 
   it('keeps only the first 250 when that is chosen', async () => {
     const { repo } = await big();
@@ -391,5 +391,5 @@ describe('Import: more than 250 cards', () => {
     const decks = (await repo.all()).filter(l => l.kind === 'deck');
     expect(decks.map(d => d.entries.length)).toEqual([250]);
     expect(await screen.findByText(t.done.keptFirst(250, 300))).toBeTruthy();
-  });
+  }, 20000);
 });

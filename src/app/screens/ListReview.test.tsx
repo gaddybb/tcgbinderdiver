@@ -909,7 +909,9 @@ describe('List review: tabs, the dive plan and the binder groups beside the list
   it('shows a tab for each list, marks this one, and opens another', async () => {
     await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'tower', 'greaves'] });
     const tabs = await screen.findByRole('navigation', { name: copy.review.tabsLabel });
-    const links = within(tabs).getAllByRole('link');
+    const [all, ...links] = within(tabs).getAllByRole('link');
+    expect(all.textContent).toBe(copy.listView.back);
+    expect(all.getAttribute('aria-current')).toBeNull();
     expect(links.map(a => a.textContent)).toEqual(['Lifegain Commander', 'Zombie Tribal', 'Wishlist']);
     expect(links[0].getAttribute('aria-current')).toBe('page');
     fireEvent.click(links[1]);

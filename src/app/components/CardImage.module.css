@@ -16,6 +16,7 @@
 }
 .thumbLg { width: var(--size-thumb-w-lg); }
 .dim { opacity: 0.45; }
+.fluid { width: 100%; }
 .img {
   display: block;
   width: 100%;
