@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Changed
+- Local card catalog in the app (step 4 of the data plan): a bulk connector reads `/data/manifest.json` and the hashed cards and prices files, keeps them on the device (only changed files are downloaded again, and the saved copy works offline), and answers name lookups, printings (basic lands included), fuzzy matches, autocomplete and sets from it. Names it does not know, or everything while the data files are unavailable, go to the live Scryfall API as before. Cards from the catalog carry the catalog time as their fetch time and are not saved per card; live cards are saved as before. Until the daily refresh (next step) publishes data files, the app keeps using the live API.
 - Faster first load of a list's card data: printings are fetched four cards at a time instead of one (request starts are still spaced 100 ms apart, so Scryfall's rate limit holds), and basic lands no longer fetch their hundreds of printings. Basics are still saved with their picture and type, with an empty printings list. `loadCards` takes `includeBasics` (off) and `concurrency` options; the engine exports `isBasicLand`.
 - Scryfall requests no longer send a custom `User-Agent` header: Scryfall's docs require browser code to keep the browser's own, and a custom one forced a CORS preflight on every request. The client's `userAgent` option is removed.
 

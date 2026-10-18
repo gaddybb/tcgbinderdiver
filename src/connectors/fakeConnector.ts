@@ -61,6 +61,7 @@ export function fakeConnector(known: readonly (string | FakeCard)[], options: Fa
         if (match) result.found.push({ requested, card: fakeSummary(match) });
         else result.notFound.push(requested);
       }
+      await opts?.onBatch?.(result);
       return result;
     },
     async fuzzy() { return { status: 'none' }; },

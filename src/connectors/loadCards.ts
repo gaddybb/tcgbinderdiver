@@ -5,7 +5,7 @@
 // and basic lands get no printings fetch at all, since the engine skips them.
 import { isStale } from '../core/cards';
 import type { CardRecord } from '../core/cards';
-import type { CardSummary, FoundName, GameConnector } from '../core/connector';
+import type { CardSummary, FoundName, GameConnector, NameLookup } from '../core/connector';
 import { isBasicLand } from '../core/engine/engine';
 import type { Printing } from '../core/engine/engine';
 import { nameKey } from '../core/parse/parseDecklist';
@@ -67,10 +67,12 @@ export async function loadCards(options: LoadCardsOptions): Promise<LoadCardsRes
   }
   const advance = (by: number) => { progress.done += by; options.onProgress?.({ ...progress }); };
 
+  // A card that came from the local catalog carries the time of that data (`dataTime`). It is not saved per card:
+  // reading it again from the catalog is instant, and that way its prices are always as fresh as the catalog.
   const save = async (requested: string, card: CardSummary, printings: Printing[]) => {
     for (const key of keysByCard.get(sameCard(requested)) ?? []) {
-      const record: CardRecord = { key, summary: card, printings, fetchedAt: now.toISOString() };
-      await repo.put(record);
+      const record: CardRecord = { key, summary: card, printings, fetchedAt: card.dataTime ?? now.toISOString() };
+      if (card.dataTime === undefined) await repo.put(record);
       records.set(key, record);
       options.onRecord?.(record);
       advance(1);
@@ -78,7 +80,18 @@ export async function loadCards(options: LoadCardsOptions): Promise<LoadCardsRes
   };
 
   try {
-    const lookup = await connector.lookupNames(missing.map(c => c.name), { signal });
+    // Lookups are collected batch by batch, so when a later batch fails the earlier ones are still used.
+    const lookup: NameLookup = { found: [], notFound: [] };
+    let lookupFailure: unknown;
+    try {
+      const returned = await connector.lookupNames(missing.map(c => c.name), {
+        signal,
+        onBatch: batch => { lookup.found.push(...batch.found); lookup.notFound.push(...batch.notFound); },
+      });
+      if (lookup.found.length + lookup.notFound.length === 0) { lookup.found.push(...returned.found); lookup.notFound.push(...returned.notFound); }
+    } catch (error) {
+      lookupFailure = error;
+    }
 
     for (const name of lookup.notFound) {
       const keys = keysByCard.get(sameCard(name)) ?? [];
@@ -86,10 +99,12 @@ export async function loadCards(options: LoadCardsOptions): Promise<LoadCardsRes
       advance(keys.length);
     }
 
-    // Basics keep their picture and type but get no printings, so there is nothing to wait for.
+    // Basics fetched from the live API keep their picture and type but get no printings (the engine skips them, and
+    // they have hundreds). From the local catalog their printings cost nothing, so they keep them: a later
+    // "include basic lands" switch then needs no refetch.
     const queue: FoundName[] = [];
     for (const found of lookup.found) {
-      if (!options.includeBasics && isBasicLand(found.card.typeLine)) await save(found.requested, found.card, []);
+      if (!options.includeBasics && found.card.dataTime === undefined && isBasicLand(found.card.typeLine)) await save(found.requested, found.card, []);
       else queue.push(found);
     }
 
@@ -110,6 +125,7 @@ export async function loadCards(options: LoadCardsOptions): Promise<LoadCardsRes
     };
     const workers = Math.max(1, Math.min(options.concurrency ?? PRINTINGS_CONCURRENCY, queue.length));
     await Promise.all(Array.from({ length: workers }, worker));
+    if (lookupFailure) throw lookupFailure;   // after everything that did arrive has been used and saved
     if (stopped) throw failure;
   } catch (error) {
     if ((error as { kind?: string }).kind === 'aborted' || signal?.aborted) result.aborted = true;

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react';
 import { loadCards } from '../../connectors/loadCards';
 import type { LoadProgress, WantedCard } from '../../connectors/loadCards';
+import { createBulkConnector, loadCatalog } from '../../connectors/bulk';
 import { ScryfallConnector } from '../../connectors/scryfall';
 import type { CardRecord } from '../../core/cards';
 import type { GameConnector } from '../../core/connector';
@@ -16,7 +17,8 @@ interface CardDataContext {
 const Context = createContext<CardDataContext | null>(null);
 
 interface CardDataProviderProps {
-  // Tests pass a fake; the app uses Scryfall, with the sets list cached in storage.
+  // Tests pass a fake. The app reads the local card catalog and asks Scryfall live only for what it does not have,
+  // or for everything while the catalog is not available.
   connector?: GameConnector;
   children: ReactNode;
 }
@@ -25,7 +27,10 @@ interface CardDataProviderProps {
 export function CardDataProvider({ connector: given, children }: CardDataProviderProps) {
   const storage = useStorage();
   const value = useMemo<CardDataContext>(
-    () => ({ connector: given ?? new ScryfallConnector({ cache: storage }), repo: new CardsRepository(storage) }),
+    () => ({
+      connector: given ?? createBulkConnector({ load: () => loadCatalog({ storage }), fallback: new ScryfallConnector({ cache: storage }) }),
+      repo: new CardsRepository(storage),
+    }),
     [given, storage],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
