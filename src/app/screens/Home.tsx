@@ -8,6 +8,7 @@ export function Home() {
     <>
       <h1 className={styles.title}>{copy.app.name}</h1>
       <p className={styles.lead}>{copy.home.comingSoon}</p>
+      <StandaloneLink to="/lists">{copy.home.listsLink}</StandaloneLink>
       <StandaloneLink to="/kit">{copy.home.kitLink}</StandaloneLink>
     </>
   );

@@ -4,7 +4,7 @@ import type { AppStorage, Collection } from './types';
 // In-memory storage: the fallback when IndexedDB is unavailable, and the test double for code that needs storage.
 // Copies values on the way in and out, like IndexedDB, so callers can't change stored data by mutating it.
 export class MemoryStorage implements AppStorage {
-  readonly persistent = false;
+  readonly persistent: boolean = false;
   private readonly data = new Map<Collection, Map<string, unknown>>(COLLECTIONS.map(c => [c, new Map()]));
 
   private store(collection: Collection): Map<string, unknown> {

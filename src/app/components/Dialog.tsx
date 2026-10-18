@@ -20,7 +20,7 @@ export const DialogPanel = ({ title, children, actions, modal }: DialogPanelProp
     {...(modal ? { role: 'dialog', 'aria-modal': true, 'aria-labelledby': modal.titleId, tabIndex: -1 } : {})}
   >
     <strong id={modal?.titleId} className={styles.dialogTitle}>{title}</strong>
-    {children && <span className={styles.dialogBody}>{children}</span>}
+    {children && <div className={styles.dialogBody}>{children}</div>}
     {actions && <div className={styles.dialogActions}>{actions}</div>}
   </div>
 );

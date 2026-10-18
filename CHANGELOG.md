@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- My lists (`/lists`): list cards with the In next dive switch, the next-dive summary, rename on the card, Duplicate, Copy as text and Delete with a confirmation (Clear wishlist for the wishlist, which always exists), an empty state, and the menu as a bottom sheet on a phone. Lists are saved on the device. Paste a new list is a temporary plain paste box until the import flow replaces it. Start store dive waits for the store dive.
+- Lists core in `src/core/lists`: lists of cards with quantities and statuses, the 250-card and 25-list limits, add, rename, duplicate, status and quantity edits, "Updated" ages, the next-dive summary, one combined needed list across lists, and Copy as text. `ListsRepository` keeps them in storage and guarantees the single wishlist.
+- Page header, next-dive bar and empty state components; the list card can rename in place; the menu shows a line under each choice. A list view stand-in at `/lists/:id`, and routes with parameters.
 - UI kit: one component per kit item (Button, Chip, Switch, Input, Select, Stepper, Checkbox, Radio, ColorFilter, StatusLabel, PullVerdict, OddsLabel, QuantityBadge, ProgressBar, StepIndicator, CardTile, ListRow, ListCard, Skeleton, Banner, Toast, Menu, Sheet, Dialog, TourTip, TabBar, BinderPicker, Logo, GameAnchor), all built on design tokens and the copy module.
 - Kit gallery at `/kit`: every component in every state, mirroring board 8 of the design reference.
 - A small hand-rolled router (`usePath`, `navigate`, `Link`), the `useLayout` hook (phone, tablet, desktop from one set of breakpoints), and a Not found page.

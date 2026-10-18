@@ -1,0 +1,18 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+  border-radius: var(--radius-xl);
+  border: var(--border-thin) dashed var(--color-border-strong);
+  background: var(--color-floor1);
+}
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-h3);
+}
+.text { margin: 0; color: var(--color-text-muted); font-size: var(--text-body-sm); line-height: 1.5; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
