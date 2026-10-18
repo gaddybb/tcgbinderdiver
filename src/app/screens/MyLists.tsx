@@ -78,8 +78,8 @@ export function MyLists() {
       sticky={phone}
       title={summary.listCount > 0 ? t.next(summary.listCount, summary.cardCount) : t.nextNone}
       detail={summary.listCount > 0 && !phone ? joinNames(summary.listNames) : undefined}
-      // The store dive itself arrives in a later step, so the button waits.
-      action={<Button disabled>{t.startDive}</Button>}
+      // Opens the dive plan; the store dive itself starts from there.
+      action={<Button disabled={summary.listCount === 0} onClick={() => navigate('/plan')}>{t.startDive}</Button>}
     />
   );
 

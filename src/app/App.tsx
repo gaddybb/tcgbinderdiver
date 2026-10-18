@@ -2,6 +2,7 @@ import { ToastProvider } from './components';
 import { CardDataProvider } from './data/CardDataProvider';
 import { ListsProvider } from './data/ListsProvider';
 import { StorageProvider } from './data/StorageProvider';
+import { StoreSettingsProvider } from './data/StoreSettingsProvider';
 import { Footer } from './layout/Footer';
 import { matchRoute } from './routes';
 import { usePath } from './router';
@@ -25,9 +26,11 @@ export function App({ storage, clock, connector }: AppProps = {}) {
         <main className={styles.main}>
           <StorageProvider storage={storage}>
             <ListsProvider clock={clock}>
-              <CardDataProvider connector={connector}>
-                <Screen params={params} />
-              </CardDataProvider>
+              <StoreSettingsProvider>
+                <CardDataProvider connector={connector}>
+                  <Screen params={params} />
+                </CardDataProvider>
+              </StoreSettingsProvider>
             </ListsProvider>
           </StorageProvider>
         </main>
