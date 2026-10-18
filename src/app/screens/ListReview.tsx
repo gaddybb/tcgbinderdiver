@@ -18,9 +18,9 @@ import {
 } from '../components';
 import type { ColorCategory } from '../components';
 import { copy } from '../copy/en';
-import { useCardData, useConnector } from '../data/CardDataProvider';
+import { useCardData, useCatalogInfo, useConnector } from '../data/CardDataProvider';
 import { useLists } from '../data/ListsProvider';
-import { formatUsd } from '../format';
+import { formatDate, formatUsd } from '../format';
 import { useLayout } from '../layout/useLayout';
 import styles from './Screen.module.css';
 
@@ -68,6 +68,7 @@ function ReviewBody({ list }: { list: CardList }) {
 
   const cards = useMemo(() => list.entries.map(e => ({ cardKey: e.cardKey, name: e.name })), [list.entries]);
   const data = useCardData(cards, lists.now);
+  const catalog = useCatalogInfo();
 
   // Where each card is planned to be found, for this list on its own. (The combined plan across lists comes with the dive plan.)
   const { targets } = useMemo(
@@ -288,6 +289,7 @@ function ReviewBody({ list }: { list: CardList }) {
                 }))}
               />
             )}
+            {catalog && <p className={styles.lead}>{t.pricesUpdated(formatDate(catalog.scryfallUpdatedAt))}{catalog.offline && ` ${t.pricesOffline}`}</p>}
             {phone && selecting && <SelectionBar placement="bottom" ariaLabel={b.selectedCards(picked.length)} label={b.selectedCards(picked.length)} actions={actions} />}
           </>
         )}

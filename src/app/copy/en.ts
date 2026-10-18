@@ -207,6 +207,8 @@ export const en = {
     summaryPhone: (needed: number, online: string | null) =>
       `${needed} still needed${online ? ` · about ${online} online` : ''}`,
     tableLabel: (name: string) => `Cards on ${name}`,
+    pricesUpdated: (date: string) => `Prices from Scryfall, updated ${date}. They are estimates.`,
+    pricesOffline: 'You are offline, so these are the prices saved on this device.',
     columns: { image: 'Image', card: 'Card', status: 'Status', target: 'Target binder', set: 'Set and #', price: 'Avg online' },
     sort: {
       label: 'Sort',

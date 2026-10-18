@@ -25,7 +25,7 @@ const CARDS: Record<string, FakeCard> = {
 
 const spec = (cards: Spec['cards'], over: Partial<Spec> = {}): Spec => ({ id: 'a', name: 'Lifegain Commander', created: T0, cards, ...over });
 
-interface Options { saved?: (keyof typeof CARDS)[]; fetchedAt?: Date; hold?: boolean; failLookup?: boolean; path?: string; lists?: Spec[] }
+interface Options { saved?: (keyof typeof CARDS)[]; fetchedAt?: Date; hold?: boolean; failLookup?: boolean; path?: string; lists?: Spec[]; catalog?: { builtAt: string; scryfallUpdatedAt: string; offline: boolean } }
 
 async function setup(cards: Spec['cards'], options: Options = {}) {
   const storage = new MemoryStorage();
@@ -39,6 +39,8 @@ async function setup(cards: Spec['cards'], options: Options = {}) {
   }
   const fake = fakeConnector(Object.values(CARDS), { failLookup: options.failLookup });
   if (options.hold) fake.hold();
+  const info = options.catalog;
+  if (info) Object.assign(fake.connector, { catalogInfo: () => Promise.resolve(info) });   // as the bulk connector has
   window.history.replaceState(null, '', options.path ?? '/lists/a');
   const view = render(<App storage={storage} clock={() => T0} connector={fake.connector} />);
   return { storage, lists: new ListsRepository(storage), repo, fake, ...view };
@@ -167,6 +169,27 @@ describe('List review: the table', () => {
     expect(owned).not.toContain('FDN');
     expect(owned).toContain(copy.status.in_collection);
     expect(text(tableRow('Soul Warden'))).toContain('FDN 24');
+  });
+});
+
+describe('List review: when prices were updated', () => {
+  const CATALOG = { builtAt: '2026-10-17T22:00:00.000Z', scryfallUpdatedAt: '2026-10-17T09:30:00.000Z', offline: false };
+
+  it('says the prices are Scryfall estimates and when they were updated, when the catalog is in use', async () => {
+    await setup(THREE, { saved: ['ajani', 'tower', 'greaves'], catalog: CATALOG });
+    expect(await screen.findByText(/^Prices from Scryfall, updated .*2026\. They are estimates\.$/)).toBeTruthy();
+    expect(screen.queryByText(new RegExp(escapeRe(copy.review.pricesOffline)))).toBeNull();
+  });
+
+  it('adds that these are saved prices when the device is offline', async () => {
+    await setup(THREE, { saved: ['ajani', 'tower', 'greaves'], catalog: { ...CATALOG, offline: true } });
+    expect(await screen.findByText(new RegExp(escapeRe(copy.review.pricesOffline)))).toBeTruthy();
+  });
+
+  it('says nothing when the live API is in use', async () => {
+    await setup(THREE, { saved: ['ajani', 'tower', 'greaves'] });
+    await screen.findByRole('rowheader', { name: "Ajani's Pridemate" });
+    expect(screen.queryByText(/Prices from Scryfall/)).toBeNull();
   });
 });
 
