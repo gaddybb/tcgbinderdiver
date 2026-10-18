@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- Decklist parser in `src/core/parse`: `parseDecklist` reads Moxfield, Archidekt, EDHREC and MTGO text (counts, set codes, collector numbers, foil tags, `#tags`, headers, sideboard and maybeboard sections) and `combineEntries` merges duplicate lines under the section toggles.
 - Engine: `reopenStop` brings a finished stop's unfound cards back and keeps the frozen stop order. `Plan` now carries `order` and `left` to support it.
 - Engine: `pullVerdict` labels plan stops "Worth a pull", "Buy online" or "Show staff" from `PullSettings` (default 2 copies or $10, in `pullSettings.ts`). It never changes routing.
 - Routing engine in `src/core/engine`, copied from `reference/engine`: per-printing routing, scoring, plan building and Finish stop. `WEIGHTS` and `V1_STORE` are in their own modules. 29 Vitest checks, ported one for one from the reference tests, plus the missing 21c.
