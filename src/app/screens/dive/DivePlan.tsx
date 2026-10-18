@@ -13,6 +13,7 @@ import { navigate } from '../../router';
 import screen from '../Screen.module.css';
 import styles from './Dive.module.css';
 import { PullSettingsPanel } from './PullSettingsPanel';
+import { startDive } from './startDive';
 import { useDive } from './useDive';
 
 const t = copy.dive;
@@ -45,10 +46,7 @@ export function DivePlan() {
   const contributing = dive.lists.filter(l => l.entries.some(e => e.status === 'needed'));
   const loading = dive.data.status === 'loading' && dive.data.progress.total > 0;
 
-  const startTrip = () => {
-    tripApi.start(contributing.map(l => l.id));
-    navigate('/dive');
-  };
+  const startTrip = () => startDive(tripApi, dive.lists);
 
   const summaryBar = (
     <SummaryBar

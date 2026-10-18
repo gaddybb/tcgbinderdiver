@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import type { CardRecord } from '../../../core/cards';
-import { planLists } from '../../../core/plan';
 import type { ListPlan } from '../../../core/plan';
 import type { CardList } from '../../../core/lists';
 import { useCardData } from '../../data/CardDataProvider';
 import type { CardData } from '../../data/CardDataProvider';
 import { useLists } from '../../data/ListsProvider';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
+import { divePlanFor, neededCards } from './planData';
 
 export interface Dive {
   ready: boolean;                        // the saved lists and settings are in
@@ -23,16 +23,8 @@ export function useDive(): Dive {
   const lists = useLists();
   const store = useStoreSettings();
   const next = useMemo(() => lists.lists.filter(l => l.inNextDive), [lists.lists]);
-  const wanted = useMemo(() => {
-    const byKey = new Map<string, { cardKey: string; name: string }>();
-    for (const list of next) for (const e of list.entries) if (e.status === 'needed' && !byKey.has(e.cardKey)) byKey.set(e.cardKey, { cardKey: e.cardKey, name: e.name });
-    return [...byKey.values()];
-  }, [next]);
+  const wanted = useMemo(() => neededCards(next), [next]);
   const data = useCardData(wanted, lists.now);
-  const listPlan = useMemo(() => planLists(next, data.records, store.profile, lists.now()), [next, data.records, store.profile, lists]);
-  const needed = useMemo(
-    () => wanted.map(w => data.records.get(w.cardKey)).filter((r): r is CardRecord => r !== undefined),
-    [wanted, data.records],
-  );
+  const { listPlan, needed } = useMemo(() => divePlanFor(next, data.records, store.profile, lists.now()), [next, data.records, store.profile, lists]);
   return { ready: lists.ready && store.ready, lists: next, needed, neededCount: wanted.length, data, listPlan };
 }

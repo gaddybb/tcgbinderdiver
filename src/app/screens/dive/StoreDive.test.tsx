@@ -227,6 +227,19 @@ describe('Store dive: a counter stop', () => {
     expect(screen.getByRole('button', { name: c.foundUndo })).toBeTruthy();
   });
 
+  it('does not call a card found when only some copies are: it says how many, and Found finds the rest', async () => {
+    const { storage } = await setup({
+      lists: [{ ...DECK, cards: [['Lightning Greaves', 2]] }],
+      trip: { ...startTrip('t', T0, ['a']), found: { 'lightning greaves': { a: 1 } } },
+    });
+    await screen.findByRole('heading', { name: 'Display case' });
+    expect(screen.getByText(c.partial(1, 2), { exact: false })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: c.foundUndo })).toBeNull();
+    press(c.found);
+    expect(screen.getByRole('button', { name: c.foundUndo })).toBeTruthy();
+    await waitFor(async () => expect((await savedTrip(storage)).found['lightning greaves']).toEqual({ a: 2 }));
+  });
+
   it('shows the cards still wanted in big text, and closes', async () => {
     await toDisplayCase();
     press(c.bigText);

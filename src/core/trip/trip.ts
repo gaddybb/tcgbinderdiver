@@ -161,7 +161,9 @@ export interface TripSummary {
 export function tripSummary(trip: Trip, plan: Plan, parts: ReadonlyMap<string, NeededAcrossLists>): TripSummary {
   let found = 0;
   const left: TripSummary['left'] = [];
+  const offTheHunt = new Set(plan.skipped);   // basic lands, while they are off the hunt
   for (const part of parts.values()) {
+    if (offTheHunt.has(part.cardKey)) continue;
     found += foundCopies(trip, part);
     const remaining = remainingCopies(trip, part);
     if (remaining > 0) left.push({ cardKey: part.cardKey, name: part.name, copies: remaining });

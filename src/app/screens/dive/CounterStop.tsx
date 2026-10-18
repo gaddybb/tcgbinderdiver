@@ -65,14 +65,15 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, onFound, o
 
       <ul className={styles.rows}>
         {rows.map(row => {
-          const found = foundCopies(trip, row.part) > 0;
+          const have = foundCopies(trip, row.part);
+          const found = remainingCopies(trip, row.part) <= 0;
           const gone = trip.notAvailable.includes(row.key);
           return (
             <li key={row.key} className={cx(styles.counterRow, (found || gone) && styles.counterRowGone)}>
               <CardThumb edge={row.edge} src={row.image} />
               <div className={styles.counterText}>
                 <div className={styles.counterName}>{row.name}{row.part.copies > 1 && ` ×${row.part.copies}`}</div>
-                <div className={styles.counterSub}>{row.sub}</div>
+                <div className={styles.counterSub}>{row.sub}{have > 0 && !found && ` · ${t.partial(have, row.part.copies)}`}</div>
               </div>
               <div className={styles.counterActions}>
                 {found ? (

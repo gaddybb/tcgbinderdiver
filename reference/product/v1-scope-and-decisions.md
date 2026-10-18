@@ -30,9 +30,9 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 - [ ] Lists in this dive switches (same setting on My lists, the plan and the store).
 
 ### In the store
-- [ ] Store dive on desktop (sidebar), tablet and phone: stop dropdown with previous and next, list toggles, sort and filter (color, price, collector number, A to Z), card image tiles with Found, progress counted in copies.
-- [ ] One Finish binder action: unfound copies move to each card's next stop; stop order stays frozen all trip; Reopen a finished stop from the picker.
-- [ ] Show-staff stops (Display case, Ask an associate): list sorted A to Z, big names, Found or Not available per card, "likely in value binders / bulk boxes" hints, big-text view to hand over the phone. Not available cards go to Buy the rest.
+- [x] Store dive on desktop (sidebar), tablet and phone: stop dropdown with previous and next, list toggles, sort and filter (color, price, collector number, A to Z), card image tiles with Found, progress counted in copies.
+- [x] One Finish binder action: unfound copies move to each card's next stop; stop order stays frozen all trip; Reopen a finished stop from the picker.
+- [x] Show-staff stops (Display case, Ask an associate): list sorted A to Z, big names, Found or Not available per card, "likely in value binders / bulk boxes" hints, big-text view to hand over the phone. Not available cards go to Buy the rest.
 - [ ] End trip confirmation; trip summary; Buy the rest (copy leftover list in TCGplayer Mass Entry format); nearby stores with a map; Back to my lists; Start a new trip (resets stops).
 - [ ] QR hand-off from desktop to phone: the list travels inside the link until accounts exist.
 

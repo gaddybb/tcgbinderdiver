@@ -206,6 +206,16 @@ describe('the end of a trip', () => {
     expect(summary.leftCopies).toBe(4);
   });
 
+  it('leaves basic lands that are off the hunt out of what is left', () => {
+    const records = new Map([...RECORDS, ...[record('f', 'Forest', [recent('fdn', 'Foundations')], 'Basic Land — Forest')].map(r => [r.key, r] as const)]);
+    const lists = [list('x', ['b'], ['f', 3])];
+    const trip = startTrip('t', NOW, ['x']);
+    const { needed, parts } = tripCards(lists, trip, records);
+    const summary = tripSummary(trip, tripPlan(needed, V1_STORE, NOW, trip), parts);
+    expect(summary.left.map(l => l.cardKey)).toEqual(['b']);
+    expect(summary.leftCopies).toBe(1);
+  });
+
   it('writes the leftovers as quantity and name lines for TCGplayer Mass Entry', () => {
     expect(massEntryText([{ name: 'Sol Ring', copies: 1 }, { name: 'Path to Exile', copies: 3 }])).toBe('1 Sol Ring\n3 Path to Exile');
     expect(massEntryText([])).toBe('');
