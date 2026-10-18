@@ -2,6 +2,7 @@
 import { massEntryText, tripSummary } from '../../../core/trip';
 import { Banner, Button, EmptyState, PageHeader, SkeletonRow, useToast } from '../../components';
 import { copyText } from '../../clipboard';
+import { NEARBY_STORES_URL } from '../../links';
 import { copy } from '../../copy/en';
 import { useTrip } from '../../data/TripProvider';
 import { navigate } from '../../router';
@@ -64,6 +65,14 @@ export function TripSummary() {
           <Button variant="secondary" onClick={() => navigate('/lists')}>{t.backToLists}</Button>
           <Button onClick={() => { clear(); navigate('/plan'); }}>{t.newTrip}</Button>
         </div>
+
+        <section className={styles.rows} aria-label={t.stores.title}>
+          <h2 className={styles.stopTitle}>{t.stores.title}</h2>
+          <p className={styles.note}>{t.stores.detail}</p>
+          <div>
+            <Button variant="secondary" onClick={() => { window.open(NEARBY_STORES_URL, '_blank', 'noopener,noreferrer'); }}>{t.stores.action}</Button>
+          </div>
+        </section>
 
         {summary.left.length > 0 && (
           <section className={styles.rows} aria-label={t.buy.title}>

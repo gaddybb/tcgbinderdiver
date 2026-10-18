@@ -442,6 +442,11 @@ export const en = {
     newTrip: 'Start a new trip',
     buy: { title: 'Buy the rest', detail: (n: number) => `Copy your ${n} ${n === 1 ? 'card' : 'cards'} in the format TCGplayer Mass Entry reads.`, copy: (n: number) => `Copy ${n} ${n === 1 ? 'card' : 'cards'}`, copied: 'Copied. Paste it into TCGplayer Mass Entry.', copyFailed: 'Could not copy. Select the list and copy it yourself.' },
     noTrip: { title: 'No trip to show', text: 'Start a store dive from your dive plan.', action: 'Go to your dive plan' },
+    stores: {
+      title: 'Try another store nearby',
+      detail: 'Opens Google Maps in a new tab, searching for game stores around you.',
+      action: 'Find game stores nearby',
+    },
   },
   pullSettings: {
     title: 'Pull settings',
@@ -759,7 +764,7 @@ export const en = {
       device: { title: 'Stored on your device', text: "Your lists, card statuses, binder groups and settings are saved in this browser. They aren't sent to us. Clearing your browser's site data for Binder Diver deletes them." },
       analytics: { title: 'Analytics, only if you allow it', text: "If you choose Allow analytics, Binder Diver uses Google Analytics to count things like which pages are visited and which features get used. It doesn't collect your name or email, and it isn't used to sell anything." },
       cards: { title: 'Card data', text: 'Card data comes from Scryfall. Binder Diver downloads it from its own site, and your browser asks Scryfall directly for card pictures and for any card Binder Diver does not have yet, so Scryfall sees those requests under its own privacy policy.' },
-      stores: { title: 'Store search', text: 'When you ask to find nearby stores, your approximate location is sent to Google Maps to show results. That only happens when you tap it.' },
+      stores: { title: 'Store search', text: "When you tap Find game stores nearby, Binder Diver opens Google Maps in a new tab with a search for game stores. Google Maps asks for your location itself, under Google's privacy policy; Binder Diver never sees it. Nothing is sent to Google until you tap." },
       affiliate: { title: 'Affiliate links', text: 'Buy on TCGplayer buttons are affiliate links through Impact. If you buy after tapping one, Binder Diver may earn a small commission at no extra cost to you. TCGplayer may set its own cookies once you\'re on its site.' },
       accounts: { title: 'Accounts', text: "There are no accounts yet. If they're added later, this page will explain what's stored and how to delete it." },
       contact: { title: 'Contact', text: 'Privacy questions: [CONTACT EMAIL]' },
