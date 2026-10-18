@@ -9,6 +9,7 @@ import type { CardRecord } from '../../core/cards';
 import type { GameConnector } from '../../core/connector';
 import { CardsRepository } from '../../storage';
 import { useStorage } from './StorageProvider';
+import { useStoreSettings } from './StoreSettingsProvider';
 
 interface CardDataContext {
   connector: GameConnector;
@@ -65,6 +66,7 @@ export interface CardData {
   progress: LoadProgress;
   notFound: ReadonlySet<string>;     // card keys the data source does not know
   retry: () => void;
+  refresh: () => void;               // forget what is saved for these cards and fetch it again
 }
 
 const NONE: ReadonlyMap<string, CardRecord> = new Map();
@@ -77,6 +79,7 @@ export function useCardData(cards: readonly WantedCard[], now: () => Date): Card
   const ctx = useContext(Context);
   if (!ctx) throw new Error('useCardData needs a CardDataProvider above it.');
   const { connector, repo } = ctx;
+  const includeBasics = useStoreSettings().settings.includeBasicLands;
 
   const [records, setRecords] = useState<ReadonlyMap<string, CardRecord>>(NONE);
   const [progress, setProgress] = useState<LoadProgress>({ total: 0, done: 0 });
@@ -85,7 +88,7 @@ export function useCardData(cards: readonly WantedCard[], now: () => Date): Card
 
   // The run starts again only when the set of cards changes (or on Retry), not on every render.
   const signature = useMemo(() => cards.map(c => c.cardKey + FIELD + c.name).sort().join(LINE), [cards]);
-  const id = attempt + ':' + signature;
+  const id = attempt + ':' + signature + ':' + includeBasics;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -94,20 +97,24 @@ export function useCardData(cards: readonly WantedCard[], now: () => Date): Card
       return { cardKey, name };
     });
     loadCards({
-      connector, repo, cards: wanted, now: now(), signal: controller.signal,
+      connector, repo, cards: wanted, now: now(), signal: controller.signal, includeBasics,
       onCached: cached => { if (!controller.signal.aborted) setRecords(new Map(cached)); },
       onRecord: record => { if (!controller.signal.aborted) setRecords(prev => new Map(prev).set(record.key, record)); },
       onProgress: p => { if (!controller.signal.aborted) setProgress(p); },
     }).then(result => {
       if (controller.signal.aborted || result.aborted) return;
       setRecords(new Map(result.records));
-      setFinished({ id: attempt + ':' + signature, status: result.failed ? 'error' : 'ready', notFound: new Set(result.notFound) });
+      setFinished({ id: attempt + ':' + signature + ':' + includeBasics, status: result.failed ? 'error' : 'ready', notFound: new Set(result.notFound) });
     });
     return () => controller.abort();
-  }, [connector, repo, signature, now, attempt]);
+  }, [connector, repo, signature, now, attempt, includeBasics]);
 
   // Until the run for these cards finishes, the status is loading.
   const done = finished?.id === id ? finished : null;
   const retry = useCallback(() => setAttempt(n => n + 1), []);
-  return { records, status: done?.status ?? 'loading', progress, notFound: done?.notFound ?? new Set(), retry };
+  const refresh = useCallback(() => {
+    const keys = signature === '' ? [] : signature.split(LINE).map(line => line.split(FIELD)[0]);
+    void repo.deleteMany(keys).then(() => setAttempt(n => n + 1));
+  }, [repo, signature]);
+  return { records, status: done?.status ?? 'loading', progress, notFound: done?.notFound ?? new Set(), retry, refresh };
 }

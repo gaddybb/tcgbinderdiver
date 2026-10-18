@@ -528,6 +528,7 @@ export const en = {
       `${needed} still needed${online ? ` · about ${online} online` : ''}`,
     tableLabel: (name: string) => `Cards on ${name}`,
     pasteAnother: 'Paste another list',
+    refresh: 'Refresh card data',
     tabsLabel: 'Your lists',
     pricesUpdated: (date: string) => `Prices from Scryfall, updated ${date}. They are estimates.`,
     pricesOffline: 'You are offline, so these are the prices saved on this device.',

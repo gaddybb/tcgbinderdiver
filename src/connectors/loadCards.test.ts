@@ -186,6 +186,18 @@ describe('loadCards', () => {
       expect(result.records.get('forest')!.printings).toHaveLength(1);
     });
 
+    it('saved with no printings are fetched again once basics are on the hunt, and left alone while they are off', async () => {
+      const { connector, repo, calls } = setup(['Sol Ring', ...lands]);
+      await loadCards({ connector, repo, cards: want('Forest'), now: NOW });   // saved with no printings, as when basics were off
+      calls.lookups.length = 0; calls.printings.length = 0;
+      await loadCards({ connector, repo, cards: want('Forest'), now: NOW });
+      expect(calls.lookups).toEqual([]);
+      const result = await loadCards({ connector, repo, cards: want('Forest'), now: NOW, includeBasics: true });
+      expect(calls.printings).toEqual(['Forest']);
+      expect(result.records.get('forest')!.printings).toHaveLength(1);
+      expect((await repo.get('forest'))!.printings).toHaveLength(1);
+    });
+
     it('never touch the printings source, so a list of only basics can not fail there', async () => {
       const { connector, repo } = setup(lands, { failPrintingsFor: ['Forest'] });
       const result = await loadCards({ connector, repo, cards: want('Forest'), now: NOW });

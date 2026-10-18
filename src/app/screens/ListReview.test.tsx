@@ -25,7 +25,7 @@ const CARDS: Record<string, FakeCard> = {
 
 const spec = (cards: Spec['cards'], over: Partial<Spec> = {}): Spec => ({ id: 'a', name: 'Lifegain Commander', created: T0, cards, ...over });
 
-interface Options { settings?: unknown; saved?: (keyof typeof CARDS)[]; fetchedAt?: Date; hold?: boolean; failLookup?: boolean; path?: string; lists?: Spec[]; catalog?: { builtAt: string; scryfallUpdatedAt: string; offline: boolean } }
+interface Options { settings?: unknown; emptyPrintings?: (keyof typeof CARDS)[]; saved?: (keyof typeof CARDS)[]; fetchedAt?: Date; hold?: boolean; failLookup?: boolean; path?: string; lists?: Spec[]; catalog?: { builtAt: string; scryfallUpdatedAt: string; offline: boolean } }
 
 async function setup(cards: Spec['cards'], options: Options = {}) {
   const storage = new MemoryStorage();
@@ -37,6 +37,10 @@ async function setup(cards: Spec['cards'], options: Options = {}) {
   for (const key of options.saved ?? []) {
     const card = CARDS[key];
     await repo.put({ key: card.name.toLowerCase(), summary: fakeSummary(card), printings: card.printings ?? [], fetchedAt: (options.fetchedAt ?? T0).toISOString() });
+  }
+  for (const key of options.emptyPrintings ?? []) {
+    const card = CARDS[key];
+    await repo.put({ key: card.name.toLowerCase(), summary: fakeSummary(card), printings: [], fetchedAt: (options.fetchedAt ?? T0).toISOString() });
   }
   const fake = fakeConnector(Object.values(CARDS), { failLookup: options.failLookup });
   if (options.hold) fake.hold();
@@ -994,5 +998,27 @@ describe('List review: tabs, the dive plan and the binder groups beside the list
     await dataArrived('Command Tower', 'FDC');
     fireEvent.change(screen.getByLabelText(copy.review.sort.label), { target: { value: 'set' } });
     expect(names()).toEqual(['Command Tower', 'Soul Warden', "Ajani's Pridemate"]);   // fdc, then fdn by number
+  });
+});
+
+describe('List review: refreshing card data', () => {
+  const ON = { binderGroups: [], notCarried: [], includeBasicLands: true, pull: { worthPullMinCards: 2, worthPullMinUsd: 10 } };
+
+  it('has a Refresh card data button that forgets what is saved and fetches the cards again', async () => {
+    const { fake, repo } = await setup([["Ajani's Pridemate"], ['Soul Warden']], { saved: ['ajani', 'warden'] });
+    await dataArrived("Ajani's Pridemate", 'FDN 135');
+    expect(fake.calls.lookups).toEqual([]);
+    fireEvent.click(screen.getByRole('button', { name: copy.review.refresh }));
+    await waitFor(() => expect(fake.calls.lookups).toHaveLength(1));
+    expect(fake.calls.lookups[0].sort()).toEqual(["Ajani's Pridemate", 'Soul Warden']);
+    await waitFor(async () => expect((await repo.get('soul warden'))!.fetchedAt).toBe(T0.toISOString()));
+    await dataArrived('Soul Warden', 'FDN 24');
+  });
+
+  it('fetches a basic land saved without printings once basics are included, so it gets a binder', async () => {
+    const { fake } = await setup([['Forest', 2], ['Soul Warden']], { settings: ON, saved: ['warden'], emptyPrintings: ['forest'] });
+    await dataArrived('Forest', 'FDN 280');
+    expect(fake.calls.lookups.flat()).toContain('Forest');
+    expect(text(tableRow('Forest'))).not.toContain(copy.review.target.noBinder);
   });
 });

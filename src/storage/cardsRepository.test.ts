@@ -53,3 +53,16 @@ describe('CardsRepository', () => {
     expect((await repo.getMany(['junk', 'text'])).size).toBe(0);
   });
 });
+
+describe('CardsRepository.deleteMany', () => {
+  it('forgets the records it is given and keeps the others', async () => {
+    const repo = new CardsRepository(new MemoryStorage());
+    const record = (key: string) => ({ key, summary: { name: key } as never, printings: [], fetchedAt: 'a' });
+    await repo.put(record('a')); await repo.put(record('b')); await repo.put(record('c'));
+    await repo.deleteMany(['a', 'c', 'missing']);
+    expect(await repo.get('a')).toBeUndefined();
+    expect(await repo.get('c')).toBeUndefined();
+    expect(await repo.get('b')).toBeDefined();
+    await repo.deleteMany([]);
+  });
+});

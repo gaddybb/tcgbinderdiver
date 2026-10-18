@@ -216,7 +216,12 @@ function ReviewBody({ list }: { list: CardList }) {
       <PageHeader
         title={list.name}
         subtitle={phone ? t.summaryPhone(counts.needed, online) : t.summary(counts.cards, counts.needed, online)}
-        actions={<Button variant="secondary" onClick={() => navigate('/import')}>{t.pasteAnother}</Button>}
+        actions={
+          <span className={review.headerActions}>
+            <Button variant="text" onClick={data.refresh}>{t.refresh}</Button>
+            <Button variant="secondary" onClick={() => navigate('/import')}>{t.pasteAnother}</Button>
+          </span>
+        }
       />
 
       <div className={styles.stack}>
