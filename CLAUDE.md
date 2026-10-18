@@ -31,7 +31,12 @@ So nothing that may change gets scattered across files:
 
 ## Process
 - Propose the folder structure and PR-sized steps first, then wait for approval before building.
-- Small PRs. Tests with every rule (port `reference/engine/engine.test.ts` to Vitest first). Add a CHANGELOG entry per feature.
+- One PR per feature (logic and screens together); split a feature only when it is truly large. Tests with every rule
+  (port `reference/engine/engine.test.ts` to Vitest first). Add a CHANGELOG entry per feature.
+- While working, run only the tests for the area being changed. Run the full suite once before opening the PR; CI runs
+  lint, tests and build again. Browser-check new screens only. Stop for the owner's review once per feature.
+- Merge only when the owner says to, and only after the `check` job shows pass (Cloudflare's Workers Builds is red on PR
+  branches and is ignored).
 - When a v1 item in `reference/product/v1-scope-and-decisions.md` ships, tick its checkbox in the same PR. Don't otherwise edit
   files under `reference/` unless the owner asks.
 - Ask before adding any dependency beyond React, Vite, TypeScript, Vitest and an IndexedDB helper.
