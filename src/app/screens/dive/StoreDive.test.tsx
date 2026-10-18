@@ -32,7 +32,7 @@ const CARDS: Record<string, { name: string; typeLine?: string; printings: Printi
 const DECK: Spec = { id: 'a', name: 'Lifegain', cards: [["Ajani's Pridemate", 2], ['Soul Warden'], ['Cultivate'], ['Command Tower'], ['Lightning Greaves'], ['Old Bulk']] };
 const ZOMBIES: Spec = { id: 'b', name: 'Zombies', cards: [["Ajani's Pridemate"], ['Zombie Thing']] };
 
-interface Options { lists?: Spec[]; trip?: Trip | null; path?: string }
+interface Options { lists?: Spec[]; trip?: Trip | null; path?: string; extra?: string[] }
 
 async function setup(options: Options = {}) {
   const storage = new MemoryStorage();
@@ -42,6 +42,9 @@ async function setup(options: Options = {}) {
   const repo = new CardsRepository(storage);
   for (const card of Object.values(CARDS)) {
     await repo.put({ key: card.name.toLowerCase(), summary: fakeSummary({ name: card.name, typeLine: card.typeLine }), printings: card.printings, fetchedAt: T0.toISOString() });
+  }
+  for (const name of options.extra ?? []) {
+    await repo.put({ key: name.toLowerCase(), summary: fakeSummary({ name }), printings: [recent('fdn', 'Foundations')], fetchedAt: T0.toISOString() });
   }
   window.history.replaceState(null, '', options.path ?? '/dive');
   const view = render(<App storage={storage} clock={() => T0} connector={fakeConnector([]).connector} />);
@@ -430,23 +433,34 @@ describe('Ending the trip', () => {
     Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
   });
 
-  it('Buy on TCGplayer copies the leftovers and opens Mass Entry in a new tab, with no commission line while affiliate links are off', async () => {
-    let copied = '';
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (text: string) => { copied = text; } }, configurable: true });
+  const withWindowOpen = async (run: (opened: unknown[][]) => Promise<void>) => {
     const opened: unknown[][] = [];
     const original = window.open;
     window.open = ((...args: unknown[]) => { opened.push(args); return null; }) as typeof window.open;
-    try {
-      await setup({ lists: [{ ...DECK, cards: [['Soul Warden']] }], trip: { ...startTrip('t', T0, ['a']), endedAt: T0.toISOString() }, path: '/trip' });
-      expect(await screen.findByText(copy.tripEnd.buy.buyNote)).toBeTruthy();
+    try { await run(opened); } finally { window.open = original; Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true }); }
+  };
+
+  it('Buy on TCGplayer opens Mass Entry with the leftovers already in it, with no commission line while affiliate links are off', async () => {
+    await withWindowOpen(async opened => {
+      await setup({ lists: [{ ...DECK, cards: [['Soul Warden'], ['Cultivate', 2]] }], trip: { ...startTrip('t', T0, ['a']), endedAt: T0.toISOString() }, path: '/trip' });
+      expect(await screen.findByText(copy.tripEnd.buy.detailFilled(3))).toBeTruthy();
       expect(screen.queryByText(copy.affiliate.note)).toBeNull();
-      fireEvent.click(screen.getByRole('button', { name: copy.tripEnd.buy.buyOnTcgplayer }));
-      await waitFor(() => expect(copied).toBe('1 Soul Warden'));
+      fireEvent.click(screen.getByRole('button', { name: copy.tripEnd.buy.buyOnTcgplayer(3) }));
+      expect(opened).toEqual([['https://www.tcgplayer.com/massentry?productline=Magic&c=1%20Soul%20Warden||2%20Cultivate', '_blank', 'noopener,noreferrer']]);
+    });
+  });
+
+  it('a list too long for an address is copied first and Mass Entry opens empty, with a note saying to paste', async () => {
+    await withWindowOpen(async opened => {
+      let copied = '';
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (text: string) => { copied = text; } }, configurable: true });
+      const names = Array.from({ length: 100 }, (_, i) => `A Card With A Very Long Name That Goes On And On For A Good While Number ${i}`);
+      await setup({ lists: [{ ...DECK, cards: names.map(n => [n] as [string]) }], extra: names, trip: { ...startTrip('t', T0, ['a']), endedAt: T0.toISOString() }, path: '/trip' });
+      expect(await screen.findByText(copy.tripEnd.buy.buyNote)).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: copy.tripEnd.buy.buyOnTcgplayer(100) }));
       await waitFor(() => expect(opened).toEqual([['https://www.tcgplayer.com/massentry', '_blank', 'noopener,noreferrer']]));
-    } finally {
-      window.open = original;
-      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
-    }
+      expect(copied.split('\n')).toHaveLength(100);
+    });
   });
 
   it('offers to find game stores nearby, opening a Google Maps search in a new tab and nothing else', async () => {
@@ -462,6 +476,48 @@ describe('Ending the trip', () => {
     } finally {
       window.open = original;
     }
+  });
+
+  describe('the page layout', () => {
+    const ENDED = { ...startTrip('t', T0, ['a']), found: { 'soul warden': { a: 1 } }, endedAt: T0.toISOString() };
+    const lists = [{ ...DECK, cards: [['Soul Warden'], ['Cultivate', 2], ['Command Tower']] as Spec['cards'] }];
+
+    it('leads with what was found and in how many places', async () => {
+      await setup({ lists, trip: { ...ENDED, events: [{ type: 'finish', stopId: 'set:fdn', found: ['soul warden'] }] }, path: '/trip' });
+      expect(await screen.findByRole('heading', { level: 1, name: copy.tripEnd.title })).toBeTruthy();
+      expect(await screen.findByText(copy.tripEnd.found(1, 1))).toBeTruthy();
+    });
+
+    it('on a desktop is two columns: what is left on one side, Buy the rest and nearby stores beside it', async () => {
+      window.innerWidth = 1280;
+      window.dispatchEvent(new Event('resize'));
+      await setup({ lists, trip: ENDED, path: '/trip' });
+      const side = await screen.findByRole('complementary', { name: copy.tripEnd.sideLabel });
+      expect(await within(side).findByRole('button', { name: copy.tripEnd.buy.buyOnTcgplayer(3) })).toBeTruthy();
+      expect(within(side).getByRole('button', { name: copy.tripEnd.stores.action })).toBeTruthy();
+      expect(within(side).queryByRole('button', { name: copy.tripEnd.newTrip })).toBeNull();
+      expect(screen.getByRole('button', { name: copy.tripEnd.newTrip })).toBeTruthy();
+    });
+
+    it('shows each card still wanted as a picture with its name and how many', async () => {
+      await setup({ lists, trip: ENDED, path: '/trip' });
+      const region = await screen.findByRole('region', { name: copy.tripEnd.left(3) });
+      expect(within(region).getByText('Cultivate')).toBeTruthy();
+      expect(within(region).getByText(copy.tripEnd.copies(2))).toBeTruthy();
+      expect(region.querySelectorAll('img')).toHaveLength(2);
+    });
+
+    it('on a phone puts the buttons, Buy the rest and the stores before the cards still wanted', async () => {
+      window.innerWidth = 375;
+      window.dispatchEvent(new Event('resize'));
+      await setup({ lists, trip: ENDED, path: '/trip' });
+      const buy = await screen.findByRole('button', { name: copy.tripEnd.buy.buyOnTcgplayer(3) });
+      const stores = screen.getByRole('button', { name: copy.tripEnd.stores.action });
+      const newTrip = screen.getByRole('button', { name: copy.tripEnd.newTrip });
+      const left = screen.getByRole('region', { name: copy.tripEnd.left(3) });
+      for (const early of [buy, stores, newTrip]) expect(early.compareDocumentPosition(left) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(screen.queryByRole('complementary', { name: copy.tripEnd.sideLabel })).toBeNull();
+    });
   });
 
   it('Start a new trip clears the old one and goes to the dive plan', async () => {
