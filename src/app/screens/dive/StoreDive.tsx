@@ -7,8 +7,8 @@ import type { PlanStop } from '../../../core/engine/engine';
 import { SORT_MODES, sortCards } from '../../../core/sort';
 import type { SortMode } from '../../../core/sort';
 import {
-  finishBinder, finishedStops, foundCopies, markAllFound, markFound, markNotAvailable, reopenBinder, setListOn,
-  stopLabel, tripSummary, undoAllFound, undoFound,
+  finishBinder, finishedStops, foundCopies, markFound, markNotAvailable, reopenBinder, setListOn,
+  stopLabel, tripSummary, undoFound,
 } from '../../../core/trip';
 import {
   Banner, Button, CardTile, ColorFilter, Chip, Dialog, EmptyState, isColorCategory, PageHeader, ProgressBar, PullVerdict, Select, SkeletonRow,
@@ -67,6 +67,8 @@ export function StoreDive() {
   const finished = finishedStops(trip).filter(id => !stops.some(s => s.stop.id === id));
   const categoryOf = (record: CardRecord) => connector.sortCategory(record.summary);
   const loading = data.status === 'loading' && data.progress.total > 0;
+  // Four columns of large cards on desktop, three on a tablet, two on a phone.
+  const gridClass = `${styles.grid} ${layout === 'desktop' ? styles.gridWide : layout === 'tablet' ? styles.gridMid : ''}`;
   const summary = tripSummary(trip, plan, cards.parts);
 
   const go = (id: string | undefined) => setSelected(id ?? null);
@@ -214,15 +216,16 @@ export function StoreDive() {
             )}
 
             {shown.length === 0 ? <p className={styles.note}>{t.noMatches}</p> : (
-              <ul className={`${styles.grid} ${layout === 'desktop' ? styles.gridWide : ''}`}>
+              <ul className={gridClass}>
                 {shown.map(e => (
                   <CardTile
                     key={e.key}
+                    fluid
                     name={e.record.summary.name}
                     setLabel={`${e.candidate.printing.setCode.toUpperCase()} ${e.candidate.printing.collectorNumber}`}
                     price={formatUsd(e.candidate.price)}
                     lists={e.part.parts.map(p => p.listName).join(', ')}
-                    imageUrl={e.record.summary.imageSmall}
+                    imageUrl={e.record.summary.imageNormal ?? e.record.summary.imageSmall}
                     edge={e.edge}
                     quantity={e.part.copies}
                     found={foundCopies(trip, e.part)}
@@ -247,8 +250,9 @@ export function StoreDive() {
             parts={cards.parts}
             records={data.records}
             categoryOf={categoryOf}
-            onFound={part => update(tr => markAllFound(tr, part))}
-            onUndo={part => update(tr => undoAllFound(tr, part))}
+            gridClass={gridClass}
+            onFound={part => update(tr => markFound(tr, part))}
+            onUndo={part => update(tr => undoFound(tr, part))}
             onNotAvailable={key => update(tr => markNotAvailable(tr, key))}
             onDone={() => finish(current, copy.storeDive.counter.doneToast)}
           />

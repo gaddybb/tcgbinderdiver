@@ -220,9 +220,8 @@ function ReviewBody({ list }: { list: CardList }) {
       />
 
       <div className={styles.stack}>
-        <StandaloneLink to="/lists">{copy.listView.back}</StandaloneLink>
-
         <nav aria-label={t.tabsLabel} className={review.tabs}>
+          <Link to="/lists" className={review.all}>{copy.listView.back}</Link>
           {lists.lists.map(l => (
             <Link key={l.id} to={`/lists/${l.id}`} className={review.tab} aria-current={l.id === list.id ? 'page' : undefined}>{l.name}</Link>
           ))}

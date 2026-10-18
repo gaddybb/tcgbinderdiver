@@ -1,4 +1,5 @@
 import { copy } from '../copy/en';
+import { cx } from '../cx';
 import { Button } from './Button';
 import { CardImage } from './CardImage';
 import { ProgressBar } from './ProgressBar';
@@ -18,17 +19,21 @@ export interface CardTileProps {
   onFound: () => void;
   onUndo: () => void;
   onOpen?: () => void;       // opens card detail; makes the picture a button
+  fluid?: boolean;           // fill the column, for the store dive gallery (the picture grows with it)
+  hint?: string;             // a line about where to look, for counter places
+  notAvailable?: boolean;    // the staff do not have it
+  onNotAvailable?: () => void;   // shows a Not available button (counter places)
 }
 
 // A card at a store stop. One copy: Found, then Found · Undo. Several copies: a ×N badge, progress in copies,
 // Found +1 and a minus to undo one. Progress is always written out, never only a bar.
-export function CardTile({ name, setLabel, price, lists, imageUrl, edge, quantity, found, onFound, onUndo, onOpen }: CardTileProps) {
+export function CardTile({ name, setLabel, price, lists, imageUrl, edge, quantity, found, onFound, onUndo, onOpen, fluid, hint, notAvailable, onNotAvailable }: CardTileProps) {
   const many = quantity > 1;
   const allFound = found >= quantity;
-  const image = <CardImage name={name} src={imageUrl} edge={edge} dim={found > 0 && (allFound || !many)} />;
+  const image = <CardImage name={name} src={imageUrl} edge={edge} fluid={fluid} dim={(found > 0 && (allFound || !many)) || (notAvailable === true && found === 0)} />;
 
   return (
-    <li className={styles.tile}>
+    <li className={cx(styles.tile, fluid && styles.fluid)}>
       <span className={styles.imageWrap}>
         {onOpen
           ? <button type="button" className={styles.open} aria-label={copy.cardTile.openCard(name)} onClick={onOpen}>{image}</button>
@@ -41,6 +46,7 @@ export function CardTile({ name, setLabel, price, lists, imageUrl, edge, quantit
         <span className={styles.price}>{price}</span>
       </div>
       <span className={styles.lists}>{lists}</span>
+      {hint && <span className={styles.hint}>{hint}</span>}
 
       {many && (
         <ProgressBar size="sm" value={found} max={quantity} label={copy.progress.copiesLabel(name)} caption={copy.progress.copiesOf(found, quantity)} />
@@ -48,7 +54,13 @@ export function CardTile({ name, setLabel, price, lists, imageUrl, edge, quantit
 
       {!many && (found > 0
         ? <Button variant="secondary" fullWidth aria-pressed onClick={onUndo}>{copy.cardTile.foundUndo}</Button>
-        : <Button fullWidth onClick={onFound}>{copy.cardTile.found}</Button>)}
+        : notAvailable
+          ? <><span className={styles.allFound}>{copy.cardTile.notAvailable}</span><Button fullWidth onClick={onFound}>{copy.cardTile.found}</Button></>
+          : <Button fullWidth onClick={onFound}>{copy.cardTile.found}</Button>)}
+
+      {onNotAvailable && !notAvailable && found === 0 && (
+        <Button variant="secondary" fullWidth aria-label={copy.cardTile.notAvailableFor(name)} onClick={onNotAvailable}>{copy.cardTile.notAvailable}</Button>
+      )}
 
       {many && (
         <div className={styles.actions}>

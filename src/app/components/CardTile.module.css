@@ -5,6 +5,8 @@
   flex-direction: column;
   gap: 0.375rem;
 }
+.fluid { width: 100%; }
+.hint { font-size: var(--text-sm); color: var(--color-text-muted); }
 .imageWrap {
   position: relative;
   display: block;

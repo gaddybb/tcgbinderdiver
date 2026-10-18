@@ -1,16 +1,24 @@
 .layout { display: flex; flex-direction: column; gap: var(--space-5); }
 .layoutWide { display: grid; grid-template-columns: minmax(0, 1fr) var(--size-aside); gap: var(--space-5); align-items: start; }
 .main { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
-.tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.tab {
+
+/* One row: the way back to all lists, then a tab for each list. The tabs are links, so they look like tabs, not buttons. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-1) var(--space-4);
+  border-bottom: var(--border-thin) solid var(--color-divider);
+}
+.all, .tab {
   display: inline-flex;
   align-items: center;
   min-height: var(--tap-min);
-  padding: 0 var(--space-4);
-  border: var(--border-thin) solid var(--color-border-strong);
-  border-radius: var(--radius-pill);
-  color: var(--color-text);
+  color: var(--color-text-muted);
   text-decoration: none;
-  font-weight: var(--weight-bold);
+  border-bottom: var(--border-thick) solid transparent;
+  margin-bottom: calc(-1 * var(--border-thin));
 }
-.tab[aria-current='page'] { background: var(--color-brass); color: var(--color-on-accent); border-color: transparent; }
+.all { padding-right: var(--space-4); border-right: var(--border-thin) solid var(--color-divider); font-size: var(--text-sm); }
+.tab { font-weight: var(--weight-bold); }
+.tab[aria-current='page'] { color: var(--color-text); border-bottom-color: var(--color-brass); }
