@@ -45,6 +45,18 @@ export const en = {
     proxy: 'Proxy',
     out_of_deck: 'Out of deck',
   },
+  // A line under each status when choosing one
+  statusHint: {
+    needed: 'Still hunting for it',
+    in_collection: 'You own it',
+    ordered: 'Bought online, on the way',
+    proxy: 'Playing a stand-in for now',
+    out_of_deck: 'Cut, kept for reference',
+  },
+  statusPicker: {
+    label: (name: string, status: string) => `Status of ${name}: ${status}`,
+    changed: (name: string, status: string) => `${name}: ${status}`,
+  },
   verdict: {
     worth_a_pull: 'Worth a pull',
     buy_online: 'Buy online',
@@ -183,13 +195,43 @@ export const en = {
     add: 'Add list',
     addToWishlist: 'Add to wishlist',
   },
-  // A plain stand-in for the list view (a later step), so Open leads somewhere.
+  // List review (reference/design: ListReview, ListReviewPhone, StatusDesk, StatusPhone)
   listView: {
     back: 'Back to my lists',
-    counts: (needed: number, cards: number) => `${needed} needed of ${cards}`,
-    comingSoon: 'The full list view, with statuses and card details, is coming in the next step.',
     notFoundTitle: 'That list is not here',
     emptyList: 'No cards on this list yet.',
+  },
+  review: {
+    summary: (cards: number, needed: number, online: string | null) =>
+      `${cards} ${cards === 1 ? 'card' : 'cards'} · ${needed} still needed${online ? ` · about ${online} online for what's needed` : ''}`,
+    summaryPhone: (needed: number, online: string | null) =>
+      `${needed} still needed${online ? ` · about ${online} online` : ''}`,
+    tableLabel: (name: string) => `Cards on ${name}`,
+    columns: { image: 'Image', card: 'Card', status: 'Status', target: 'Target binder', set: 'Set and #', price: 'Avg online' },
+    sort: {
+      label: 'Sort',
+      alphabetical: 'Alphabetical',
+      price_desc: 'Price, high to low',
+      collector_number: 'Collector number',
+      color: 'Color',
+    },
+    search: { label: 'Search', placeholder: 'Card name' },
+    noMatches: 'No cards match your search.',
+    target: {
+      noBinder: 'No binder',
+      basicLand: 'Basic land',
+      notFound: 'Not found',
+      none: '—',
+    },
+    loading: {
+      title: (name: string) => `Finishing ${name}`,
+      detail: (done: number, total: number) => `${done} of ${total} cards looked up`,
+    },
+    error: { title: 'Card data can not update', detail: 'Showing saved info.', retry: 'Try again' },
+    notFoundBanner: {
+      title: (n: number) => `${n} ${n === 1 ? 'card was' : 'cards were'} not found`,
+      detail: (names: string) => `Check the spelling: ${names}`,
+    },
   },
   tour: {
     skip: 'Skip',
@@ -298,6 +340,8 @@ export const en = {
       binderRow: 'Binder row (dive plan)',
       listCard: 'List card (My lists)',
       listCardRename: 'List card, renaming',
+      cardTable: 'Card table (list review)',
+      statusPicker: 'Status picker',
       pageHeader: 'Page header',
       summaryBar: 'Next dive bar',
       emptyState: 'Empty state',

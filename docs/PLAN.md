@@ -62,14 +62,18 @@ interface Storage { get; put; delete; list }   // per collection; IndexedDB now,
 6. Scryfall connector with mocked-fetch tests (batch 75, fuzzy fallback, pagination, sets cache, pacing, resume).
 7. UI kit components and the `/kit` gallery (may split in two).
 8. Lists core (statuses, quantities, several lists) and My lists.
-9. List review, card status and bulk actions, card detail.
-10. Import flow (4 steps, wishlist variant, fix names, problem states).
-11. Dive plan, pull settings, binder groups, no-binder cards.
-12. Trip core and store dive: flip stops (Found +1, Finish binder, frozen order, Reopen).
-13. Show-staff stops, big-text view, end trip, trip summary, Buy the rest.
-14. Pages: Home, walkthrough and tour, About, Support, Privacy, app states.
-15. Offline service worker, install prompt, consent banner and GA4.
-16. QR hand-off and sample decks.
+9. Card data and list review (split from the original step 9, because the review screen needs real card data first):
+   card records saved on the device, loading with progress and retry, the engine run over a list to give each card its
+   target binder, and the review table with images, prices, sort, search and per-card status change.
+10. Bulk actions and filters on the review (select mode, set status, copy to list, remove, price and color filters), and
+    card detail (needs the "odds" levels, which the spec does not define yet).
+11. Import flow (4 steps, wishlist variant, fix names, problem states). Replaces the temporary paste box.
+12. Dive plan, pull settings, binder groups, no-binder cards.
+13. Trip core and store dive: flip stops (Found +1, Finish binder, frozen order, Reopen).
+14. Show-staff stops, big-text view, end trip, trip summary, Buy the rest.
+15. Pages: Home, walkthrough and tour, About, Support, Privacy, app states.
+16. Offline service worker, install prompt, consent banner and GA4.
+17. QR hand-off and sample decks.
 
 ## Decisions taken with the owner
 - Pull order: keep the spec's single order (set binders by copies, then newest, then name). The Balanced / Most cards /

@@ -12,6 +12,7 @@ export interface MenuItem {
   hint?: string;       // a line under the label, shown in the phone sheet
   onSelect: () => void;
   danger?: boolean;
+  checked?: boolean;   // set on every item to make a choice list: the current one shows a check mark
 }
 
 interface MenuListProps {
@@ -31,13 +32,17 @@ export function MenuList({ label, items, showHints = false, tabbable = false, on
         <li key={item.label} role="none">
           <button
             type="button"
-            role="menuitem"
+            role={item.checked === undefined ? 'menuitem' : 'menuitemradio'}
+            aria-checked={item.checked}
             tabIndex={tabbable ? 0 : -1}
             className={cx(styles.item, item.danger && styles.danger)}
             onClick={() => { item.onSelect(); onItemSelected?.(); }}
           >
-            {item.label}
-            {showHints && item.hint && <span className={styles.hint}>{item.hint}</span>}
+            <span>
+              {item.label}
+              {showHints && item.hint && <span className={styles.hint}>{item.hint}</span>}
+            </span>
+            {item.checked && <span aria-hidden="true" className={styles.check}>✓</span>}
           </button>
         </li>
       ))}
@@ -50,13 +55,15 @@ interface MenuProps {
   items: readonly MenuItem[];
   trigger?: ReactNode;         // defaults to the "⋯" icon
   sheetTitle?: string;         // when set, a phone opens the menu as a bottom sheet with this title
+  showHints?: boolean;         // show each item's hint under its label in the popup too (a sheet always does)
+  variant?: 'icon' | 'text';  // the trigger: a square icon button, or a button with words
 }
 
-const menuButtons = (root: ParentNode) => Array.from(root.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
+const menuButtons = (root: ParentNode) => Array.from(root.querySelectorAll<HTMLButtonElement>('[role^="menuitem"]'));
 
 // A button that opens a menu. Arrow keys move, Escape closes and returns to the button, a click outside closes.
 // On a phone, with a sheetTitle, the same items open in a bottom sheet with their hints and a Cancel button.
-export function Menu({ label, items, trigger = '⋯', sheetTitle }: MenuProps) {
+export function Menu({ label, items, trigger = '⋯', sheetTitle, showHints = false, variant = 'icon' }: MenuProps) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const popupId = useId();
@@ -90,12 +97,18 @@ export function Menu({ label, items, trigger = '⋯', sheetTitle }: MenuProps) {
 
   return (
     <div ref={wrapRef} className={styles.wrap}>
-      <Button variant="icon" quiet aria-label={label} aria-haspopup="menu" aria-expanded={open} aria-controls={open && !asSheet ? popupId : undefined} onClick={() => setOpen(o => !o)}>
-        {trigger}
-      </Button>
+      {variant === 'icon' ? (
+        <Button variant="icon" quiet aria-label={label} aria-haspopup="menu" aria-expanded={open} aria-controls={open && !asSheet ? popupId : undefined} onClick={() => setOpen(o => !o)}>
+          {trigger}
+        </Button>
+      ) : (
+        <Button variant="secondary" aria-label={label} aria-haspopup="menu" aria-expanded={open} aria-controls={open && !asSheet ? popupId : undefined} onClick={() => setOpen(o => !o)}>
+          {trigger}
+        </Button>
+      )}
       {open && !asSheet && (
         <div id={popupId} className={styles.popup}>
-          <MenuList label={label} items={items} onKeyDown={onKeyDown} onItemSelected={() => close(true)} />
+          <MenuList label={label} items={items} showHints={showHints} onKeyDown={onKeyDown} onItemSelected={() => close(true)} />
         </div>
       )}
       {asSheet && (

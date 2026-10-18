@@ -18,9 +18,12 @@
 }
 .item {
   font: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
   font-size: var(--text-body-sm);
   font-weight: var(--weight-bold);
-  display: block;
   width: 100%;
   text-align: left;
   padding: 0.6875rem var(--space-3);
@@ -34,6 +37,7 @@
 }
 .item:hover, .item:focus-visible { background: var(--color-floor2); }
 .danger { color: var(--color-error); }
+.check { color: var(--color-accent); flex: 0 0 auto; }
 .hint {
   display: block;
   margin-top: 0.125rem;

@@ -1,25 +1,11 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../App';
-import { MAX_LISTS, WISHLIST_ID, addEntries, createList, setEntryStatus } from '../../core/lists';
-import type { CardList } from '../../core/lists';
+import { MAX_LISTS, WISHLIST_ID } from '../../core/lists';
 import { ListsRepository, MemoryStorage } from '../../storage';
 import { copy } from '../copy/en';
-
-const T0 = new Date('2026-10-17T12:00:00');
-const daysAgo = (n: number) => new Date(T0.getTime() - n * 24 * 3600 * 1000);
-
-type Spec = { id: string; name: string; kind?: 'deck' | 'wishlist'; created?: Date; updated?: Date; on?: boolean; cards?: [name: string, quantity?: number, status?: 'needed' | 'proxy' | 'in_collection'][] };
-
-function makeList(spec: Spec): CardList {
-  const created = spec.created ?? T0;
-  let list = createList({ id: spec.id, kind: spec.kind ?? 'deck', name: spec.name }, created);
-  for (const [name, quantity = 1, status = 'needed'] of spec.cards ?? []) {
-    list = addEntries(list, [{ cardKey: name.toLowerCase(), name, quantity }], created).list;
-    if (status !== 'needed') list = setEntryStatus(list, name.toLowerCase(), status, created);
-  }
-  return { ...list, updatedAt: (spec.updated ?? created).toISOString(), inNextDive: spec.on ?? true };
-}
+import { T0, daysAgo, makeList } from '../testkit';
+import type { Spec } from '../testkit';
 
 function setup(specs: Spec[] = [], options: { persistent?: boolean; path?: string } = {}) {
   const storage = new MemoryStorage();
@@ -489,43 +475,5 @@ describe('My lists: saving on this device', () => {
     first.unmount();
     render(<App storage={first.storage} clock={() => T0} />);
     expect(await screen.findByRole('link', { name: 'Kept' })).toBeTruthy();
-  });
-});
-
-describe('The list view stand-in', () => {
-  it('shows the list\'s cards with their quantity and status', async () => {
-    setup(TWO_DECKS_AND_WISHLIST, { path: '/lists/a' });
-    expect(await screen.findByRole('heading', { level: 1, name: 'Lifegain Commander' })).toBeTruthy();
-    expect(screen.getByText(copy.listView.counts(2, 3))).toBeTruthy();
-    const rows = screen.getAllByRole('listitem');
-    expect(rows).toHaveLength(3);
-    expect(within(rows[1]).getByText('Soul Warden')).toBeTruthy();
-    expect(within(rows[1]).getByText('×2')).toBeTruthy();
-    expect(within(rows[2]).getByText(copy.status.proxy)).toBeTruthy();
-    expect(within(rows[0]).getByText(copy.status.needed)).toBeTruthy();
-  });
-
-  it('is reached from Open on My lists, and goes back', async () => {
-    setup(TWO_DECKS_AND_WISHLIST);
-    fireEvent.click(within(await screen.findByRole('link', { name: 'Zombie Tribal' }).then(a => a.closest('li') as HTMLElement)).getByRole('link', { name: copy.listCard.open }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Zombie Tribal' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('link', { name: copy.listView.back }));
-    expect(await screen.findByRole('heading', { level: 1, name: copy.myLists.title })).toBeTruthy();
-  });
-
-  it('says so for a list that is not there', async () => {
-    setup(TWO_DECKS_AND_WISHLIST, { path: '/lists/nope' });
-    expect(await screen.findByRole('heading', { name: copy.listView.notFoundTitle })).toBeTruthy();
-    expect(screen.getByRole('link', { name: copy.listView.back })).toBeTruthy();
-  });
-
-  it('says so for a list with no cards', async () => {
-    setup([{ id: 'e', name: 'Empty deck' }], { path: '/lists/e' });
-    expect(await screen.findByText(copy.listView.emptyList)).toBeTruthy();
-  });
-
-  it('shows a loading placeholder first', () => {
-    setup(TWO_DECKS_AND_WISHLIST, { path: '/lists/a' });
-    expect(screen.getByRole('status', { name: copy.loading })).toBeTruthy();
   });
 });

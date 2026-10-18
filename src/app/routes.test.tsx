@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Home } from './screens/Home';
 import { Kit } from './screens/Kit';
-import { ListView } from './screens/ListView';
+import { ListReview } from './screens/ListReview';
 import { MyLists } from './screens/MyLists';
 import { NotFound } from './screens/NotFound';
 import { matchRoute } from './routes';
@@ -15,7 +15,7 @@ describe('matchRoute', () => {
 
   it('passes a path part to the screen as a param', () => {
     const match = matchRoute('/lists/abc-123');
-    expect(match.screen).toBe(ListView);
+    expect(match.screen).toBe(ListReview);
     expect(match.params).toEqual({ id: 'abc-123' });
   });
 

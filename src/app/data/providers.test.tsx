@@ -92,6 +92,24 @@ describe('ListsProvider', () => {
     expect(result.current.lists.map(l => l.id)).toEqual([WISHLIST_ID]);
   });
 
+  it('sets the status of a card, saves it and marks the list updated', async () => {
+    const { result } = renderHook(() => useLists(), { wrapper: wrap(new MemoryStorage(), () => 'deck-1') });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => { await result.current.createDeck('Deck', [{ cardKey: 'sol', name: 'Sol Ring', quantity: 1 }]); });
+    await act(async () => { await result.current.setStatus('deck-1', 'sol', 'proxy'); });
+    const deck = result.current.lists.find(l => l.id === 'deck-1')!;
+    expect(deck.entries[0].status).toBe('proxy');
+    expect(deck.updatedAt).toBe(T0.toISOString());
+  });
+
+  it('ignores a status change for a list or card that is not there', async () => {
+    const { result } = renderHook(() => useLists(), { wrapper: wrap(new MemoryStorage(), () => 'deck-1') });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => { await result.current.createDeck('Deck', [{ cardKey: 'sol', name: 'Sol Ring', quantity: 1 }]); });
+    await act(async () => { await result.current.setStatus('nope', 'sol', 'proxy'); await result.current.setStatus('deck-1', 'nope', 'proxy'); });
+    expect(result.current.lists.find(l => l.id === 'deck-1')!.entries[0].status).toBe('needed');
+  });
+
   it('ignores an edit to a list that is gone', async () => {
     const { result } = renderHook(() => useLists(), { wrapper: wrap(new MemoryStorage()) });
     await waitFor(() => expect(result.current.ready).toBe(true));

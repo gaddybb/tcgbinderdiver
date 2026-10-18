@@ -1,9 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
-  WISHLIST_ID, addEntries, clearEntries, renameList, setInNextDive as withInNextDive,
+  WISHLIST_ID, addEntries, clearEntries, renameList, setEntryStatus, setInNextDive as withInNextDive,
 } from '../../core/lists';
 import type { CardList, IncomingEntry } from '../../core/lists';
+import type { CardStatus } from '../../core/status';
 import { ListLimitError, ListsRepository } from '../../storage';
 import { useStorage } from './StorageProvider';
 
@@ -23,6 +24,7 @@ export interface ListsApi {
   remove: (id: string) => Promise<void>;
   clearWishlist: () => Promise<void>;
   setInNextDive: (id: string, on: boolean) => Promise<void>;
+  setStatus: (listId: string, cardKey: string, status: CardStatus) => Promise<void>;
 }
 
 const ListsContext = createContext<ListsApi | null>(null);
@@ -111,6 +113,7 @@ export function ListsProvider({ children, clock = () => new Date(), makeId }: Li
 
       clearWishlist: () => edit(WISHLIST_ID, list => clearEntries(list, now())),
       setInNextDive: (id, on) => edit(id, list => withInNextDive(list, on)),
+      setStatus: (listId, cardKey, status) => edit(listId, list => setEntryStatus(list, cardKey, status, now())),
     };
   }, [lists, ready, storage.persistent, repo, refresh, now]);
 
