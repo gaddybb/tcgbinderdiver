@@ -21,9 +21,20 @@ This is not legal advice.
 - Other games (Pokemon, Lorcana, Yu-Gi-Oh) have their own publishers and policies; read each before adding a game. Don't promote other games on Magic pages.
 
 ## Scryfall
-- Request from each user's browser, paced (about 100 ms apart), cached; send Accept and User-Agent headers.
-- Don't put Scryfall data behind a paywall. Show images unmodified. Credit Scryfall on every page.
-- See `engine/scryfall-integration.md` for the calls. Verify current terms at https://scryfall.com/docs/api.
+Changed 2026-10-17 by the owner (see `docs/DATA-PLAN.md`): card data now comes from Scryfall's daily bulk file instead of
+per-card API calls. Terms below were read from scryfall.com/docs/api on that date.
+- **Card data** comes from Scryfall's bulk file (Default Cards), slimmed at build time into static files on our own site.
+  The live API is used only for what bulk data can't do: cards newer than the last build and typo matching.
+- **Live API calls** come from each user's browser, paced (about 100 ms apart) and cached. Send an `Accept` header and
+  **keep the browser's own `User-Agent`** (Scryfall: "keep the browser's User-Agent intact"); never set a custom one from
+  browser code. Build scripts send an accurate app `User-Agent` such as `BinderDiver/1.0` and `Accept`.
+- **Never proxy Scryfall's API, and never simply repackage or republish their data.** Our software must create additional
+  value for players (the routing). The slimmed files are app assets, not a public data product or API.
+- **Prices are estimates.** Scryfall: bulk prices "should be considered dangerously stale after 24 hours" and are only for
+  trends or a general estimate. Refresh prices at least daily, show when they were last updated, and never present them as exact.
+- Don't put Scryfall data behind a paywall. Show images unmodified (don't cover the copyright or artist line, distort, blur
+  or crop). Credit Scryfall on every page. Don't use the Scryfall name or logo in a way that implies endorsement.
+- See `engine/scryfall-integration.md` for the data and calls. Verify current terms at https://scryfall.com/docs/api.
 
 ## Affiliate and sponsors
 - TCGplayer's program runs through Impact. First-click attribution, 48-hour window, whole cart credited, payouts about 45 days after month end (as stated by TCGplayer to the owner).
