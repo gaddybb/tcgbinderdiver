@@ -9,7 +9,7 @@ import { useLists } from '../../data/ListsProvider';
 import { joinNames } from '../../format';
 import { CardDetailShell } from './CardDetailShell';
 import { useDetailModel } from './model';
-import { AlsoTry, FirstPlace, Heading, Picture, Printings, subtitleFor } from './Sections';
+import { AlsoTry, BuyButton, FirstPlace, Heading, Picture, Printings, subtitleFor } from './Sections';
 import styles from './CardDetail.module.css';
 
 const t = copy.cardDetail;
@@ -57,7 +57,7 @@ export function ListCardDetail({ list, cardKey, keys, records, onOpen, onClose }
       onClose={onClose}
       onPrevious={at >= 0 ? go(at - 1) : undefined}
       onNext={at >= 0 ? go(at + 1) : undefined}
-      footer={<Button variant="secondary" onClick={() => { void remove(); }}>{t.removeFromList}</Button>}
+      footer={<><Button variant="secondary" onClick={() => { void remove(); }}>{t.removeFromList}</Button><BuyButton name={model?.name ?? entry.name} /></>}
     >
       {titleId => (
         <>

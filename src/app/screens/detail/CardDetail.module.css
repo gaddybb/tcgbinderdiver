@@ -46,6 +46,7 @@
   background: var(--color-ground);
   border-top: var(--border-thin) solid var(--color-divider);
 }
+.buy { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
 .footerGrow { flex: 1 1 0; }
 
 .picture { display: flex; justify-content: center; }

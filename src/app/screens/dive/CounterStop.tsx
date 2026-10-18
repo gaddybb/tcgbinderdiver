@@ -121,7 +121,11 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
             const gone = trip.notAvailable.includes(row.key);
             return (
               <li key={row.key} className={cx(styles.counterRow, (found || gone) && styles.counterRowGone)}>
-                <HoverPreview src={row.image}><CardThumb edge={row.edge} src={row.thumb} /></HoverPreview>
+                <HoverPreview src={row.image}>
+                  <button type="button" className={styles.openThumb} aria-label={copy.cardTile.openCard(row.name)} onClick={() => onOpen(row.key, rows.map(r => r.key))}>
+                    <CardThumb edge={row.edge} src={row.thumb} />
+                  </button>
+                </HoverPreview>
                 <div className={styles.counterText}>
                   <div className={styles.counterName}>{row.name}{row.part.copies > 1 && ` ×${row.part.copies}`}</div>
                   <div className={styles.counterSub}>{row.sub}{have > 0 && !found && ` · ${t.foundCount(have, row.part.copies)}`}</div>

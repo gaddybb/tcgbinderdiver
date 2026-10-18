@@ -2,7 +2,9 @@
 import { massEntryText, tripSummary } from '../../../core/trip';
 import { Banner, Button, EmptyState, PageHeader, SkeletonRow, useToast } from '../../components';
 import { copyText } from '../../clipboard';
-import { NEARBY_STORES_URL } from '../../links';
+import { MASS_ENTRY_URL } from '../../../core/buy';
+import { isOn } from '../../flags';
+import { NEARBY_STORES_URL, buyUrl } from '../../links';
 import { copy } from '../../copy/en';
 import { useTrip } from '../../data/TripProvider';
 import { navigate } from '../../router';
@@ -37,6 +39,10 @@ export function TripSummary() {
     analytics.track('buy_rest_tapped', { cards: summary.leftCopies });
     const ok = await copyText(massEntryText(summary.left));
     toast.show({ message: ok ? t.buy.copied : t.buy.copyFailed });
+  };
+  const buyOnTcgplayer = async () => {
+    await copyLeft();
+    window.open(buyUrl(MASS_ENTRY_URL), '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -79,8 +85,11 @@ export function TripSummary() {
             <h2 className={styles.stopTitle}>{t.buy.title}</h2>
             <p className={styles.note}>{t.buy.detail(summary.leftCopies)}</p>
             <div>
-              <Button onClick={() => { void copyLeft(); }}>{t.buy.copy(summary.leftCopies)}</Button>
+              <Button onClick={() => { void copyLeft(); }}>{t.buy.copy(summary.leftCopies)}</Button>{' '}
+              <Button variant="secondary" onClick={() => { void buyOnTcgplayer(); }}>{t.buy.buyOnTcgplayer}</Button>
             </div>
+            <p className={styles.note}>{t.buy.buyNote}</p>
+            {isOn('affiliateLinks') && <p className={styles.note}>{copy.affiliate.note}</p>}
           </section>
         )}
       </div>

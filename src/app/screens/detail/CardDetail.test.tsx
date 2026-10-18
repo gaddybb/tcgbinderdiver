@@ -128,6 +128,22 @@ describe('Card detail from the list review', () => {
     await waitFor(async () => expect((await savedList(storage, 'a')).entries).toHaveLength(2));
   });
 
+  it('has a Buy on TCGplayer button that opens a search for the card in a new tab', async () => {
+    const opened: unknown[][] = [];
+    const original = window.open;
+    window.open = ((...args: unknown[]) => { opened.push(args); return null; }) as typeof window.open;
+    try {
+      await setup('/lists/a', [DECK]);
+      fireEvent.click(await screen.findByRole('button', { name: copy.cardTile.openCard('Soul Warden') }));
+      const panel = within(await dialog());
+      expect(panel.queryByText(copy.affiliate.note)).toBeNull();
+      fireEvent.click(panel.getByRole('button', { name: t.buyLabel('Soul Warden') }));
+      expect(opened).toEqual([['https://www.tcgplayer.com/search/magic/product?q=Soul%20Warden&productLineName=magic&view=grid', '_blank', 'noopener,noreferrer']]);
+    } finally {
+      window.open = original;
+    }
+  });
+
   it('names every list the card is on', async () => {
     await setup('/lists/a', [ELVES, WISH]);
     fireEvent.click(await screen.findByRole('button', { name: copy.cardTile.openCard('Llanowar Elves') }));

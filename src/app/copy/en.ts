@@ -440,7 +440,7 @@ export const en = {
     copies: (n: number) => `×${n}`,
     backToLists: 'Back to my lists',
     newTrip: 'Start a new trip',
-    buy: { title: 'Buy the rest', detail: (n: number) => `Copy your ${n} ${n === 1 ? 'card' : 'cards'} in the format TCGplayer Mass Entry reads.`, copy: (n: number) => `Copy ${n} ${n === 1 ? 'card' : 'cards'}`, copied: 'Copied. Paste it into TCGplayer Mass Entry.', copyFailed: 'Could not copy. Select the list and copy it yourself.' },
+    buy: { title: 'Buy the rest', detail: (n: number) => `Copy your ${n} ${n === 1 ? 'card' : 'cards'} in the format TCGplayer Mass Entry reads.`, copy: (n: number) => `Copy ${n} ${n === 1 ? 'card' : 'cards'}`, copied: 'Copied. Paste it into TCGplayer Mass Entry.', copyFailed: 'Could not copy. Select the list and copy it yourself.', buyOnTcgplayer: 'Buy on TCGplayer', buyNote: 'Your list is copied first. Paste it into Mass Entry on TCGplayer, which opens in a new tab.' },
     noTrip: { title: 'No trip to show', text: 'Start a store dive from your dive plan.', action: 'Go to your dive plan' },
     stores: {
       title: 'Try another store nearby',
@@ -564,6 +564,8 @@ export const en = {
       detail: (names: string) => `Check the spelling: ${names}`,
     },
   },
+  // Shown beside buy buttons while affiliate links are on (flags.ts)
+  affiliate: { note: 'Affiliate link: Binder Diver may earn a small commission at no extra cost to you.' },
   // Card detail, from the list review and the store dive (reference/design: CardDetailDesk, CardDetailPhone, CardDetailDivePhone, CardSplitPhone)
   cardDetail: {
     close: 'Close card detail',
@@ -610,6 +612,8 @@ export const en = {
       listDone: 'All found',
     },
     removeFromList: 'Remove from list',
+    buy: 'Buy on TCGplayer',
+    buyLabel: (name: string) => `Buy ${name} on TCGplayer (opens in a new tab)`,
     removed: (name: string, list: string) => `${name} removed from ${list}`,
     quantityChanged: (name: string, quantity: number) => `${name}: ${quantity} ${quantity === 1 ? 'copy' : 'copies'}`,
   },

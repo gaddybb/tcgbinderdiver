@@ -9,7 +9,7 @@ import { Button, ProgressBar } from '../../components';
 import { copy } from '../../copy/en';
 import { CardDetailShell } from './CardDetailShell';
 import { useDetailModel } from './model';
-import { AlsoTry, FirstPlace, Heading, Picture, Printings, subtitleFor } from './Sections';
+import { AlsoTry, BuyButton, FirstPlace, Heading, Picture, Printings, subtitleFor } from './Sections';
 import styles from './CardDetail.module.css';
 
 const t = copy.cardDetail;
@@ -71,6 +71,7 @@ export function StoreCardDetail({ stop, cardKey, keys, records, parts, trip, onO
           <Picture name={name} model={model} />
           <Heading id={titleId} name={name} subtitle={subtitleFor(model)} />
           {many && <ProgressBar value={found} max={part.copies} label={t.progressLabel} caption={t.progress(found, part.copies)} />}
+          <BuyButton name={name} />
           {part.parts.length > 1 && (
             <section className={styles.split} aria-labelledby="split-title">
               <h3 id="split-title" className={styles.sectionTitle}>{t.split.title(part.parts.length)}</h3>

@@ -2,11 +2,14 @@
 // Places are shown in the engine's order and nothing else: no odds, no chances.
 import type { Place } from '../../../core/cardDetail';
 import type { Finish } from '../../../core/engine/engine';
-import { ListRow, Rank } from '../../components';
+import { Button, ListRow, Rank } from '../../components';
 import { CardImage } from '../../components/CardImage';
 import { copy } from '../../copy/en';
 import { cx } from '../../cx';
 import { formatUsd } from '../../format';
+import { isOn } from '../../flags';
+import { buyUrl } from '../../links';
+import { cardSearchUrl } from '../../../core/buy';
 import { useLayout } from '../../layout/useLayout';
 import type { DetailModel } from './model';
 import styles from './CardDetail.module.css';
@@ -16,6 +19,16 @@ const t = copy.cardDetail;
 const setLabel = (setCode: string, number: string) => `${setCode.toUpperCase()} ${number}`;
 const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 const finishNote = (finish: Finish): string | null => (finish === 'nonfoil' ? null : t.finish[finish].toLowerCase());
+
+// Opens the card's TCGplayer search in a new tab, through the affiliate address once there is one.
+export function BuyButton({ name }: { name: string }) {
+  return (
+    <span className={styles.buy}>
+      <Button variant="secondary" aria-label={t.buyLabel(name)} onClick={() => { window.open(buyUrl(cardSearchUrl(name)), '_blank', 'noopener,noreferrer'); }}>{t.buy}</Button>
+      {isOn('affiliateLinks') && <span className={styles.note}>{copy.affiliate.note}</span>}
+    </span>
+  );
+}
 
 export function Picture({ name, model }: { name: string; model: DetailModel | null }) {
   const wide = useLayout() !== 'phone';
