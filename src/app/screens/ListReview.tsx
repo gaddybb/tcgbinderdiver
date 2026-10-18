@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { typicalOnline } from '../../core/cards';
 import type { CardRecord } from '../../core/cards';
-import { V1_STORE } from '../../core/engine/engine';
 import { PRICE_FILTERS, filterCards } from '../../core/filter';
 import type { PriceFilter } from '../../core/filter';
 import { MAX_CARDS_PER_LIST, binderCounts, cardKeysInBinder, listCounts } from '../../core/lists';
@@ -20,6 +19,7 @@ import type { ColorCategory } from '../components';
 import { copy } from '../copy/en';
 import { useCardData, useCatalogInfo, useConnector } from '../data/CardDataProvider';
 import { useLists } from '../data/ListsProvider';
+import { useStoreSettings } from '../data/StoreSettingsProvider';
 import { formatDate, formatUsd } from '../format';
 import { useLayout } from '../layout/useLayout';
 import styles from './Screen.module.css';
@@ -69,11 +69,12 @@ function ReviewBody({ list }: { list: CardList }) {
   const cards = useMemo(() => list.entries.map(e => ({ cardKey: e.cardKey, name: e.name })), [list.entries]);
   const data = useCardData(cards, lists.now);
   const catalog = useCatalogInfo();
+  const store = useStoreSettings();
 
   // Where each card is planned to be found, for this list on its own. (The combined plan across lists comes with the dive plan.)
   const { targets } = useMemo(
-    () => planLists([{ ...list, inNextDive: true }], data.records, V1_STORE, lists.now()),
-    [list, data.records, lists],
+    () => planLists([{ ...list, inNextDive: true }], data.records, store.profile, lists.now()),
+    [list, data.records, store.profile, lists],
   );
 
   const rows: Row[] = list.entries.map(entry => {

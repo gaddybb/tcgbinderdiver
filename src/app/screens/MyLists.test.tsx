@@ -165,8 +165,14 @@ describe('My lists: the next dive', () => {
     expect(await screen.findByText(copy.myLists.nextNone)).toBeTruthy();
   });
 
-  it('keeps Start store dive off until the store dive exists', async () => {
+  it('opens the dive plan from Start store dive', async () => {
     setup(TWO_DECKS_AND_WISHLIST);
+    fireEvent.click(await screen.findByRole('button', { name: copy.myLists.startDive }));
+    expect(window.location.pathname).toBe('/plan');
+  });
+
+  it('keeps Start store dive off when no list is turned on', async () => {
+    setup(TWO_DECKS_AND_WISHLIST.map(s => ({ ...s, on: false })));
     expect((await screen.findByRole('button', { name: copy.myLists.startDive }) as HTMLButtonElement).disabled).toBe(true);
   });
 });
