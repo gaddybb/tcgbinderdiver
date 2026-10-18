@@ -35,4 +35,13 @@ export type CardRoute =
 
 export interface NeededCard { key: string; card: CardInput; copies: number; }
 export interface PlanStop { stop: Stop; cards: { key: string; copies: number; candidate: Candidate }[]; copies: number; value: number; }
-export interface Plan { stops: PlanStop[]; assignment: Map<string, string>; noStop: string[]; skipped: string[]; routes: Map<string, CardRoute>; }
+export interface Plan {
+  stops: PlanStop[]; assignment: Map<string, string>; noStop: string[]; skipped: string[]; routes: Map<string, CardRoute>;
+  // Every stop that ever held a card, in walking order. Frozen for the trip, so a reopened stop returns to its place.
+  order: string[];
+  // Per card, the stops it left unfound when they were finished. Reopening a stop brings those cards back.
+  left: Map<string, string[]>;
+}
+
+export type PullVerdict = 'worth_a_pull' | 'buy_online' | 'show_staff';
+export interface PullSettings { worthPullMinCards: number; worthPullMinUsd: number; }
