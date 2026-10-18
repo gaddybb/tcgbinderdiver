@@ -23,6 +23,11 @@ export class CardsRepository {
     return found;
   }
 
+  // Forgets saved card data, so the next load fetches it again.
+  async deleteMany(keys: readonly string[]): Promise<void> {
+    await Promise.all(keys.map(key => this.storage.delete('cards', key)));
+  }
+
   async put(record: CardRecord): Promise<void> {
     await this.storage.put('cards', record.key, record);
   }

@@ -53,7 +53,10 @@ export async function loadCards(options: LoadCardsOptions): Promise<LoadCardsRes
   const records = await repo.getMany([...wanted.keys()]);
   options.onCached?.(records);
 
-  const missing = [...wanted.values()].filter(card => { const saved = records.get(card.cardKey); return !saved || isStale(saved, now); });
+  // With basics on the hunt, a basic land saved with no printings (saved while they were off) is fetched again so it can be planned.
+  const needsFetch = (saved: CardRecord | undefined) =>
+    !saved || isStale(saved, now) || (options.includeBasics === true && saved.printings.length === 0 && isBasicLand(saved.summary.typeLine));
+  const missing = [...wanted.values()].filter(card => needsFetch(records.get(card.cardKey)));
   const progress: LoadProgress = { total: missing.length, done: 0 };
   options.onProgress?.({ ...progress });
   const result: LoadCardsResult = { records, notFound: [], failed: false, aborted: false };
