@@ -12,6 +12,9 @@ export type {
 };
 export { WEIGHTS } from './weights';
 export { V1_STORE } from './storeProfile';
+export { DEFAULT_PULL_SETTINGS } from './pullSettings';
+export { pullVerdict } from './pullVerdict';
+export type { PullSettings, PullVerdict } from './types';
 
 const MAIN_SET_TYPES = new Set(['core', 'expansion', 'draft_innovation', 'masters']);
 const SPECIAL_SET_TYPES = new Set(['box', 'masterpiece', 'promo', 'memorabilia', 'funny', 'token']);
@@ -166,7 +169,7 @@ export function buildPlan(needed: NeededCard[], store: StoreProfile, now: Date, 
   return assemble(needed, chosen, routes, noStop, skipped);
 }
 
-function assemble(needed: NeededCard[], chosen: Map<string, RankedStop>, routes: Map<string, CardRoute>, noStop: string[], skipped: string[], frozenOrder?: string[]): Plan {
+function assemble(needed: NeededCard[], chosen: Map<string, RankedStop>, routes: Map<string, CardRoute>, noStop: string[], skipped: string[], frozenOrder?: string[], left: Map<string, string[]> = new Map()): Plan {
   const stops = new Map<string, PlanStop>();
   const assignment = new Map<string, string>();
   for (const n of needed) {
@@ -187,23 +190,53 @@ function assemble(needed: NeededCard[], chosen: Map<string, RankedStop>, routes:
       (a.stop.kind === 'set_binder' ? (b.copies - a.copies) || (Date.parse(b.stop.releasedAt ?? '') || 0) - (Date.parse(a.stop.releasedAt ?? '') || 0) : 0) ||
       a.stop.label.localeCompare(b.stop.label));
   }
-  return { stops: list, assignment, noStop, skipped, routes };
+  // A stop that gains cards later is appended, so it keeps its place for the rest of the trip.
+  const order = [...(frozenOrder ?? []), ...list.map(s => s.stop.id).filter(id => !(frozenOrder ?? []).includes(id))];
+  return { stops: list, assignment, noStop, skipped, routes, order, left };
 }
 
 // Finish a stop mid-trip: only that stop's cards move, to their next unfinished stop. Order stays frozen.
 export function finishStop(plan: Plan, needed: NeededCard[], stopId: string, finished: Set<string>, found: Set<string>): Plan {
   const nowFinished = new Set(finished); nowFinished.add(stopId);
-  const frozen = plan.stops.map(s => s.stop.id);
   const chosen = new Map<string, RankedStop>();
   const noStop = [...plan.noStop];
+  const left = new Map(plan.left);
   for (const n of needed) {
     const cur = plan.assignment.get(n.key);
     if (!cur) continue;
     const r = plan.routes.get(n.key) as { status: 'routed'; ranked: RankedStop[] };
     if (cur !== stopId || found.has(n.key)) { chosen.set(n.key, r.ranked.find(x => x.stop.id === cur)!); continue; }
+    left.set(n.key, [...(left.get(n.key) ?? []), stopId]);   // remembered so Reopen can bring it back
     const next = r.ranked.find(x => !nowFinished.has(x.stop.id));
     if (next) chosen.set(n.key, next); else noStop.push(n.key);
   }
   for (const n of needed) if (found.has(n.key) && plan.assignment.get(n.key) === stopId) chosen.delete(n.key);   // found cards leave the plan
-  return assemble(needed.filter(n => chosen.has(n.key)), chosen, plan.routes, noStop, plan.skipped, frozen);
+  return assemble(needed.filter(n => chosen.has(n.key)), chosen, plan.routes, noStop, plan.skipped, plan.order, left);
+}
+
+// Reopen a finished stop: the cards that left it unfound come back (from a later stop or from no_stop).
+// Found cards stay found, other cards stay where they are, and stop order stays frozen.
+export function reopenStop(plan: Plan, needed: NeededCard[], stopId: string, finished: Set<string>, found: Set<string>): Plan {
+  if (!finished.has(stopId)) return plan;
+  const stillFinished = new Set(finished); stillFinished.delete(stopId);
+  const chosen = new Map<string, RankedStop>();
+  const restored = new Set<string>();
+  const left = new Map(plan.left);
+  for (const n of needed) {
+    const r = plan.routes.get(n.key);
+    if (!r || r.status !== 'routed') continue;
+    const cur = plan.assignment.get(n.key);
+    const stops = left.get(n.key) ?? [];
+    if (!found.has(n.key) && stops.includes(stopId)) {
+      const next = r.ranked.find(x => !stillFinished.has(x.stop.id));
+      if (next) {
+        chosen.set(n.key, next); restored.add(n.key);
+        left.set(n.key, stops.filter(id => id !== stopId));
+        continue;
+      }
+    }
+    if (cur) chosen.set(n.key, r.ranked.find(x => x.stop.id === cur)!);
+  }
+  const noStop = plan.noStop.filter(k => !restored.has(k));
+  return assemble(needed.filter(n => chosen.has(n.key)), chosen, plan.routes, noStop, plan.skipped, plan.order, left);
 }
