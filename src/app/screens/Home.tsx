@@ -5,6 +5,7 @@ import { copy } from '../copy/en';
 import { useLayout } from '../layout/useLayout';
 import { navigate } from '../router';
 import { setImportText } from './import/handoff';
+import { SampleDeckButton } from './pages/SampleDeckButton';
 import styles from './pages/Pages.module.css';
 
 const t = copy.homePage;
@@ -29,6 +30,7 @@ export function Home() {
         <form className={styles.form} onSubmit={e => { e.preventDefault(); plan(); }}>
           <Input label={t.formLabel} multiline rows={4} placeholder={t.placeholder} value={text} onChange={e => setText(e.target.value)} />
           <Button size="lg" onClick={plan}>{t.plan}</Button>
+          <SampleDeckButton size="lg" />
         </form>
         <p className={styles.text}>{t.firstDive} <StandaloneLink to="/walkthrough">{t.takeWalkthrough}</StandaloneLink></p>
       </section>

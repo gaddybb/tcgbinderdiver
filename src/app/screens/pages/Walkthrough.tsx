@@ -4,6 +4,7 @@ import { copy } from '../../copy/en';
 import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
 import { TourDock } from '../tour/TourDock';
+import { SampleDeckButton } from './SampleDeckButton';
 import { PageIntro } from './PageParts';
 import styles from './Pages.module.css';
 
@@ -44,6 +45,7 @@ export function Walkthrough() {
         <h2 className={styles.title}>{t.readyTitle}</h2>
         <div className={styles.actions}>
           <Button size="lg" onClick={() => navigate('/import')}>{t.plan}</Button>
+          <SampleDeckButton size="lg" />
           <Button variant="secondary" size="lg" onClick={() => setReplay(true)}>{t.replay}</Button>
         </div>
       </section>

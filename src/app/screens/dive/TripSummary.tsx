@@ -7,12 +7,15 @@ import { useTrip } from '../../data/TripProvider';
 import { navigate } from '../../router';
 import screen from '../Screen.module.css';
 import styles from './StoreDive.module.css';
+import { InstallBanner } from './InstallBanner';
+import { useAnalytics } from '../../analytics/AnalyticsProvider';
 import { useTripPlan } from './useTripPlan';
 
 const t = copy.tripEnd;
 
 export function TripSummary() {
   const toast = useToast();
+  const analytics = useAnalytics();
   const { clear } = useTrip();
   const { ready, trip, cards, plan, data } = useTripPlan();
 
@@ -30,6 +33,7 @@ export function TripSummary() {
   const loading = data.status === 'loading' && data.progress.total > 0;
 
   const copyLeft = async () => {
+    analytics.track('buy_rest_tapped', { cards: summary.leftCopies });
     const ok = await copyText(massEntryText(summary.left));
     toast.show({ message: ok ? t.buy.copied : t.buy.copyFailed });
   };
@@ -42,6 +46,7 @@ export function TripSummary() {
       />
       <div className={screen.stack}>
         {loading && <Banner tone="info" title={copy.storeDive.loading(data.progress.done, data.progress.total)} />}
+        <InstallBanner />
 
         <section className={styles.rows} aria-label={summary.left.length > 0 ? t.left(summary.leftCopies) : t.nothingLeft}>
           <p className={styles.counterName}>{summary.left.length > 0 ? t.left(summary.leftCopies) : t.nothingLeft}</p>

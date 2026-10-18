@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Binder Diver">
+  <rect width="64" height="64" rx="14" fill="#172a35"/>
+  <circle cx="32" cy="28" r="22" fill="#c8a96a"/>
+  <circle cx="32" cy="29" r="12" fill="#172a35" stroke="#8e7442" stroke-width="3"/>
+  <path d="M20 29h24M32 17v24" stroke="#8e7442" stroke-width="2"/>
+  <path d="M12 50h40l-4 10H16z" fill="#a98d55"/>
+</svg>

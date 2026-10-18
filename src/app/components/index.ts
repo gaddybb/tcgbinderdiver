@@ -17,6 +17,7 @@ export { COLOR_CATEGORIES, isColorCategory } from './colors';
 export type { ColorCategory } from './colors';
 export { Dialog, DialogPanel } from './Dialog';
 export { EmptyState } from './EmptyState';
+export { HoverPreview } from './HoverPreview';
 export { Input } from './Input';
 export { ListCard } from './ListCard';
 export { ListRow, Rank } from './ListRow';

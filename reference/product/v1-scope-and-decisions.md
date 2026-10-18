@@ -34,11 +34,11 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 - [x] One Finish binder action: unfound copies move to each card's next stop; stop order stays frozen all trip; Reopen a finished stop from the picker.
 - [x] Show-staff stops (Display case, Ask an associate): list sorted A to Z, big names, Found or Not available per card, "likely in value binders / bulk boxes" hints, big-text view to hand over the phone. Not available cards go to Buy the rest.
 - [ ] End trip confirmation; trip summary; Buy the rest (copy leftover list in TCGplayer Mass Entry format); nearby stores with a map; Back to my lists; Start a new trip (resets stops).
-- [ ] QR hand-off from desktop to phone: the list travels inside the link until accounts exist.
+- [x] QR hand-off from desktop to phone: the list travels inside the link until accounts exist.
 
 ### Pages, states and trust
 - [x] Home with game theming (Magic only live; others "coming"), walkthrough with FAQ, first-time tour (welcome plus three tips, replayable), About, Support (Ko-fi), Privacy.
-- [ ] App states: first visit, loading, nothing left to find, no binders left, offline, card data unavailable, image missing, install prompt (once, after first trip), cookie choice.
+- [x] App states: first visit, loading, nothing left to find, no binders left, offline, card data unavailable, image missing, install prompt (once, after first trip), cookie choice.
 - [ ] Offline: a loaded plan and dive keep working from saved data.
 - [x] Footer on every page with the verbatim Fan Content disclaimer and Scryfall credit.
 - [ ] GA4 through Tag Manager behind consent. Events: list pasted, plan viewed, stop finished (with found and unfound counts per stop type), card found, Buy the rest tapped. No card names or lists leave the device.

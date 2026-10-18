@@ -19,6 +19,7 @@ export interface CardList {
   inNextDive: boolean;
   createdAt: string;    // ISO
   updatedAt: string;    // ISO; changes when the contents or name change, not when the dive switch moves
+  sample?: boolean;     // a sample deck the player is trying out: removed when they paste their own list or try another
 }
 
 // What a player pastes in: one line per card, after sections and duplicates are settled.

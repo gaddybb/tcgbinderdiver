@@ -1,0 +1,21 @@
+.banner {
+  position: fixed;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: calc(var(--space-3) + var(--tabbar-offset, 0rem));
+  z-index: var(--z-toast);
+  max-width: var(--size-prose);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-deep);
+  border: var(--border-thin) solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-toast);
+}
+.text { display: flex; flex-direction: column; gap: var(--space-1); flex: 1 1 16rem; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }

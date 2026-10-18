@@ -12,7 +12,7 @@ import type { SortMode } from '../../core/sort';
 import { CARD_STATUSES } from '../../core/status';
 import type { CardStatus } from '../../core/status';
 import {
-  Banner, Button, CardTable, CardThumb, ColorFilter, Input, ListRow, Menu, PageHeader, QuantityBadge, Select, SelectHeader, SelectionBar, SkeletonRow,
+  Banner, Button, CardTable, CardThumb, ColorFilter, HoverPreview, Input, ListRow, Menu, PageHeader, QuantityBadge, Select, SelectHeader, SelectionBar, SkeletonRow,
   StandaloneLink, StatusLabel, StatusPicker, isColorCategory, useToast,
 } from '../components';
 import type { ColorCategory } from '../components';
@@ -214,7 +214,11 @@ function ReviewBody({ list }: { list: CardList }) {
   const picker = (row: Row) => (
     <StatusPicker cardName={row.entry.name} status={row.entry.status} onChange={status => changeStatus(row.entry, status)} />
   );
-  const thumb = (row: Row) => <CardThumb edge={row.edge} src={row.record?.summary.imageSmall} />;
+  const thumb = (row: Row) => (
+    <HoverPreview src={row.record?.summary.imageNormal ?? null}>
+      <CardThumb edge={row.edge} src={row.record?.summary.imageSmall} />
+    </HoverPreview>
+  );
 
   return (
     <>

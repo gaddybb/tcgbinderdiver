@@ -1,10 +1,11 @@
 // The dive plan at /plan: the stops for the lists turned on, in walking order, each with its count, value and verdict.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { V1_STORE } from '../../../core/engine/engine';
 import type { StopKind } from '../../../core/engine/engine';
 import { diveStops, groupByKind, totalCards } from '../../../core/store';
 import { Banner, Button, Dialog, EmptyState, ListRow, PageHeader, PullVerdict, Rank, SkeletonRow, StandaloneLink, SummaryBar } from '../../components';
 import { copy } from '../../copy/en';
+import { useAnalytics } from '../../analytics/AnalyticsProvider';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
 import { useTrip } from '../../data/TripProvider';
 import { formatUsd, joinNames } from '../../format';
@@ -13,6 +14,7 @@ import { navigate } from '../../router';
 import screen from '../Screen.module.css';
 import styles from './Dive.module.css';
 import { BasicsNote } from './BasicsNote';
+import { SampleBanner } from './SampleBanner';
 import { PullSettingsPanel } from './PullSettingsPanel';
 import { startDive } from './startDive';
 import { useDive } from './useDive';
@@ -34,6 +36,7 @@ export function DivePlan() {
   const phone = useLayout() === 'phone';
   const dive = useDive();
   const store = useStoreSettings();
+  const analytics = useAnalytics();
   const [panel, setPanel] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
   const tripApi = useTrip();
@@ -46,6 +49,14 @@ export function DivePlan() {
   // An empty wishlist is on by default; naming it as part of the dive would only be noise.
   const contributing = dive.lists.filter(l => l.entries.some(e => e.status === 'needed'));
   const loading = dive.data.status === 'loading' && dive.data.progress.total > 0;
+
+  // Counted once per visit, when the plan has stops to show.
+  const counted = useRef(false);
+  useEffect(() => {
+    if (counted.current || stops.length === 0) return;
+    counted.current = true;
+    analytics.track('plan_viewed', { cards: total, stops: stops.length });
+  }, [stops.length, total, analytics]);
 
   const startTrip = () => startDive(tripApi, dive.lists);
 
@@ -77,6 +88,7 @@ export function DivePlan() {
 
       <div className={screen.stack}>
         <StandaloneLink to="/lists">{t.backToLists}</StandaloneLink>
+        <SampleBanner />
 
         {!dive.ready ? <SkeletonRow /> : dive.lists.length === 0 ? (
           <EmptyState title={t.empty.title} actions={<Button onClick={() => navigate('/lists')}>{t.empty.action}</Button>}>{t.empty.text}</EmptyState>
