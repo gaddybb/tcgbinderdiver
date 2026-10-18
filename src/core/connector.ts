@@ -13,6 +13,9 @@ export interface CardSummary {
   imageNormal: string | null;
   sourceUri: string;      // page for the card at the data source
   printingsUri: string;   // where every printing of the card is listed
+  // Set when the card came from the local catalog: the time of that data (prices included). Such a card is read from
+  // the catalog each time rather than saved, so it is never older than the catalog.
+  dataTime?: string;
 }
 
 export interface SetInfo {

@@ -75,7 +75,7 @@ Draft message to Scryfall (owner to send, from the contact page):
 
 ## Decisions for the owner
 - Approve this plan and the policy edits (merge this PR).
-- Send the message to Scryfall (recommended before launch; building can start meanwhile).
+- Scryfall message: owner decided it is not needed, since Scryfall offers the daily bulk file for this use. The draft above is kept in case it is wanted later.
 - Create the Cloudflare API token and add it, with the account id, as GitHub secrets (step 5). Never paste them in chat.
 - Accept that a Scryfall outage at build time blocks that deploy (the old one keeps running).
 

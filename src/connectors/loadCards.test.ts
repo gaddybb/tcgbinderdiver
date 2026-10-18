@@ -4,6 +4,9 @@ import { CardsRepository } from '../storage/cardsRepository';
 import { MemoryStorage } from '../storage/memoryStorage';
 import { fakeConnector } from './fakeConnector';
 import type { FakeCard } from './fakeConnector';
+import { buildManifest, decodeCatalog, encodeScryfallCards } from '../core/catalog';
+import localFixture from '../core/catalog/fixtures/default-cards.sample.jsonl?raw';
+import { createBulkConnector } from './bulk';
 import { loadCards, PRINTINGS_CONCURRENCY } from './loadCards';
 import type { LoadProgress } from './loadCards';
 import { ScryfallClient, ScryfallConnector } from './scryfall';
@@ -305,5 +308,41 @@ describe('loadCards', () => {
     const { records } = await loadCards({ connector, repo, cards: want('Sol Ring'), now: NOW });
     const record: CardRecord = records.get('sol ring')!;
     expect(Object.keys(record).sort()).toEqual(['fetchedAt', 'key', 'printings', 'summary']);
+  });
+});
+
+describe('loadCards with the local catalog', () => {
+  const lines = localFixture.split('\n').filter(l => l.trim()).map(l => JSON.parse(l) as unknown);
+  const built = encodeScryfallCards(lines);
+  const manifest = buildManifest({ builtAt: '2026-10-17T22:00:00.000Z', scryfallUpdatedAt: '2026-10-17T21:05:45.300+00:00', counts: built.counts, cardsHash: 'a', pricesHash: 'b' });
+  const local = () => {
+    const live = fakeConnector(['Brand New Card']);
+    const connector = createBulkConnector({ load: async () => ({ catalog: decodeCatalog(built.cards, built.prices), manifest, offline: false }), fallback: live.connector });
+    const storage = new MemoryStorage();
+    return { connector, live, repo: new CardsRepository(storage) };
+  };
+
+  it('uses the catalog time as the fetch time and does not save local cards', async () => {
+    const { connector, repo, live } = local();
+    const result = await loadCards({ connector, repo, cards: want('Lightning Bolt'), now: NOW });
+    expect(result.records.get('lightning bolt')).toMatchObject({ fetchedAt: manifest.scryfallUpdatedAt });
+    expect(result.records.get('lightning bolt')!.printings.length).toBeGreaterThan(0);
+    expect(await repo.get('lightning bolt')).toBeUndefined();
+    expect(live.calls.lookups).toEqual([]);
+    expect(live.calls.printings).toEqual([]);
+  });
+
+  it('keeps printings for basic lands when they come from the catalog', async () => {
+    const { connector, repo } = local();
+    const result = await loadCards({ connector, repo, cards: want('Forest'), now: NOW });
+    expect(result.records.get('forest')!.printings.length).toBeGreaterThan(0);
+  });
+
+  it('still saves cards that came from the live API', async () => {
+    const { connector, repo } = local();
+    const result = await loadCards({ connector, repo, cards: want('Lightning Bolt', 'Brand New Card'), now: NOW });
+    expect(result.records.has('brand new card')).toBe(true);
+    expect(await repo.get('brand new card')).toBeDefined();
+    expect(await repo.get('lightning bolt')).toBeUndefined();
   });
 });
