@@ -206,6 +206,19 @@ describe('the end of a trip', () => {
     expect(summary.leftCopies).toBe(4);
   });
 
+  it('counts a place not yet finished once something was found in it', () => {
+    const { trip, needed, parts } = setup();
+    const t = markFound(trip, parts.get('c')!);   // c is at the Commander box, which is never finished
+    expect(tripSummary(t, tripPlan(needed, V1_STORE, NOW, t), parts).searched).toBe(1);
+    expect(tripSummary(trip, tripPlan(needed, V1_STORE, NOW, trip), parts).searched).toBe(0);
+  });
+
+  it('counts a place once however many ways it was visited', () => {
+    const { trip, needed, parts } = setup();
+    const t = finishBinder(markFound(markAllFound(trip, parts.get('b')!), parts.get('a')!), 'set:fdn', parts);
+    expect(tripSummary(t, tripPlan(needed, V1_STORE, NOW, t), parts).searched).toBe(1);
+  });
+
   it('leaves basic lands that are off the hunt out of what is left', () => {
     const records = new Map([...RECORDS, ...[record('f', 'Forest', [recent('fdn', 'Foundations')], 'Basic Land — Forest')].map(r => [r.key, r] as const)]);
     const lists = [list('x', ['b'], ['f', 3])];

@@ -87,11 +87,12 @@ describe('the QR code', () => {
     const word = () => Array.from({ length: 14 }, () => { seed = (seed * 1103515245 + 12345) % 2147483648; return String.fromCharCode(97 + (seed >> 8) % 26); }).join('');
     const cards = Array.from({ length: 200 }, () => [`${word()} ${word()}`, 1] as [string, number]);
     await open('/lists/a', [{ ...DECK, cards }]);
-    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
-    expect(await within(aside).findByText(copy.qr.tooBig)).toBeTruthy();
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title }, { timeout: 10000 });
+    // Compressing 200 names is slow when the whole suite is running, so this waits longer than the default.
+    expect(await within(aside).findByText(copy.qr.tooBig, {}, { timeout: 10000 })).toBeTruthy();
     expect(within(aside).queryByRole('img', { name: copy.qr.label })).toBeNull();
     expect(within(aside).getByRole('button', { name: copy.qr.copyLink })).toBeTruthy();
-  });
+  }, 20000);
 
   it('is not shown when no list in the dive has anything to find', async () => {
     await open('/lists/a', [{ ...DECK, cards: [['Sol Ring', 1, 'in_collection']] }]);

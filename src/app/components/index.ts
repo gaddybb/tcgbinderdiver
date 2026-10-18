@@ -5,7 +5,7 @@ export type { BinderOption } from './BinderPicker';
 export { GameAnchor, Logo } from './Brand';
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
-export { CardThumb } from './CardImage';
+export { CardImage, CardThumb } from './CardImage';
 export { CardTile } from './CardTile';
 export type { CardTileProps } from './CardTile';
 export { CardTable } from './CardTable';

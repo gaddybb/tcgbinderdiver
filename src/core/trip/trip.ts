@@ -171,7 +171,7 @@ export function stopLabel(plan: Plan, stopId: string): string | undefined {
 
 export interface TripSummary {
   foundCopies: number;
-  searched: number;             // binders finished
+  searched: number;             // places finished, plus places not finished that still hold something found
   stops: number;                // every binder that ever held a card this trip
   left: { cardKey: string; name: string; copies: number }[];   // copies still wanted, in list order
   leftCopies: number;
@@ -187,7 +187,14 @@ export function tripSummary(trip: Trip, plan: Plan, parts: ReadonlyMap<string, N
     const remaining = remainingCopies(trip, part);
     if (remaining > 0) left.push({ cardKey: part.cardKey, name: part.name, copies: remaining });
   }
-  return { foundCopies: found, searched: finishedStops(trip).length, stops: plan.order.length, left, leftCopies: left.reduce((n, l) => n + l.copies, 0) };
+  // A place counts once the player has been through it: finished, or at least one card found there.
+  const visited = new Set(finishedStops(trip));
+  for (const stop of plan.stops) {
+    // A card that has already left a place unfound was found (if at all) in the place it left, not in this one.
+    const foundHere = (key: string) => { const part = parts.get(key); return part !== undefined && foundCopies(trip, part) > 0 && !(plan.left.get(key)?.length); };
+    if (stop.cards.some(c => foundHere(c.key))) visited.add(stop.stop.id);
+  }
+  return { foundCopies: found, searched: visited.size, stops: plan.order.length, left, leftCopies: left.reduce((n, l) => n + l.copies, 0) };
 }
 
 // TCGplayer Mass Entry reads one "quantity name" line per card.

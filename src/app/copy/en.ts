@@ -440,7 +440,17 @@ export const en = {
     copies: (n: number) => `×${n}`,
     backToLists: 'Back to my lists',
     newTrip: 'Start a new trip',
-    buy: { title: 'Buy the rest', detail: (n: number) => `Copy your ${n} ${n === 1 ? 'card' : 'cards'} in the format TCGplayer Mass Entry reads.`, copy: (n: number) => `Copy ${n} ${n === 1 ? 'card' : 'cards'}`, copied: 'Copied. Paste it into TCGplayer Mass Entry.', copyFailed: 'Could not copy. Select the list and copy it yourself.', buyOnTcgplayer: 'Buy on TCGplayer', buyNote: 'Your list is copied first. Paste it into Mass Entry on TCGplayer, which opens in a new tab.' },
+    sideLabel: 'Buy the rest and find another store',
+    buy: {
+      title: 'Buy the rest on TCGplayer',
+      detail: (n: number) => `Copy your ${n} ${n === 1 ? 'card' : 'cards'} in the format TCGplayer Mass Entry reads.`,
+      detailFilled: (n: number) => `Opens Mass Entry with your ${n} ${n === 1 ? 'card' : 'cards'} filled in.`,
+      copy: (n: number) => `Copy ${n} ${n === 1 ? 'card' : 'cards'}`,
+      copied: 'Copied. Paste it into TCGplayer Mass Entry.',
+      copyFailed: 'Could not copy. Select the list and copy it yourself.',
+      buyOnTcgplayer: (n: number) => `Buy ${n} ${n === 1 ? 'card' : 'cards'} on TCGplayer`,
+      buyNote: 'This list is too long to carry in a link, so it is copied first. Paste it into Mass Entry on TCGplayer, which opens in a new tab.',
+    },
     noTrip: { title: 'No trip to show', text: 'Start a store dive from your dive plan.', action: 'Go to your dive plan' },
     stores: {
       title: 'Try another store nearby',
