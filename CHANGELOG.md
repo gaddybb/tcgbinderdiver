@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 - Faster first load of a list's card data: printings are fetched four cards at a time instead of one (request starts are still spaced 100 ms apart, so Scryfall's rate limit holds), and basic lands no longer fetch their hundreds of printings. Basics are still saved with their picture and type, with an empty printings list. `loadCards` takes `includeBasics` (off) and `concurrency` options; the engine exports `isBasicLand`.
+- Scryfall requests no longer send a custom `User-Agent` header: Scryfall's docs require browser code to keep the browser's own, and a custom one forced a CORS preflight on every request. The client's `userAgent` option is removed.
 
 ### Added
 - List review (`/lists/:id`): a list's cards with their picture, status, the binder to look in, the printing found there (set and number) and a typical online price, as a table on tablet and desktop and as rows on a phone. Change a card's status from a menu (a bottom sheet on a phone) with an Undo, sort by name, price, collector number or color, and search by name. Replaces the plain list view.

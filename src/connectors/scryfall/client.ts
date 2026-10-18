@@ -18,7 +18,6 @@ export interface ClientOptions {
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
   baseUrl?: string;
-  userAgent?: string;
   minIntervalMs?: number;    // gap between request starts: about 100 ms, at most ~10 a second
   maxRetries?: number;       // retries after the first try, for 429, 5xx and network failures
   backoffBaseMs?: number;    // 1st retry waits this long, then double
@@ -34,7 +33,6 @@ export interface ApiResponse {
 
 const DEFAULTS = {
   baseUrl: SCRYFALL_BASE_URL,
-  userAgent: 'BinderDiver/0.1',
   minIntervalMs: 100,
   maxRetries: 3,
   backoffBaseMs: 1000,
@@ -51,7 +49,6 @@ export class ScryfallClient {
   constructor(options: ClientOptions = {}) {
     this.opts = {
       baseUrl: options.baseUrl ?? DEFAULTS.baseUrl,
-      userAgent: options.userAgent ?? DEFAULTS.userAgent,
       minIntervalMs: options.minIntervalMs ?? DEFAULTS.minIntervalMs,
       maxRetries: options.maxRetries ?? DEFAULTS.maxRetries,
       backoffBaseMs: options.backoffBaseMs ?? DEFAULTS.backoffBaseMs,
@@ -87,7 +84,9 @@ export class ScryfallClient {
 
   private async request(method: 'GET' | 'POST', pathOrUrl: string, body: unknown, signal?: AbortSignal): Promise<ApiResponse> {
     const url = this.url(pathOrUrl);
-    const headers: Record<string, string> = { Accept: 'application/json;q=0.9,*/*;q=0.8', 'User-Agent': this.opts.userAgent };
+    // Only Accept is sent. Scryfall's API docs (Required Headers) say page JavaScript must keep the browser's own
+    // User-Agent, and a custom one would also turn every request into a CORS preflight.
+    const headers: Record<string, string> = { Accept: 'application/json;q=0.9,*/*;q=0.8' };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     const init: RequestInit = { method, headers, signal, body: body === undefined ? undefined : JSON.stringify(body) };
 
