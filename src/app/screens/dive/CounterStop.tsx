@@ -14,6 +14,7 @@ import { isColorCategory } from '../../components';
 import { copy } from '../../copy/en';
 import { cx } from '../../cx';
 import { useModal } from '../../components/useModal';
+import { usePreference } from '../../data/usePreference';
 import { formatUsd } from '../../format';
 import { useLayout } from '../../layout/useLayout';
 import styles from './StoreDive.module.css';
@@ -51,7 +52,7 @@ type View = 'gallery' | 'table';
 export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass, onFound, onUndo, onNotAvailable, onDone }: CounterStopProps) {
   const phone = useLayout() === 'phone';
   const [big, setBig] = useState(false);
-  const [view, setView] = useState<View>('gallery');
+  const [view, setView] = usePreference<View>('counter-view', 'gallery');
 
   const rows: Row[] = stop.cards
     .flatMap(({ key, candidate }) => {

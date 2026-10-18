@@ -92,4 +92,6 @@ interface Storage { get; put; delete; list }   // per collection; IndexedDB now,
 - Connect the repo to Cloudflare Pages (build `npm run build`, output `dist`) to get preview deploys.
 - Sample deck lists and `[SAMPLE DECK NAME]`.
 - Nearby-store map needs a Google Maps key and `[STORE NAME n]` placeholders.
+- Decide before launch: the look of the big-text control on counter places (now a quiet "Aa Big text" button; an icon-only button is the other option).
+- Small choices (the Gallery or Table view at counters) are kept on the device through the storage seam, not in a cookie, so no consent is needed and they can move to the account in v3.
 - QR code generation will need a small dependency (ask at PR 16). Mana font: ask at PR 7.
