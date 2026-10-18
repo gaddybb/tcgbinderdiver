@@ -10,3 +10,5 @@
   height: var(--size-control);
   accent-color: var(--color-accent);
 }
+/* A checkbox with no visible words: still a full tap target */
+.bare { justify-content: center; min-width: var(--tap-min); }

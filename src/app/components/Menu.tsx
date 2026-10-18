@@ -28,8 +28,8 @@ interface MenuListProps {
 export function MenuList({ label, items, showHints = false, tabbable = false, onItemSelected, onKeyDown }: MenuListProps) {
   return (
     <ul role="menu" aria-label={label} className={styles.list} onKeyDown={onKeyDown}>
-      {items.map(item => (
-        <li key={item.label} role="none">
+      {items.map((item, index) => (
+        <li key={index} role="none">
           <button
             type="button"
             role={item.checked === undefined ? 'menuitem' : 'menuitemradio'}

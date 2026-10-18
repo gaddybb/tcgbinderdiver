@@ -32,3 +32,5 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+.check { width: 1%; padding-right: 0; }
+.row.selected td, .row.selected th { background: var(--color-floor1); }

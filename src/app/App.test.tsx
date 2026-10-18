@@ -158,3 +158,13 @@ describe('Kit gallery', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   });
 });
+
+describe('the kit gallery shows the selection components', () => {
+  it('has the selection bar, the phone select header and a selectable row', () => {
+    goTo('/kit');
+    render(<App storage={new MemoryStorage()} />);
+    expect(screen.getAllByRole('region', { name: copy.bulk.selectedCards(3) }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(copy.bulk.selectedShort(3)).length).toBeGreaterThan(0);
+    expect(screen.getByRole('checkbox', { name: copy.bulk.selectCard(copy.kit.sample.cardName1) })).toBeTruthy();
+  });
+});
