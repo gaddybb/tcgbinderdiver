@@ -1,8 +1,7 @@
 import type { SampleDeck } from '../../core/lists';
 
-// The sample decks, a few popular lists a first-time player can try without pasting their own. [SAMPLE DECK NAME]: the
-// owner supplies the names and lists (one card per line, like a pasted decklist). Until there are some, the Try a sample
-// deck buttons stay hidden.
+// The sample decks, a few popular lists a first-time player can try without pasting their own: a name and a decklist (one
+// card per line, like a pasted one). The Try a sample deck buttons show only while there is at least one.
 export const SAMPLE_DECKS: readonly SampleDeck[] = [
  {
     name: 'Friendly Bear',
@@ -84,7 +83,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
 
 `,
   },
-  
+  {
     name: 'Calling All Angels',
     text: `1 Always Watching
 1 Angel of Finality
@@ -157,7 +156,5 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
 1 Youthful Valkyrie
 
 `,
-  }
-
- 
+  },
 ];
