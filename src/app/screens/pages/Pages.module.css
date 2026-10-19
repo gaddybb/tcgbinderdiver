@@ -41,3 +41,9 @@
 .welcomeActions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .offline { position: sticky; top: 0; z-index: var(--z-menu); }
 .heroTitleSmall { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-h1); line-height: 1.08; }
+.primer { margin: 0; max-width: var(--size-prose); font-size: var(--text-md); line-height: 1.5; }
+.formActions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.formActionsPhone { flex-direction: column; align-items: stretch; }
+.formNote { margin: 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+.stepsNote { margin: 0; max-width: var(--size-prose); font-style: italic; color: var(--color-text-muted); }
+.support { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-5) 0; text-align: center; }

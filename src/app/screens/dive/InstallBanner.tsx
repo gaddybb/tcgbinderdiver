@@ -3,7 +3,7 @@ import { copy } from '../../copy/en';
 import { usePreference } from '../../data/usePreference';
 import { useInstallOffer } from '../../pwa/install';
 
-// Offered once, on the trip summary after a first trip: the player has just seen what the app is for. Not offered again
+// Offered on the home page and on the trip summary after a first trip. Not offered again
 // after Install or Not now, and only where the browser can install it.
 export function InstallBanner() {
   const { canInstall, install } = useInstallOffer();
