@@ -26,10 +26,13 @@ const CARDS: Record<string, { name: string; typeLine?: string; printings: Printi
   tower: { name: 'Command Tower', printings: [pr({ setCode: 'cmm', setName: 'Commander Masters', setType: 'commander', usd: '0.35', collectorNumber: '2' })] },
   greaves: { name: 'Lightning Greaves', printings: [pr({ setCode: 'rna', setName: 'Ravnica Allegiance', setType: 'expansion', releasedAt: '2019-01-25', usd: '18.50', collectorNumber: '9' })] },
   bulk: { name: 'Old Bulk', printings: [pr({ setCode: 'old', setName: 'Old Set', setType: 'expansion', releasedAt: '2010-01-01', usd: '0.30', collectorNumber: '7' })] },
+  giada: { name: 'Giada, Font of Hope', printings: [recent('fdn', 'Foundations', { collectorNumber: '141', usd: '0.55' }), recent('fdn', 'Foundations', { collectorNumber: '298', usd: '4.72', borderColor: 'borderless', frameEffects: ['legendary', 'inverted'] })] },
+  showy: { name: 'Showy Thing', printings: [recent('fdn', 'Foundations', { collectorNumber: '299', usd: '2.00', borderColor: 'borderless' })] },
   zombie: { name: 'Zombie Thing', printings: [recent('fdn', 'Foundations', { collectorNumber: '300', usd: '6.00' })] },
 };
 
 const DECK: Spec = { id: 'a', name: 'Lifegain', cards: [["Ajani's Pridemate", 2], ['Soul Warden'], ['Cultivate'], ['Command Tower'], ['Lightning Greaves'], ['Old Bulk']] };
+const ANGELS: Spec = { id: 'g', name: 'Angels', cards: [['Giada, Font of Hope'], ['Showy Thing']] };
 const ZOMBIES: Spec = { id: 'b', name: 'Zombies', cards: [["Ajani's Pridemate"], ['Zombie Thing']] };
 
 interface Options { lists?: Spec[]; trip?: Trip | null; path?: string; extra?: string[] }
@@ -205,6 +208,22 @@ describe('Store dive: a binder', () => {
     await screen.findByText(t.stopOf(1, 1));
     press(t.finishBinder);
     expect(await screen.findByRole('heading', { name: t.allDone.title })).toBeTruthy();
+  });
+});
+
+describe('Store dive: the art of the print in the binder', () => {
+  it('shows the picture, number and price of the same print, and tags a special-art one', async () => {
+    await setup({ lists: [ANGELS], trip: startTrip('t1', T0, ['g']) });
+    await screen.findByText('Giada, Font of Hope', { selector: 'div' });
+    const src = (name: string) => tile(name).querySelector('img')!.getAttribute('src');
+    const giada = tile('Giada, Font of Hope');
+    expect(giada.textContent).toContain('FDN 141');
+    expect(giada.textContent).toContain('$0.55');
+    expect(giada.textContent).not.toContain(copy.art.borderless);
+    expect(src('Giada, Font of Hope')).toContain('/cards/fdn/141?');
+    const showy = tile('Showy Thing');
+    expect(showy.textContent).toContain(`FDN 299 · ${copy.art.borderless}`);
+    expect(src('Showy Thing')).toContain('/cards/fdn/299?');
   });
 });
 

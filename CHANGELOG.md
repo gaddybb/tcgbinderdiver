@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Fixed
+- A card's picture now matches the print it is shown as. Before, the picture was always the card's newest print, while the set, number and price were the print the binder is predicted to hold: a Giada borderless picture sat beside the $0.55 regular print. The store dive (gallery and table), the list review rows and card detail now show the picture of the predicted print, with its tag after the set and number (Borderless, Showcase, Extended art, Full art or Promo) when it is not the usual look. If that picture cannot load, the card's usual picture is shown. Lists still do not record which print a player owns, so there is no keep-my-print choice yet.
 - The phone QR code no longer disappears when you are trying a sample deck: a sample deck now goes into the phone link like any other list. The code is bigger and drawn as rounded blocks instead of the plain pixel grid; how fine the grid is still depends on how many cards are in the link.
 
 ### Changed

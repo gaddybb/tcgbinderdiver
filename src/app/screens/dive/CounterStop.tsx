@@ -5,6 +5,7 @@ import { useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { PlanStop } from '../../../core/engine/engine';
 import type { NeededAcrossLists } from '../../../core/lists';
+import { printingImageUrl } from '../../../core/cards';
 import type { CardRecord } from '../../../core/cards';
 import { foundCopies, remainingCopies } from '../../../core/trip';
 import type { Trip } from '../../../core/trip';
@@ -15,6 +16,7 @@ import { copy } from '../../copy/en';
 import { cx } from '../../cx';
 import { useModal } from '../../components/useModal';
 import { usePreference } from '../../data/usePreference';
+import { printingLabel } from '../../printingLabel';
 import { formatUsd } from '../../format';
 import { useLayout } from '../../layout/useLayout';
 import styles from './StoreDive.module.css';
@@ -45,6 +47,7 @@ interface Row {
   edge: ColorCategory;
   image: string | null;
   thumb: string | null;
+  fallback: string | null;   // the card's usual picture, if the print's own cannot be loaded
   sub: string;
 }
 
@@ -62,13 +65,14 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
       if (!part || !record) return [];
       const category = categoryOf(record);
       const hint = candidate.hint ? t.hint[candidate.hint] : '';
-      const setLabel = `${candidate.printing.setCode.toUpperCase()} ${candidate.printing.collectorNumber}`;
+      const setLabel = printingLabel(candidate.printing);
       const sub = [candidate.printing.setName, setLabel, formatUsd(candidate.price), hint].filter(Boolean).join(' · ');
       return [{
         key, name: record.summary.name, setLabel, price: formatUsd(candidate.price), hint, part, sub,
         edge: (isColorCategory(category) ? category : 'Colorless') as ColorCategory,
-        image: record.summary.imageNormal ?? record.summary.imageSmall,
-        thumb: record.summary.imageSmall,
+        image: printingImageUrl(candidate.printing),
+        thumb: printingImageUrl(candidate.printing, 'small'),
+        fallback: record.summary.imageNormal ?? record.summary.imageSmall,
       }];
     })
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
@@ -102,6 +106,7 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
               lists={row.part.parts.map(p => p.listName).join(', ')}
               hint={row.hint}
               imageUrl={row.image}
+              fallbackUrl={row.fallback}
               edge={row.edge}
               quantity={row.part.copies}
               found={foundCopies(trip, row.part)}
@@ -123,7 +128,7 @@ export function CounterStop({ stop, trip, parts, records, categoryOf, gridClass,
               <li key={row.key} className={cx(styles.counterRow, (found || gone) && styles.counterRowGone)}>
                 <HoverPreview src={row.image}>
                   <button type="button" className={styles.openThumb} aria-label={copy.cardTile.openCard(row.name)} onClick={() => onOpen(row.key, rows.map(r => r.key))}>
-                    <CardThumb edge={row.edge} src={row.thumb} />
+                    <CardThumb edge={row.edge} src={row.thumb} fallback={row.fallback} />
                   </button>
                 </HoverPreview>
                 <div className={styles.counterText}>

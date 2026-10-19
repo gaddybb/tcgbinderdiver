@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { typicalOnline } from '../../core/cards';
+import { findPrinting, printingImageUrl, typicalOnline } from '../../core/cards';
 import type { CardRecord } from '../../core/cards';
+import type { Printing } from '../../core/engine/engine';
 import { PRICE_FILTERS, filterCards } from '../../core/filter';
 import type { PriceFilter } from '../../core/filter';
 import { MAX_CARDS_PER_LIST, binderCounts, cardKeysInBinder, listCounts } from '../../core/lists';
@@ -22,6 +23,7 @@ import { useLists } from '../data/ListsProvider';
 import { useStoreSettings } from '../data/StoreSettingsProvider';
 import { formatDate, formatUsd } from '../format';
 import { useLayout } from '../layout/useLayout';
+import { printingLabel } from '../printingLabel';
 import { Link, navigate } from '../router';
 import { ListCardDetail } from './detail/ListCardDetail';
 import { DivePanel } from './dive/DivePanel';
@@ -53,6 +55,7 @@ interface Row {
   record: CardRecord | undefined;
   edge: ColorCategory;
   target: CardTarget | undefined;
+  printing: Printing | undefined;   // the print the target binder is predicted to hold: its picture and label go on the row
   targetText: string;
   setLabel: string;
   price: number | null;
@@ -100,13 +103,15 @@ function ReviewBody({ list }: { list: CardList }) {
     else if (target?.kind === 'stop') targetText = target.stopLabel;
     else if (target?.kind === 'no_binder') targetText = t.target.noBinder;
     else if (target?.kind === 'skipped_basic') targetText = t.target.basicLand;
+    const printing = record && target?.kind === 'stop' ? findPrinting(record.printings, target.setCode, target.collectorNumber) : undefined;
     return {
       entry,
       record,
       edge: isColorCategory(category) ? category : 'Colorless',
       target,
+      printing,
       targetText,
-      setLabel: target?.kind === 'stop' ? `${target.setCode.toUpperCase()} ${target.collectorNumber}` : t.target.none,
+      setLabel: printing ? printingLabel(printing) : target?.kind === 'stop' ? `${target.setCode.toUpperCase()} ${target.collectorNumber}` : t.target.none,
       price: record ? typicalOnline(record.printings) : null,
     };
   });
@@ -218,8 +223,8 @@ function ReviewBody({ list }: { list: CardList }) {
     <StatusPicker cardName={row.entry.name} status={row.entry.status} onChange={status => changeStatus(row.entry, status)} />
   );
   const thumb = (row: Row) => (
-    <HoverPreview src={row.record?.summary.imageNormal ?? null}>
-      <CardThumb edge={row.edge} src={row.record?.summary.imageSmall} />
+    <HoverPreview src={row.printing ? printingImageUrl(row.printing) : row.record?.summary.imageNormal ?? null}>
+      <CardThumb edge={row.edge} src={row.printing ? printingImageUrl(row.printing, 'small') : row.record?.summary.imageSmall} fallback={row.record?.summary.imageSmall} />
     </HoverPreview>
   );
 

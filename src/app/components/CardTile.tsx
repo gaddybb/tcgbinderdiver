@@ -13,6 +13,7 @@ export interface CardTileProps {
   price: string;             // already formatted, for example "$0.25"
   lists: string;             // which lists want this card
   imageUrl: string | null;
+  fallbackUrl?: string | null;   // the card's usual picture, if the print's own cannot be loaded
   edge: ColorCategory;
   quantity: number;          // copies wanted across the lists that are on
   found: number;             // copies found so far
@@ -27,10 +28,10 @@ export interface CardTileProps {
 
 // A card at a store stop. One copy: Found, then Found · Undo. Several copies: a ×N badge, progress in copies,
 // Found +1 and a minus to undo one. Progress is always written out, never only a bar.
-export function CardTile({ name, setLabel, price, lists, imageUrl, edge, quantity, found, onFound, onUndo, onOpen, fluid, hint, notAvailable, onNotAvailable }: CardTileProps) {
+export function CardTile({ name, setLabel, price, lists, imageUrl, fallbackUrl, edge, quantity, found, onFound, onUndo, onOpen, fluid, hint, notAvailable, onNotAvailable }: CardTileProps) {
   const many = quantity > 1;
   const allFound = found >= quantity;
-  const image = <CardImage name={name} src={imageUrl} edge={edge} fluid={fluid} dim={(found > 0 && (allFound || !many)) || (notAvailable === true && found === 0)} />;
+  const image = <CardImage name={name} src={imageUrl} fallback={fallbackUrl} edge={edge} fluid={fluid} dim={(found > 0 && (allFound || !many)) || (notAvailable === true && found === 0)} />;
 
   return (
     <li className={cx(styles.tile, fluid && styles.fluid)}>

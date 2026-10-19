@@ -20,7 +20,9 @@ import { useConnector } from '../../data/CardDataProvider';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
 import { useAnalytics } from '../../analytics/AnalyticsProvider';
 import { useTrip } from '../../data/TripProvider';
+import { printingImageUrl } from '../../../core/cards';
 import type { CardRecord } from '../../../core/cards';
+import { printingLabel } from '../../printingLabel';
 import { formatUsd } from '../../format';
 import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
@@ -240,10 +242,11 @@ export function StoreDive() {
                     key={e.key}
                     fluid
                     name={e.record.summary.name}
-                    setLabel={`${e.candidate.printing.setCode.toUpperCase()} ${e.candidate.printing.collectorNumber}`}
+                    setLabel={printingLabel(e.candidate.printing)}
                     price={formatUsd(e.candidate.price)}
                     lists={e.part.parts.map(p => p.listName).join(', ')}
-                    imageUrl={e.record.summary.imageNormal ?? e.record.summary.imageSmall}
+                    imageUrl={printingImageUrl(e.candidate.printing)}
+                    fallbackUrl={e.record.summary.imageNormal ?? e.record.summary.imageSmall}
                     edge={e.edge}
                     quantity={e.part.copies}
                     found={foundCopies(trip, e.part)}

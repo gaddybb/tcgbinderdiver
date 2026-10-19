@@ -90,6 +90,8 @@ export const en = {
     stepOf: (n: number, total: number, state: 'done' | 'current' | 'todo') =>
       state === 'done' ? `Step ${n} of ${total}, done` : `Step ${n} of ${total}`,
   },
+  // What a special print is called next to its set and number
+  art: { borderless: 'Borderless', showcase: 'Showcase', extendedart: 'Extended art', fullart: 'Full art', promo: 'Promo' },
   cardTile: {
     found: 'Found',
     foundUndo: 'Found · Undo',
