@@ -806,7 +806,7 @@ export const en = {
     credits: ['Card data and images: Scryfall'],
     contactTitle: 'Contact',
     contactLead: 'Questions, ideas or a bug?',
-    contactText: '[CONTACT EMAIL OR FEEDBACK FORM]',
+    contactText: 'support@tcgbinderdiver.com',
   },
   supportPage: {
     eyebrow: 'Support',
@@ -818,7 +818,7 @@ export const en = {
     otherTitle: 'Other ways to help',
     share: 'Share it with your playgroup or your local store',
     feedback: "Tell us what's missing, or report a bug:",
-    feedbackLink: '[FEEDBACK LINK]',
+    feedbackLink: 'support@tcgbinderdiver.com',
     affiliate: 'Buy cards you couldn\'t find through the Buy on TCGplayer button. Binder Diver earns a small commission at no extra cost to you.',
     goTitle: 'Where tips go',
     goText: 'Hosting, the domain, and development time. Nothing in the app is ever locked behind a tip.',
@@ -835,7 +835,7 @@ export const en = {
       stores: { title: 'Store search', text: "When you tap Find game stores nearby, Binder Diver opens Google Maps in a new tab with a search for game stores. Google Maps asks for your location itself, under Google's privacy policy; Binder Diver never sees it. Nothing is sent to Google until you tap." },
       affiliate: { title: 'Affiliate links', text: 'Buy on TCGplayer buttons are affiliate links through Impact. If you buy after tapping one, Binder Diver may earn a small commission at no extra cost to you. TCGplayer may set its own cookies once you\'re on its site.' },
       accounts: { title: 'Accounts', text: "There are no accounts yet. If they're added later, this page will explain what's stored and how to delete it." },
-      contact: { title: 'Contact', text: 'Privacy questions: [CONTACT EMAIL]' },
+      contact: { title: 'Contact', text: 'Privacy questions: support@tcgbinderdiver.com' },
     },
   },
   tourFlow: {

@@ -29,7 +29,7 @@ export function Home() {
         <GameAnchor />
         <p className={styles.eyebrow}>{t.eyebrow(copy.games.magic)}</p>
         <h1 className={phone ? styles.heroTitleSmall : styles.heroTitle}>{t.title}</h1>
-        <p className={styles.lead}>{t.lead}</p>
+        //<p className={styles.lead}>{t.lead}</p>
         <p className={styles.primer}>{t.primer}</p>
         <form className={styles.form} onSubmit={e => { e.preventDefault(); plan(); }}>
           <Input label={t.formLabel} multiline rows={4} placeholder={t.placeholder} value={text} onChange={e => setText(e.target.value)} />
