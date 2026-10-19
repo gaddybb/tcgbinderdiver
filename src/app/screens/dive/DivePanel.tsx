@@ -89,7 +89,10 @@ export function DivePanel({ compact, records }: DivePanelProps) {
           {active ? (
             <Button onClick={() => navigate('/dive')}>{copy.dive.resumeDive}</Button>
           ) : (
-            <Button disabled={stops.length === 0} onClick={() => startDive(tripApi, next)}>{copy.dive.startDive}</Button>
+            <>
+              <Button disabled={stops.length === 0} onClick={() => startDive(tripApi, next)}>{copy.dive.startDive}</Button>
+              <span className={styles.hint}>{copy.dive.startHint}</span>
+            </>
           )}
           <Button variant="text" onClick={() => navigate('/plan')}>{t.fullPlan}</Button>
 

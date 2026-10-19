@@ -2,6 +2,7 @@
 .wide { max-width: var(--content-max); }
 .intro { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); text-align: center; }
 .eyebrow { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-brass); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .title { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-h1); line-height: 1.08; }
 .lead { margin: 0; font-size: var(--text-md); color: var(--color-text-muted); }
 .h2 { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-lg); }

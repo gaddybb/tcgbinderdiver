@@ -69,7 +69,12 @@ export function DivePlan() {
           <Button onClick={() => navigate('/dive')}>{t.resumeDive}</Button>
           <Button variant="text" onClick={() => setConfirmNew(true)}>{t.newTrip}</Button>
         </span>
-      ) : <Button disabled={total === 0} onClick={startTrip}>{t.startDive}</Button>}
+      ) : (
+        <span className={styles.startBlock}>
+          <Button disabled={total === 0} onClick={startTrip}>{t.startDive}</Button>
+          <span className={styles.hint}>{t.startHint}</span>
+        </span>
+      )}
     />
   );
 
