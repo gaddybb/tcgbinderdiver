@@ -65,10 +65,9 @@ beforeEach(() => window.history.replaceState(null, '', '/dive'));
 afterEach(() => { setWidth(1024); window.history.replaceState(null, '', '/'); });
 
 describe('Store dive: with no trip', () => {
-  it('says there is no trip and points to the dive plan', async () => {
+  it('sends the Dive tab to the dive plan when there is no trip, and says why', async () => {
     await setup({ trip: null });
-    expect(await screen.findByRole('heading', { name: t.noTrip.title })).toBeTruthy();
-    press(t.noTrip.action);
+    expect(await screen.findByText(t.noTrip.redirect)).toBeTruthy();
     expect(window.location.pathname).toBe('/plan');
   });
 });

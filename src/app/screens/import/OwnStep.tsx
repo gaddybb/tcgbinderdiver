@@ -32,6 +32,16 @@ export function OwnStep({ entries, choices, onChange, busy, onBack, onFinish }: 
         <p className={styles.lead}>{t.lead}</p>
       </section>
 
+      {/* At the top, so a long list never hides the way forward. */}
+      <div className={styles.actions}>
+        <Button variant="secondary" onClick={onBack}>{copy.importFlow.back}</Button>
+        <span className={styles.actionsEnd}>
+          <Button variant="text" disabled={busy} onClick={() => onFinish(resetStatuses())}>{t.skip}</Button>
+          <Button disabled={busy} onClick={() => onFinish(choices)}>{t.finish}</Button>
+        </span>
+      </div>
+      <p className={styles.note}>{t.later}</p>
+
       <div className={styles.toolbar}>
         <p className={styles.counts}>{t.summary(counts.in_collection, counts.ordered, counts.proxy, counts.out_of_deck, counts.needed)}</p>
         <Menu
@@ -62,15 +72,6 @@ export function OwnStep({ entries, choices, onChange, busy, onBack, onFinish }: 
       </ul>
 
       <p className={styles.note}>{t.legend}</p>
-
-      <div className={styles.actions}>
-        <Button variant="secondary" onClick={onBack}>{copy.importFlow.back}</Button>
-        <span className={styles.actionsEnd}>
-          <Button variant="text" disabled={busy} onClick={() => onFinish(resetStatuses())}>{t.skip}</Button>
-          <Button disabled={busy} onClick={() => onFinish(choices)}>{t.finish}</Button>
-        </span>
-      </div>
-      <p className={styles.note}>{t.later}</p>
     </div>
   );
 }

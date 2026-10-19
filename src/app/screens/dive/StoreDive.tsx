@@ -59,8 +59,15 @@ export function StoreDive() {
 
   const ended = trip?.endedAt !== undefined;
   useEffect(() => { if (ended) navigate('/trip', { replace: true }); }, [ended]);
+  // A dive starts from the dive plan, so the Dive tab with no trip sends the player there and says why.
+  const noTrip = ready && !trip;
+  useEffect(() => {
+    if (!noTrip) return;
+    navigate('/plan', { replace: true });
+    toast.show({ message: t.noTrip.redirect });
+  }, [noTrip, toast]);
 
-  if (!ready || ended) return <SkeletonRow />;
+  if (!ready || ended || noTrip) return <SkeletonRow />;
   if (!trip || !cards || !plan) {
     return (
       <>

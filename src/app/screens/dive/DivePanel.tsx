@@ -52,6 +52,7 @@ export function DivePanel({ compact, records }: DivePanelProps) {
       </div>
 
       {!compact || !open ? <p className={styles.sectionDetail}>{t.summary(stops.reduce((n, s) => n + s.cards, 0), stops.length)}</p> : null}
+      {compact && !open && <Button onClick={() => navigate(active ? '/dive' : '/plan')}>{active ? copy.dive.resumeDive : t.build}</Button>}
 
       {shown && (
         <>
