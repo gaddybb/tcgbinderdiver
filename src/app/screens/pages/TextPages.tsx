@@ -79,7 +79,7 @@ export function More() {
   const t = copy.more;
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>{t.title}</h1>
+      <h1 className={styles.srOnly}>{t.title}</h1>
       <ul className={styles.menuList}>
         <li><Link to="/walkthrough">{t.walkthrough}</Link></li>
         <li><Link to="/support">{t.support}</Link></li>
