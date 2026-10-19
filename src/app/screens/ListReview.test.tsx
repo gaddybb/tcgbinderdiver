@@ -151,13 +151,21 @@ describe('List review: the table', () => {
     expect(text(tableRow('Soul Warden'))).not.toContain('×');
   });
 
-  it('shows the card picture as given, as decoration, when there is one', async () => {
+  it('shows the picture of the print the target binder is predicted to hold, as decoration', async () => {
     const { container } = await setup([["Ajani's Pridemate"]], { saved: ['ajani'] });
     await screen.findByRole('table');
     await waitFor(() => expect(container.querySelector('table img')).not.toBeNull());
     const img = container.querySelector('table img')!;
-    expect(img.getAttribute('src')).toBe(fakeSummary(CARDS.ajani).imageSmall);
+    expect(img.getAttribute('src')).toMatch(/^https:\/\/api\.scryfall\.com\/cards\/[a-z0-9]+\/[^/]+\?format=image&version=small$/);
     expect(img.getAttribute('alt')).toBe('');
+  });
+
+  it('falls back to the usual picture of the card when its own print cannot load', async () => {
+    const { container } = await setup([["Ajani's Pridemate"]], { saved: ['ajani'] });
+    await screen.findByRole('table');
+    await waitFor(() => expect(container.querySelector('table img')).not.toBeNull());
+    fireEvent.error(container.querySelector('table img')!);
+    await waitFor(() => expect(container.querySelector('table img')!.getAttribute('src')).toBe(fakeSummary(CARDS.ajani).imageSmall));
   });
 
   it('leaves out the picture when the card has none', async () => {

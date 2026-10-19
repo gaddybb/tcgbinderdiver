@@ -35,7 +35,7 @@ export function Picture({ name, model }: { name: string; model: DetailModel | nu
   return (
     <div className={styles.picture}>
       <div className={cx(styles.pictureBox, wide && styles.pictureBoxWide)}>
-        <CardImage name={name} src={model?.imageUrl ?? null} edge={model?.edge ?? 'Colorless'} fluid />
+        <CardImage name={name} src={model?.imageUrl ?? null} fallback={model?.imageFallback} edge={model?.edge ?? 'Colorless'} fluid />
       </div>
     </div>
   );
