@@ -25,7 +25,7 @@ export interface ListsApi {
   now: () => Date;                // the app's clock, so screens and tests agree on "today"
   createDeck: (name: string, entries: readonly IncomingEntry[]) => Promise<CreateResult>;
   // Sample decks: trying one replaces any earlier sample, and Paste my own list removes it.
-  startSample: (name: string, entries: readonly IncomingEntry[]) => Promise<CardList>;
+  startSample: (name: string, entries: readonly IncomingEntry[], banner?: string) => Promise<CardList>;
   removeSamples: () => Promise<void>;
   addToWishlist: (entries: readonly IncomingEntry[]) => Promise<{ added: number; skipped: number; kept: number; total: number }>;
   rename: (id: string, name: string) => Promise<void>;
@@ -98,10 +98,10 @@ export function ListsProvider({ children, clock = () => new Date(), makeId }: Li
         }
       },
 
-      async startSample(name, entries) {
+      async startSample(name, entries, banner) {
         const at = now();
         for (const old of (await repo.all()).filter(l => l.sample)) await repo.remove(old.id);
-        const deck = await repo.createDeck(name, at, { sample: true });
+        const deck = await repo.createDeck(name, at, { sample: true, banner });
         const { list } = addEntries(deck, entries, at);
         await repo.save(list);
         await refresh();

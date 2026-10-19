@@ -104,6 +104,16 @@ describe('My lists: pasting a list', () => {
   });
 });
 
+describe('My lists: the deck art', () => {
+  it('heads each list card with the art of its first card, or the card chosen for it', async () => {
+    setup([{ id: 'a', name: 'First', cards: [['Sol Ring'], ['Soul Warden']] }, { id: 'b', name: 'Chosen', cards: [['Sol Ring'], ['Soul Warden']], banner: 'Soul Warden' }]);
+    await screen.findByRole('link', { name: 'First' });
+    const art = (title: string) => card(title).querySelector('img')!.getAttribute('src');
+    expect(art('First')).toContain('exact=Sol%20Ring');
+    expect(art('Chosen')).toContain('exact=Soul%20Warden');
+  });
+});
+
 describe('My lists: the cards', () => {
   it('shows decks newest first and the wishlist last, with kind, summary and age', async () => {
     setup(TWO_DECKS_AND_WISHLIST);

@@ -1,5 +1,5 @@
 // Sample decks: a small built-in set, one picked at random. Pure: the random number comes in as an argument.
-export interface SampleDeck { name: string; text: string }
+export interface SampleDeck { name: string; text: string; banner?: string }   // banner: the card whose art heads the deck, usually its commander
 
 // Picks a deck with `random` (a number from 0 up to, not including, 1), avoiding `avoid` by name when there is another.
 export function pickSample(decks: readonly SampleDeck[], random: number, avoid?: string): SampleDeck | undefined {

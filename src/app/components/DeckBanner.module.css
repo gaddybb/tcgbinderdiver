@@ -1,0 +1,5 @@
+.banner { display: block; position: relative; overflow: hidden; background: var(--color-deep); }
+.card { height: var(--size-banner); }
+.page { height: var(--size-banner-page); border-radius: var(--radius-xl); }
+.img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+.banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, var(--color-ground)); }

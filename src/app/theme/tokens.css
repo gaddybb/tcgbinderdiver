@@ -76,6 +76,8 @@
   --size-list-card: 22rem;
   --size-aside: 24rem;
   --size-end-tile: 7.5rem; /* a card still wanted, on the trip summary */
+  --size-banner: 6rem;     /* the deck art strip on a list card */
+  --size-banner-page: 9rem;   /* the same over a list's page */
   --size-qr: 15rem;        /* the QR code beside the dive plan */
   --size-preview-w: 18rem; /* the larger card picture shown on hover in tables */
   --size-prose: 44rem;     /* reading width for text pages */

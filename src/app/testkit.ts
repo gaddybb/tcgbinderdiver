@@ -13,6 +13,7 @@ export type Spec = {
   created?: Date;
   updated?: Date;
   on?: boolean;
+  banner?: string;
   cards?: [name: string, quantity?: number, status?: CardStatus][];
 };
 
@@ -24,5 +25,5 @@ export function makeList(spec: Spec): CardList {
     list = addEntries(list, [{ cardKey: name.toLowerCase(), name, quantity }], created).list;
     if (status !== 'needed') list = setEntryStatus(list, name.toLowerCase(), status, created);
   }
-  return { ...list, updatedAt: (spec.updated ?? created).toISOString(), inNextDive: spec.on ?? true };
+  return { ...list, updatedAt: (spec.updated ?? created).toISOString(), inNextDive: spec.on ?? true, ...(spec.banner ? { banner: spec.banner } : {}) };
 }

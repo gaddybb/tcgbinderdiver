@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Printing } from '../engine/engine';
-import { artKind, findPrinting, printingImageUrl } from './printingArt';
+import { artKind, bannerImageUrl, findPrinting, printingImageUrl } from './printingArt';
 
 const print = (over: Partial<Printing> = {}): Printing => ({
   setCode: 'fdn', setName: 'Foundations', setType: 'core', releasedAt: '2024-11-15', rarity: 'rare', collectorNumber: '141',
@@ -34,5 +34,12 @@ describe('findPrinting', () => {
     const a = print(), b = print({ collectorNumber: '298', borderColor: 'borderless' });
     expect(findPrinting([a, b], 'fdn', '298')).toBe(b);
     expect(findPrinting([a, b], 'fdn', '999')).toBeUndefined();
+  });
+});
+
+describe('bannerImageUrl', () => {
+  it('asks for the cropped art of a card by its name, encoded', () => {
+    expect(bannerImageUrl('Giada, Font of Hope')).toBe('https://api.scryfall.com/cards/named?exact=Giada%2C%20Font%20of%20Hope&format=image&version=art_crop');
+    expect(new URL(bannerImageUrl('Fire // Ice & more')).searchParams.get('exact')).toBe('Fire // Ice & more');
   });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   MAX_CARDS_PER_LIST, MAX_LISTS, WISHLIST_ID, addEntries, canCreateList, clearEntries, cleanName, copyAsText, createList, duplicateList,
-  isValidListName, listCounts, mergeNeeded, nextDiveSummary, removeEntry, renameList, setAllStatuses, setEntryQuantity, setEntryStatus,
+  bannerCardName, isValidListName, listCounts, mergeNeeded, nextDiveSummary, removeEntry, renameList, setAllStatuses, setEntryQuantity, setEntryStatus,
   setInNextDive, sortLists, updatedAge,
 } from './index';
 import type { CardList, IncomingEntry } from './index';
@@ -325,5 +325,14 @@ describe('copyAsText', () => {
   });
   it('is empty for an empty list', () => {
     expect(copyAsText(deck())).toBe('');
+  });
+});
+
+describe('bannerCardName', () => {
+  it('is the chosen card, else the first card, else nothing', () => {
+    const list = withCards(deck(), line('a', 1, 'Alpha'), line('b', 1, 'Beta'));
+    expect(bannerCardName(list)).toBe('Alpha');
+    expect(bannerCardName({ ...list, banner: 'Beta' })).toBe('Beta');
+    expect(bannerCardName(deck())).toBeNull();
   });
 });

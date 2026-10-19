@@ -2,6 +2,7 @@
 // A restyle is one look at this page. Screens never add one-off styling; they compose these.
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { bannerImageUrl } from '../../core/cards';
 import { copy } from '../copy/en';
 import { useLayout } from '../layout/useLayout';
 import {
@@ -266,6 +267,7 @@ export function Kit() {
               to="/kit"
               summary={s.listSummary}
               thumbs={['White', 'Green', 'Colorless']}
+              bannerSrc={bannerImageUrl('Sol Ring')}
               inNextDive={inNext}
               onInNextDiveChange={setInNext}
               menu={<Menu label={copy.common.moreFor(s.listTitle)} items={menuItems} />}
