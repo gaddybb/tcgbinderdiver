@@ -162,3 +162,8 @@ export function mergeNeeded(lists: readonly CardList[]): NeededAcrossLists[] {
 
 // "Copy as text": the whole list, one "quantity name" line per card, ready for Moxfield or a message.
 export const copyAsText = (list: CardList): string => list.entries.map(e => `${e.quantity} ${e.name}`).join('\n');
+
+// The card whose art heads a list: the one chosen for it (a sample deck's commander), else the first card. Null for an empty list.
+export function bannerCardName(list: Pick<CardList, 'banner' | 'entries'>): string | null {
+  return list.banner ?? list.entries[0]?.name ?? null;
+}

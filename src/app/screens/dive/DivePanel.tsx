@@ -10,6 +10,7 @@ import { useLists } from '../../data/ListsProvider';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
 import { useTrip } from '../../data/TripProvider';
 import { formatUsd } from '../../format';
+import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
 import screen from '../Screen.module.css';
 import styles from './Dive.module.css';
@@ -26,6 +27,7 @@ interface DivePanelProps {
 }
 
 export function DivePanel({ compact, records }: DivePanelProps) {
+  const phone = useLayout() === 'phone';
   const lists = useLists();
   const store = useStoreSettings();
   const tripApi = useTrip();
@@ -90,7 +92,7 @@ export function DivePanel({ compact, records }: DivePanelProps) {
           )}
           <Button variant="text" onClick={() => navigate('/plan')}>{t.fullPlan}</Button>
 
-          {!compact && <DiveQr />}
+          {(!compact || !phone) && <DiveQr />}
 
           <section className={styles.section} aria-label={t.groupsTitle}>
             <div className={styles.toolbar}>

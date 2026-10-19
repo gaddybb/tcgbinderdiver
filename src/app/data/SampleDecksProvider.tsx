@@ -30,7 +30,7 @@ export function SampleDecksProvider({ decks = SAMPLE_DECKS, random = Math.random
     if (!deck) return;
     const entries: IncomingEntry[] = combineEntries(parseDecklist(deck.text).entries, { sideboard: false, maybeboard: false })
       .map(c => ({ cardKey: nameKey(c.name), name: c.name, quantity: c.quantity, tags: c.tags }));
-    await lists.startSample(deck.name, entries);
+    await lists.startSample(deck.name, entries, deck.banner);
     navigate('/plan');
   }, [decks, random, lists]);
 

@@ -13,7 +13,7 @@ import { QR_MAX_CHARS, qrSvg } from './DiveQr';
 
 const goTo = (path: string) => window.history.replaceState(null, '', path);
 beforeEach(() => goTo('/'));
-afterEach(() => { goTo('/'); Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true }); });
+afterEach(() => { window.innerWidth = 1024; goTo('/'); Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true }); });
 
 const DECK: Spec = { id: 'a', name: 'Lifegain', cards: [['Sol Ring', 2], ['Cultivate']] };
 
@@ -59,6 +59,7 @@ describe('the QR code', () => {
   });
 
   it('shows beside the list, labelled, with a link to copy', async () => {
+    window.innerWidth = 1280;
     let copied = '';
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t: string) => { copied = t; } }, configurable: true });
     await open('/lists/a');
@@ -82,6 +83,7 @@ describe('the QR code', () => {
   });
 
   it('says a dive is too big for a code when it is, and still offers the link', async () => {
+    window.innerWidth = 1280;
     // Names that do not repeat each other, so deflating them does not shrink the link below a QR code's limit.
     let seed = 12345;
     const word = () => Array.from({ length: 14 }, () => { seed = (seed * 1103515245 + 12345) % 2147483648; return String.fromCharCode(97 + (seed >> 8) % 26); }).join('');

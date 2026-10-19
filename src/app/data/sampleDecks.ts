@@ -5,6 +5,7 @@ import type { SampleDeck } from '../../core/lists';
 export const SAMPLE_DECKS: readonly SampleDeck[] = [
  {
     name: 'Friendly Bear',
+    banner: 'Wilson, Refined Grizzly',
     text: `1 Alpha Authority
 1 Arcane Signet
 1 Barrow-Blade
@@ -85,6 +86,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   },
   {
     name: 'Calling All Angels',
+    banner: 'Giada, Font of Hope',
     text: `1 Always Watching
 1 Angel of Finality
 1 Angel of the Ruins

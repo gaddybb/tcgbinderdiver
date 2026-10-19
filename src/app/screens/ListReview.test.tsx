@@ -168,6 +168,12 @@ describe('List review: the table', () => {
     await waitFor(() => expect(container.querySelector('table img')!.getAttribute('src')).toBe(fakeSummary(CARDS.ajani).imageSmall));
   });
 
+  it('heads the page with the art of the first card of the list', async () => {
+    const { container } = await setup([["Ajani's Pridemate"]], { saved: ['ajani'] });
+    await screen.findByRole('table');
+    expect(container.querySelector('img[src*="art_crop"]')!.getAttribute('src')).toContain('exact=Ajani');
+  });
+
   it('leaves out the picture when the card has none', async () => {
     const { container } = await setup([['Greaves']], { lists: [spec([['Greaves']])], saved: [] });
     await screen.findByRole('table');
@@ -931,6 +937,7 @@ describe('List review: tabs, the dive plan and the binder groups beside the list
   const TWO: Spec[] = [spec([["Ajani's Pridemate"], ['Soul Warden'], ['Command Tower', 1, 'in_collection']]), { id: 'b', name: 'Zombie Tribal', cards: [['Lightning Greaves']] }];
   const panel = () => screen.getByRole('complementary', { name: copy.divePanel.title });
   const SETTINGS = { pull: { worthPullMinCards: 2, worthPullMinUsd: 10 }, includeBasicLands: false };
+  beforeEach(() => { setWidth(1280); });   // the plan sits beside the list only on a desktop
 
   it('shows a tab for each list, marks this one, and opens another', async () => {
     await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'tower', 'greaves'] });
@@ -1013,6 +1020,15 @@ describe('List review: tabs, the dive plan and the binder groups beside the list
     expect(within(aside).getByText(copy.divePanel.listsTitle)).toBeTruthy();
     fireEvent.click(within(aside).getByRole('button', { name: copy.divePanel.hide }));
     expect(within(aside).queryByText(copy.divePanel.listsTitle)).toBeNull();
+  });
+
+  it('on a tablet the plan sits above the cards, closed, so the table has the full width', async () => {
+    setWidth(800);
+    await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'greaves'] });
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    expect(within(aside).queryByText(copy.divePanel.listsTitle)).toBeNull();
+    expect(within(aside).getByRole('button', { name: copy.divePanel.show })).toBeTruthy();
+    expect(screen.getByRole('table')).toBeTruthy();
   });
 
   it('sorts by set', async () => {

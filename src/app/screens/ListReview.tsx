@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
-import { findPrinting, printingImageUrl, typicalOnline } from '../../core/cards';
+import { bannerImageUrl, findPrinting, printingImageUrl, typicalOnline } from '../../core/cards';
 import type { CardRecord } from '../../core/cards';
 import type { Printing } from '../../core/engine/engine';
 import { PRICE_FILTERS, filterCards } from '../../core/filter';
 import type { PriceFilter } from '../../core/filter';
-import { MAX_CARDS_PER_LIST, binderCounts, cardKeysInBinder, listCounts } from '../../core/lists';
+import { MAX_CARDS_PER_LIST, bannerCardName, binderCounts, cardKeysInBinder, listCounts } from '../../core/lists';
 import type { CardList, ListEntry } from '../../core/lists';
 import { planLists } from '../../core/plan';
 import type { CardTarget } from '../../core/plan';
@@ -13,7 +13,7 @@ import type { SortMode } from '../../core/sort';
 import { CARD_STATUSES } from '../../core/status';
 import type { CardStatus } from '../../core/status';
 import {
-  Banner, Button, CardTable, CardThumb, ColorFilter, HoverPreview, Input, ListRow, Menu, PageHeader, QuantityBadge, Select, SelectHeader, SelectionBar, SkeletonRow,
+  Banner, Button, CardTable, CardThumb, ColorFilter, DeckBanner, HoverPreview, Input, ListRow, Menu, PageHeader, QuantityBadge, Select, SelectHeader, SelectionBar, SkeletonRow,
   StandaloneLink, StatusLabel, StatusPicker, isColorCategory, useToast,
 } from '../components';
 import type { ColorCategory } from '../components';
@@ -67,7 +67,7 @@ function ReviewBody({ list }: { list: CardList }) {
   const connector = useConnector();
   const layout = useLayout();
   const phone = layout === 'phone';
-  const wide = layout !== 'phone';
+  const sideBySide = layout === 'desktop';   // the dive plan sits beside the cards only where there is room; else it sits above them
 
   const [sort, setSort] = useState<SortMode>('status');
   const [query, setQuery] = useState('');
@@ -228,8 +228,11 @@ function ReviewBody({ list }: { list: CardList }) {
     </HoverPreview>
   );
 
+  const bannerName = bannerCardName(list);
+
   return (
     <>
+      <DeckBanner size="page" src={bannerName ? bannerImageUrl(bannerName) : null} />
       <PageHeader
         title={list.name}
         subtitle={phone ? t.summaryPhone(counts.needed, online) : t.summary(counts.cards, counts.needed, online)}
@@ -249,8 +252,8 @@ function ReviewBody({ list }: { list: CardList }) {
           ))}
         </nav>
 
-        <div className={wide ? review.layoutWide : review.layout}>
-        {phone && <DivePanel compact records={data.records} />}
+        <div className={sideBySide ? review.layoutWide : review.layout}>
+        {!sideBySide && <DivePanel compact records={data.records} />}
         <div className={review.main}>
         {data.status === 'loading' && data.progress.total > 0 && (
           <Banner tone="info" title={t.loading.title(list.name)}>{t.loading.detail(data.progress.done, data.progress.total)}</Banner>
@@ -346,7 +349,7 @@ function ReviewBody({ list }: { list: CardList }) {
           </>
         )}
         </div>
-        {!phone && <DivePanel compact={false} records={data.records} />}
+        {sideBySide && <DivePanel compact={false} records={data.records} />}
         </div>
       </div>
     </>

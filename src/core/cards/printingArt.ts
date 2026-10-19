@@ -7,6 +7,11 @@ export function printingImageUrl(p: Pick<Printing, 'setCode' | 'collectorNumber'
   return `https://api.scryfall.com/cards/${encodeURIComponent(p.setCode)}/${encodeURIComponent(p.collectorNumber)}?format=image&version=${size}`;
 }
 
+// The cropped art of a card, found by its name, for the banner over a deck. Any print of the card will do.
+export function bannerImageUrl(name: string): string {
+  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}&format=image&version=art_crop`;
+}
+
 export type ArtKind = 'borderless' | 'showcase' | 'extendedart' | 'fullart' | 'promo';
 
 // Why a printing looks different from the usual one, or null for an ordinary print.

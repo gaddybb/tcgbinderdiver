@@ -11,11 +11,11 @@
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--color-text-muted);
-  padding: var(--space-2) var(--space-3);
-  white-space: nowrap;
+  padding: var(--space-2);
+  vertical-align: bottom;   /* a header that wraps (Avg online) sits level with the others */
 }
 .row td {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2);
   border-top: var(--border-thin) solid var(--color-divider);
   vertical-align: middle;
 }
@@ -23,7 +23,8 @@
 .name { font-weight: var(--weight-bold); text-align: left; }
 .badge { margin-left: var(--space-2); }
 .muted { color: var(--color-text-muted); }
-.number { text-align: right; font-weight: var(--weight-bold); white-space: nowrap; }
+/* The price stays in view when the table is wider than its column and scrolls sideways. */
+.number { text-align: right; font-weight: var(--weight-bold); white-space: nowrap; position: sticky; right: 0; background: var(--color-ground); }
 .head .number { text-align: right; }
 .srOnly {
   position: absolute;

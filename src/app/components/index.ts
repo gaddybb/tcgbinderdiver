@@ -6,6 +6,7 @@ export { GameAnchor, Logo } from './Brand';
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
 export { CardImage, CardThumb } from './CardImage';
+export { DeckBanner } from './DeckBanner';
 export { CardTile } from './CardTile';
 export type { CardTileProps } from './CardTile';
 export { CardTable } from './CardTable';

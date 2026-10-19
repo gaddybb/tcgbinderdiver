@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { copyAsText, isValidListName, nextDiveSummary, WISHLIST_ID } from '../../core/lists';
+import { bannerImageUrl } from '../../core/cards';
+import { bannerCardName, copyAsText, isValidListName, nextDiveSummary, WISHLIST_ID } from '../../core/lists';
 import type { CardList } from '../../core/lists';
 import {
   Banner, Button, Dialog, EmptyState, ListCard, Menu, PageHeader, SkeletonRow, SummaryBar, useToast,
@@ -120,7 +121,9 @@ export function MyLists() {
           <>
             {!phone && summaryBar}
             <ul className={styles.cards}>
-              {lists.lists.map(list => (
+              {lists.lists.map(list => {
+                const bannerName = bannerCardName(list);
+                return (
                 <ListCard
                   key={list.id}
                   kindLabel={list.sample ? t.kind.sample : t.kind[list.kind]}
@@ -128,6 +131,7 @@ export function MyLists() {
                   to={`/lists/${list.id}`}
                   summary={listSummaryLine(list, now)}
                   thumbs={[]}
+                  bannerSrc={bannerName ? bannerImageUrl(bannerName) : null}
                   inNextDive={list.inNextDive}
                   onInNextDiveChange={on => lists.setInNextDive(list.id, on)}
                   menu={<Menu label={copy.common.moreFor(list.name)} sheetTitle={list.name} items={menuFor(list)} />}
@@ -139,7 +143,8 @@ export function MyLists() {
                     onCancel: () => setRenaming(null),
                   } : undefined}
                 />
-              ))}
+                );
+              })}
             </ul>
             {phone && summaryBar}
           </>
