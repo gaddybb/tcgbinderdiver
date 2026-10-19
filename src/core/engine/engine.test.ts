@@ -93,9 +93,19 @@ describe('routing engine', () => {
   });
 
   // commander section off -> commander printing routes like a set (commander is not a main set type) -> bulk
-  it('16 commander off -> ask associate', () => {
-    const t = top(card('C', [pr({ setCode: 'fdc', setType: 'commander', usd: '1.00' })]), store({ hasCommanderSection: false }));
+  it('16 commander off, old Commander set -> ask associate', () => {
+    const t = top(card('C', [pr({ setCode: 'c18', setType: 'commander', releasedAt: '2018-08-10', usd: '1.00' })]), store({ hasCommanderSection: false }));
     expect(t?.stop.id).toBe('ask');
+  });
+
+  it('16b commander off, recent Commander set -> a binder of its own, like any set', () => {
+    const t = top(card('C', [pr({ setCode: 'fdc', setType: 'commander', releasedAt: '2026-10-02', usd: '1.00' })]), store({ hasCommanderSection: false }));
+    expect(t?.stop.id).toBe('set:fdc');
+  });
+
+  it('16c an ordinary print beats a Jumpstart print of the same price', () => {
+    const c = card('Giada', [pr({ setCode: 'j25', setType: 'draft_innovation', releasedAt: '2024-11-15', rarity: 'rare', usd: '0.55', collectorNumber: '60' }), pr({ setCode: 'fdn', setType: 'core', releasedAt: '2024-11-15', rarity: 'rare', usd: '0.56', collectorNumber: '141' })]);
+    expect(top(c)?.best.printing.setCode).toBe('fdn');
   });
 
   it('17 value binders on -> value stop', () => {

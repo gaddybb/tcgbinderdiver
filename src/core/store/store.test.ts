@@ -4,7 +4,7 @@ import type { NeededCard } from '../engine/engine';
 import { NOW, card, pr } from '../engine/fixtures';
 import {
   DEFAULT_STORE_SETTINGS, addGroup, addSetToGroup, cardsInSets, commanderSets, deleteGroup, diveStops, groupByKind, isPullDefault, markNotCarried,
-  placeOfSet, removeSetFromGroup, renameGroup, resetPull, setIncludeBasicLands, setPullRule, setTypes, setsUsed, storeProfile, totalCards,
+  placeOfSet, removeSetFromGroup, renameGroup, resetPull, setCombinedCommander, setIncludeBasicLands, setPullRule, setTypes, setsUsed, storeProfile, totalCards,
   unmarkNotCarried, verdictPreview,
 } from './index';
 
@@ -12,7 +12,7 @@ const S = DEFAULT_STORE_SETTINGS;
 
 describe('store settings: the profile', () => {
   it('is the fixed v1 store until the player sets something', () => {
-    expect(storeProfile(S)).toEqual(V1_STORE);
+    expect(storeProfile(S)).toEqual({ ...V1_STORE, hasCommanderSection: false });   // no combined Commander library until the player says so
   });
 
   it('carries the groups, not-carried sets and the basic lands switch', () => {
@@ -23,8 +23,12 @@ describe('store settings: the profile', () => {
     });
   });
 
+  it('the combined Commander library switch turns the Commander box on', () => {
+    expect(storeProfile(setCombinedCommander(S, true)).hasCommanderSection).toBe(true);
+  });
+
   it('starts with no groups, nothing not carried, basics off and the default rule', () => {
-    expect(S).toEqual({ binderGroups: [], notCarried: [], includeBasicLands: false, pull: DEFAULT_PULL_SETTINGS });
+    expect(S).toEqual({ binderGroups: [], notCarried: [], includeBasicLands: false, combinedCommander: false, pull: DEFAULT_PULL_SETTINGS });
     expect(isPullDefault(S)).toBe(true);
   });
 });

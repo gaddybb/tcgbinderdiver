@@ -112,7 +112,8 @@ function ReviewBody({ list }: { list: CardList }) {
       printing,
       targetText,
       setLabel: printing ? printingLabel(printing) : target?.kind === 'stop' ? `${target.setCode.toUpperCase()} ${target.collectorNumber}` : t.target.none,
-      price: record ? typicalOnline(record.printings) : null,
+      // The price of the print the row names, so the set, the picture and the price all describe one print; the card's typical price only when no print is named.
+      price: target?.kind === 'stop' && target.price !== null ? target.price : record ? typicalOnline(record.printings) : null,
     };
   });
 

@@ -34,7 +34,8 @@ async function setup(options: Options = {}) {
   const storage = new MemoryStorage();
   (storage as { persistent: boolean }).persistent = true;
   for (const spec of options.lists ?? []) { const list = makeList(spec); await storage.put('lists', list.id, list); }
-  if (options.settings) await storage.put('settings', 'store-settings', options.settings);
+  // These fixtures have a combined Commander library; the setting is off unless a test says otherwise.
+  await storage.put('settings', 'store-settings', { combinedCommander: true, ...(options.settings as object | undefined) });
   const repo = new CardsRepository(storage);
   for (const key of options.saved ?? Object.keys(CARDS)) {
     const c = CARDS[key];

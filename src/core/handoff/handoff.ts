@@ -36,7 +36,7 @@ export function toWire(handoff: Handoff): string {
   return JSON.stringify({
     v: 1,
     l: handoff.lists.map(l => [l.name, l.kind === 'wishlist' ? 1 : 0, l.entries.map(e => [e.name, e.quantity])]),
-    ...(s ? { s: [s.binderGroups.map(g => [g.id, g.name, g.setCodes]), s.notCarried, s.includeBasicLands ? 1 : 0, s.pull.worthPullMinCards, s.pull.worthPullMinUsd] } : {}),
+    ...(s ? { s: [s.binderGroups.map(g => [g.id, g.name, g.setCodes]), s.notCarried, s.includeBasicLands ? 1 : 0, s.pull.worthPullMinCards, s.pull.worthPullMinUsd, s.combinedCommander ? 1 : 0] } : {}),
   });
 }
 
@@ -67,8 +67,9 @@ export function fromWire(text: string): Handoff | null {
 
   if (o.s === undefined) return { lists };
   const s = o.s as unknown[];
-  if (!Array.isArray(s) || s.length !== 5) return null;
-  const [groups, notCarried, basics, minCards, minUsd] = s;
+  if (!Array.isArray(s) || (s.length !== 5 && s.length !== 6)) return null;   // 5: a link made before the Commander switch
+  const [groups, notCarried, basics, minCards, minUsd, commander] = s;
+  if (commander !== undefined && commander !== 0 && commander !== 1) return null;
   if (!Array.isArray(groups) || groups.length > 100 || !isCodes(notCarried) || (basics !== 0 && basics !== 1)) return null;
   if (typeof minCards !== 'number' || typeof minUsd !== 'number' || !Number.isFinite(minCards) || !Number.isFinite(minUsd)) return null;
   const binderGroups: BinderGroup[] = [];
@@ -79,7 +80,7 @@ export function fromWire(text: string): Handoff | null {
   return {
     lists,
     settings: {
-      binderGroups, notCarried: notCarried.map(c => c.toLowerCase()), includeBasicLands: basics === 1,
+      binderGroups, notCarried: notCarried.map(c => c.toLowerCase()), includeBasicLands: basics === 1, combinedCommander: commander === 1,
       pull: {
         worthPullMinCards: Math.min(99, Math.max(1, Math.round(minCards))) || DEFAULT_PULL_SETTINGS.worthPullMinCards,
         worthPullMinUsd: Math.min(999, Math.max(0, Math.round(minUsd))),

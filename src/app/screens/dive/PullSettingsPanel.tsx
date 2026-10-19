@@ -1,4 +1,4 @@
-import { isPullDefault, resetPull, setIncludeBasicLands, setPullRule, MAX_CARDS_CEILING, MAX_USD_CEILING, MIN_CARDS_FLOOR, verdictPreview } from '../../../core/store';
+import { isPullDefault, resetPull, setCombinedCommander, setIncludeBasicLands, setPullRule, MAX_CARDS_CEILING, MAX_USD_CEILING, MIN_CARDS_FLOOR, verdictPreview } from '../../../core/store';
 import type { DiveStopView } from '../../../core/store';
 import { Button, Dialog, Sheet, Stepper, Switch } from '../../components';
 import { copy } from '../../copy/en';
@@ -42,6 +42,11 @@ export function PullSettingsPanel({ open, onClose, stops }: PullSettingsPanelPro
       <div className={styles.field}>
         <Switch label={t.basics} checked={settings.includeBasicLands} onChange={on => update(s => setIncludeBasicLands(s, on))} />
         <p className={styles.sectionDetail}>{t.basicsNote}</p>
+      </div>
+
+      <div className={styles.field}>
+        <Switch label={t.commander} checked={settings.combinedCommander} onChange={on => update(s => setCombinedCommander(s, on))} />
+        <p className={styles.sectionDetail}>{t.commanderNote}</p>
       </div>
 
       <p className={styles.sectionDetail}>{t.orderNote}</p>

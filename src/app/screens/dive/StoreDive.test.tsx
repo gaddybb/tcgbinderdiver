@@ -41,6 +41,7 @@ async function setup(options: Options = {}) {
   const storage = new MemoryStorage();
   (storage as { persistent: boolean }).persistent = true;
   for (const spec of options.lists ?? [DECK, ZOMBIES]) { const list = makeList(spec); await storage.put('lists', list.id, list); }
+  await storage.put('settings', 'store-settings', { combinedCommander: true });   // these fixtures have a combined Commander library
   if (options.trip !== null) await storage.put('trips', 'current', options.trip ?? startTrip('t1', T0, ['a', 'b']));
   const repo = new CardsRepository(storage);
   for (const card of Object.values(CARDS)) {
