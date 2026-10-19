@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+- The phone QR code no longer disappears when you are trying a sample deck: a sample deck now goes into the phone link like any other list. The code is bigger and drawn as rounded blocks instead of the plain pixel grid; how fine the grid is still depends on how many cards are in the link.
+
 ### Changed
 - The trip summary follows the mockup. On a tablet and desktop it is two columns: the cards still wanted as pictures on the left, with Back to my lists and Start a new trip under them, and Buy the rest on TCGplayer and Try another store nearby in view beside them. On a phone the buttons and both panels come before the cards. It leads with what you found and in how many places (a place counts once you finished it or found a card in it). **Buy on TCGplayer** now opens Mass Entry with the leftover cards already filled in (`?productline=Magic&c=1 Name||2 Name`, checked on TCGplayer's own page); a list too long for an address is copied first and Mass Entry opens empty. The page waits for card data before showing counts. Adds the Impact site verification tag to `index.html` for the affiliate application.
 - The list review now starts sorted Needed first: cards still needed come before owned, ordered, proxied and cut ones, each group A to Z. A new Needed first choice in the Sort menu does the same; Alphabetical is plain A to Z as before. The store dive leaves it out, since every card there is needed.

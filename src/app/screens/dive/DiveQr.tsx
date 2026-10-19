@@ -14,6 +14,10 @@ import styles from './Dive.module.css';
 const t = copy.qr;
 // Past this many characters the code gets too dense to scan quickly in a store.
 export const QR_MAX_CHARS = 1400;
+// In modules: the blank border a scanner needs, the gap between blocks, and how round each block's corners are.
+const QUIET_ZONE = 2;
+const BLOCK_GAP = 0.1;
+const BLOCK_ROUND = 0.2;
 
 export function qrSvg(text: string): string | null {
   if (text.length > QR_MAX_CHARS) return null;
@@ -21,7 +25,16 @@ export function qrSvg(text: string): string | null {
     const code = qrcode(0, 'L');
     code.addData(text);
     code.make();
-    return code.createSvgTag({ scalable: true, margin: 2 });
+    // Each dark square is its own rounded block with a hairline gap, so it reads chunkier than the plain pixel grid.
+    const count = code.getModuleCount();
+    const size = count + 2 * QUIET_ZONE;
+    let blocks = '';
+    for (let row = 0; row < count; row++) {
+      for (let col = 0; col < count; col++) {
+        if (code.isDark(row, col)) blocks += `<rect x="${col + QUIET_ZONE + BLOCK_GAP / 2}" y="${row + QUIET_ZONE + BLOCK_GAP / 2}" width="${1 - BLOCK_GAP}" height="${1 - BLOCK_GAP}" rx="${BLOCK_ROUND}"/>`;
+      }
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" fill="currentColor">${blocks}</svg>`;
   } catch {
     return null;
   }
