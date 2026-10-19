@@ -22,7 +22,7 @@ const CARDS: Record<string, { name: string; typeLine?: string; printings: Printi
   forest: { name: 'Forest', typeLine: 'Basic Land — Forest', printings: [recent('fdn', 'Foundations', { collectorNumber: '280', usd: '0.10' })] },
   ajani: { name: "Ajani's Pridemate", printings: [recent('fdn', 'Foundations', { collectorNumber: '135' })] },
   warden: { name: 'Soul Warden', printings: [recent('fdn', 'Foundations', { collectorNumber: '24' })] },
-  cultivate: { name: 'Cultivate', printings: [recent('fdn', 'Foundations', { collectorNumber: '214' }), pr({ setCode: 'cmm', setName: 'Commander Masters', setType: 'commander', usd: '0.50', collectorNumber: '1' })] },
+  cultivate: { name: 'Cultivate', printings: [pr({ setCode: 'cmm', setName: 'Commander Masters', setType: 'commander', usd: '0.50', collectorNumber: '1' })] },   // Commander only: a recent set binder would now outrank the box
   tower: { name: 'Command Tower', printings: [pr({ setCode: 'cmm', setName: 'Commander Masters', setType: 'commander', usd: '0.35', collectorNumber: '2' })] },
   greaves: { name: 'Lightning Greaves', printings: [pr({ setCode: 'rna', setName: 'Ravnica Allegiance', setType: 'expansion', releasedAt: '2019-01-25', usd: '18.50', collectorNumber: '9' })] },
   bulk: { name: 'Old Bulk', printings: [pr({ setCode: 'old', setName: 'Old Set', setType: 'expansion', releasedAt: '2010-01-01', usd: '0.30', collectorNumber: '7' })] },

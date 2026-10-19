@@ -77,7 +77,7 @@ Everything the player can flip alone comes first; the counter is visited once wi
 ## Weights (all in one `WEIGHTS` table; starting guesses, tune from real data)
 | Factor | Applies to | Values |
 | --- | --- | --- |
-| Base | every candidate | display_case 0.85, commander_box 0.80, set_binder 0.75, value_binder 0.60, bulk 0.55 |
+| Base | every candidate | display_case 0.85, set_binder 0.75, commander_box 0.65, value_binder 0.60, bulk 0.55 |
 | Rarity | all but display_case | common 1.0, uncommon 1.0, rare 0.9, mythic 0.8, special or bonus 0.6 |
 | Finish | every candidate | nonfoil 1.0, foil 0.7, etched 0.5 |
 | Special printing | promo, any promo_types, set_type box, masterpiece, promo, memorabilia, funny, token, or set plst | 0.5 |
@@ -97,6 +97,7 @@ Worked example: a Foundations common, nonfoil, 1 year old, $0.25 and the cheapes
 - Confidences are guesses until real Found data exists. Cutoffs ($15, 3 years, $5) are assumptions to check with store staff.
 - Commander detection is by `set_type` only; some Commander cards appear in non-Commander sets (and vice versa). Accepting that for v1.
 - Stores that sort by color or A to Z are approximated by the hints on Ask an associate.
+- Commander box sits below set binders (0.65 against 0.75; it was 0.80, above them). Owner feedback after v1: a box of mixed singles is a weaker place to send someone than a recent set binder, and a card that is also in a recent set (a Foundations card with a Foundations Commander reprint) belongs in that set's binder. A card whose only recent prints are Commander products still goes to the Commander box, which beats Ask an associate.
 
 ## Fixes versus the AI-drafted specs
 | Problem in the drafts | Fix here |

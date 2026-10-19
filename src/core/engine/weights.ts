@@ -3,7 +3,7 @@
 import type { Finish, Location } from './types';
 
 export const WEIGHTS = {
-  base: { display_case: 0.85, commander_box: 0.8, set_binder: 0.75, value_binder: 0.6, bulk: 0.55 } as Record<Location, number>,
+  base: { display_case: 0.85, commander_box: 0.65, set_binder: 0.75, value_binder: 0.6, bulk: 0.55 } as Record<Location, number>,
   rarity: { common: 1, uncommon: 1, rare: 0.9, mythic: 0.8, special: 0.6, bonus: 0.6 } as Record<string, number>,
   finish: { nonfoil: 1, foil: 0.7, etched: 0.5 } as Record<Finish, number>,
   special: 0.5, frame: 0.7, unknownPrice: 0.8,
