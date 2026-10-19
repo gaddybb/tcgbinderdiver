@@ -63,6 +63,8 @@ describe('Site navigation', () => {
   it('the More page lists the other pages', () => {
     setWidth(375);
     open('/more');
+    // The heading stays for screen readers but is visually hidden (the tab already says where you are).
+    expect(screen.getByRole('heading', { level: 1, name: copy.more.title }).className).toContain('srOnly');
     for (const name of [copy.more.walkthrough, copy.more.support, copy.more.about, copy.more.privacy]) {
       expect(within(screen.getByRole('main')).getByRole('link', { name })).toBeTruthy();
     }
