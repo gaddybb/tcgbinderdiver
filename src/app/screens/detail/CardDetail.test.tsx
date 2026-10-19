@@ -64,11 +64,11 @@ describe('Card detail from the list review', () => {
     const panel = within(await dialog());
     expect(panel.getByRole('heading', { name: "Ajani's Pridemate" })).toBeTruthy();
     const first = panel.getAllByText(t.lookFirst)[0].parentElement as HTMLElement;
-    // The engine prefers the Commander printing for this card; the Foundations binder is the next place.
-    expect(first.textContent).toContain('Commander box');
-    expect(first.textContent).toContain('CMM 15');
+    // The engine prefers the recent Foundations binder; the Commander box is the next place.
+    expect(first.textContent).toContain('Foundations');
+    expect(first.textContent).toContain('FDN 135');
     const alsoTry = within(panel.getByRole('heading', { name: t.alsoTry }).parentElement as HTMLElement);
-    expect(alsoTry.getByText('Foundations')).toBeTruthy();
+    expect(alsoTry.getByText('Commander box')).toBeTruthy();
     expect(alsoTry.getByText('2')).toBeTruthy();   // its place in the order, not odds
     // Two paper printings; the online-only one is left out.
     expect(panel.getByText(t.printings(2))).toBeTruthy();

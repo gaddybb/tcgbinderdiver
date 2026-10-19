@@ -21,6 +21,16 @@ describe('routing engine', () => {
     expect(top(card('X', [pr({ setCode: 'fdc', setType: 'commander', usd: '22.00', rarity: 'mythic' })]))?.stop.id).toBe('case');
   });
 
+  it('5b a recent set printing beats a Commander reprint of the same card', () => {
+    const c = card('Rampant Growth', [pr({ setCode: 'fdn', setType: 'core' }), pr({ setCode: 'fdc', setType: 'commander', releasedAt: '2026-10-02' })]);
+    expect(top(c)?.stop.id).toBe('set:fdn');
+  });
+
+  it('5c a Commander printing still beats an old bulk printing, so Commander staples go to the box', () => {
+    const c = card('Wild Growth', [pr({ setCode: '7ed', setType: 'core', releasedAt: '2001-04-11' }), pr({ setCode: 'c18', setType: 'commander', releasedAt: '2018-08-10' })]);
+    expect(top(c)?.stop.id).toBe('commander');
+  });
+
   it('5 older $6.50 -> ask associate (value binders)', () => {
     const t = top(card('Archangel', [pr({ setCode: 'm14', setType: 'core', releasedAt: '2013-07-19', rarity: 'mythic', usd: '6.50' })]));
     expect(t?.stop.id).toBe('ask');

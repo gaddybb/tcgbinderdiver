@@ -21,7 +21,7 @@ const recent = (setCode: string, setName: string, over: Partial<Parameters<typeo
 const CARDS: Record<string, { name: string; typeLine?: string; printings: Printing[] }> = {
   ajani: { name: "Ajani's Pridemate", printings: [recent('fdn', 'Foundations')] },
   warden: { name: 'Soul Warden', printings: [recent('fdn', 'Foundations')] },
-  cultivate: { name: 'Cultivate', printings: [recent('fdn', 'Foundations'), pr({ setCode: 'cmm', setName: 'Commander Masters', setType: 'commander', usd: '0.50' })] },
+  cultivate: { name: 'Cultivate', printings: [pr({ setCode: 'cmm', setName: 'Commander Masters', setType: 'commander', usd: '0.50' })] },   // Commander only: a recent set binder would now outrank the box
   tower: { name: 'Command Tower', printings: [pr({ setCode: 'cmm', setName: 'Commander Masters', setType: 'commander', usd: '0.35' }), pr({ setCode: 'fdc', setName: 'Foundations Commander', setType: 'commander', usd: '0.40' })] },
   greaves: { name: 'Lightning Greaves', printings: [pr({ setCode: 'rna', setName: 'Ravnica Allegiance', setType: 'expansion', releasedAt: '2019-01-25', usd: '18.50' })] },
   forest: { name: 'Forest', typeLine: 'Basic Land — Forest', printings: [recent('fdn', 'Foundations', { usd: '0.10' })] },

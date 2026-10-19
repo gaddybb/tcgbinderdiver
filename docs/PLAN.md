@@ -97,3 +97,10 @@ interface Storage { get; put; delete; list }   // per collection; IndexedDB now,
 - Analytics needs the Google Tag Manager container id `[GTM ID]` in `src/app/analytics/config.ts`, and the analytics flag turned on in `src/app/flags.ts`. Until both, there is no consent banner and nothing is loaded or sent.
 - Sample decks: two are in (`src/app/data/sampleDecks.ts`, Friendly Bear and Calling All Angels); add more there any time.
 - Check the service worker in a real browser after the first deploy (the in-app browser used for checks refuses service workers).
+
+## Later (logged, not scheduled)
+- **SEO for the React app.** Per-page titles and descriptions, `robots.txt`, `sitemap.xml`, and static pages for Home, About, Walkthrough and Privacy built at deploy time, so search engines do not depend on running the app. Waits on the owner settling the product positioning (the wording will change after) and on the domain pointing at the site.
+- Final branding (name treatment, colors, type): in progress with the owner; the design tokens and the copy module are the two places it lands.
+- Pick the deck banner card, and a sharper banner (Scryfall's art crop is only about 626 px wide).
+- A keep-my-print choice: lists do not record which print a player owns yet.
+- Guided tour: dim the screen and highlight what is explained, on more pages, remembered per device.
