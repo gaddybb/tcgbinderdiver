@@ -1011,6 +1011,14 @@ describe('List review: tabs, the dive plan and the binder groups beside the list
     expect((await storage.get<{ listIds: string[] }>('trips', 'current'))!.listIds).toEqual(['a', 'b']);
   });
 
+  it('on a phone a Build my dive plan button sits on the closed plan, and opens the plan page', async () => {
+    setWidth(375);
+    await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'greaves'] });
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    fireEvent.click(within(aside).getByRole('button', { name: copy.divePanel.build }));
+    expect(window.location.pathname).toBe('/plan');
+  });
+
   it('on a phone the plan opens and closes above the cards', async () => {
     setWidth(375);
     await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'greaves'] });

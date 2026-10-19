@@ -155,6 +155,19 @@ describe('Import: a deck where every name matches', () => {
     expect((await repo.all()).find(l => l.kind === 'deck')!.entries.map(e => e.status)).toEqual(['in_collection', 'in_collection', 'in_collection']);
   });
 
+  it('has Back, Skip and See my list above the cards, so a long list never hides them', async () => {
+    await setup();
+    fill('Deck', '1 Sol Ring\n1 Cultivate');
+    lookUp(2);
+    const title = await heading(t.own.title);
+    const rows = screen.getByText('Sol Ring');
+    for (const name of [t.own.skip, t.own.finish]) {
+      const button = screen.getByRole('button', { name });
+      expect(title.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(button.compareDocumentPosition(rows) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
   it('"Skip, I need them all" leaves everything needed', async () => {
     const { repo } = await setup();
     fill('Deck', '1 Sol Ring\n1 Cultivate');
