@@ -1,4 +1,4 @@
-.qr { width: var(--size-qr); max-width: 100%; background: var(--color-paper); border-radius: var(--radius-md); padding: var(--space-2); }
+.qr { width: var(--size-qr); max-width: 100%; background: var(--color-paper); color: var(--color-on-paper); border-radius: var(--radius-md); padding: var(--space-2); }
 .qr svg { display: block; width: 100%; height: auto; }
 .panelCard {
   display: flex;

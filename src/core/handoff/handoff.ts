@@ -18,11 +18,12 @@ export interface Handoff {
   settings?: StoreSettings;
 }
 
-// The lists that are on for the next dive and have something to find, with their binder groups.
+// The lists that are on for the next dive and have something to find, with their binder groups. A sample deck goes too: it
+// is a real list to whoever is trying the app, and the phone gets it as an ordinary one.
 export function buildHandoff(lists: readonly CardList[], settings: StoreSettings): Handoff {
   return {
     lists: lists
-      .filter(l => l.inNextDive && !l.sample)
+      .filter(l => l.inNextDive)
       .map(l => ({ name: l.name, kind: l.kind, entries: l.entries.filter(e => e.status === 'needed').map(e => ({ name: e.name, quantity: e.quantity })) }))
       .filter(l => l.entries.length > 0),
     settings,

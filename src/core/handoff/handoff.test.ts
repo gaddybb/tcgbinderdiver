@@ -19,10 +19,10 @@ describe('buildHandoff', () => {
     expect(handoff.settings).toEqual(DEFAULT_STORE_SETTINGS);
   });
 
-  it('leaves out a sample deck and a list with nothing needed', () => {
+  it('keeps a sample deck, and leaves out a list with nothing needed', () => {
     const sample = deck('Sample', [['Sol Ring', 1]], { sample: true });
     const done = setEntryStatus(deck('Done', [['Sol Ring', 1]]), 'sol ring', 'proxy', NOW);
-    expect(buildHandoff([sample, done], DEFAULT_STORE_SETTINGS).lists).toEqual([]);
+    expect(buildHandoff([sample, done], DEFAULT_STORE_SETTINGS).lists.map(l => l.name)).toEqual(['Sample']);
   });
 
   it('counts the cards across its lists', () => {
