@@ -21,7 +21,7 @@ export function About() {
         <p className={styles.text}>{copy.footer.fanContentDisclaimer}</p>
       </TextSection>
       <TextSection title={t.contactTitle}>
-        <p className={styles.text}>{t.contactLead} {t.contactText}</p>
+        <p className={styles.text}>{t.contactLead} <a href={`mailto:${t.contactText}`}>{t.contactText}</a></p>
       </TextSection>
     </div>
   );
@@ -39,7 +39,7 @@ export function Support() {
       <TextSection title={t.otherTitle}>
         <ul className={styles.list}>
           <li>{t.share}</li>
-          <li>{t.feedback} {t.feedbackLink}</li>
+          <li>{t.feedback} <a href={`mailto:${t.feedbackLink}`}>{t.feedbackLink}</a></li>
           {isOn('affiliateLinks') && <li>{t.affiliate}</li>}
         </ul>
       </TextSection>
