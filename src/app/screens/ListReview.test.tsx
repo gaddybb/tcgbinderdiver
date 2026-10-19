@@ -20,6 +20,7 @@ const CARDS: Record<string, FakeCard> = {
   forest: { name: 'Forest', typeLine: 'Basic Land — Forest', printings: [fdn('280', '0.10')] },
   online: { name: 'Online Only', printings: [pr({ setCode: 'ymid', digital: true, games: ['arena'], usd: '1.00' })] },
   signet: { name: 'Arcane Signet', printings: [pr({ setCode: 'fdc', setName: 'Foundations Commander', setType: 'commander', collectorNumber: '334', usd: '2.00' })] },
+  giada: { name: 'Giada, Font of Hope', colors: ['W'], typeLine: 'Legendary Creature', printings: [fdn('141', '0.56'), pr({ setCode: 'rna', setName: 'Ravnica Allegiance', releasedAt: '2019-01-25', collectorNumber: '14', usd: '3.00' }), pr({ setCode: 'war', setName: 'War of the Spark', releasedAt: '2019-05-03', collectorNumber: '14', usd: '7.00' })] },
   elves: { name: 'Llanowar Elves', colors: ['G'], typeLine: 'Creature', printings: [fdn('227', '0.30')] },
 };
 
@@ -32,7 +33,8 @@ async function setup(cards: Spec['cards'], options: Options = {}) {
   (storage as { persistent: boolean }).persistent = true;
   const lists = options.lists ?? [spec(cards)];
   for (const s of lists) { const list = makeList(s); await storage.put('lists', list.id, list); }
-  if (options.settings) await storage.put('settings', 'store-settings', options.settings);
+  // These fixtures have a combined Commander library; the setting is off unless a test says otherwise.
+  await storage.put('settings', 'store-settings', { combinedCommander: true, ...(options.settings as object | undefined) });
   const repo = new CardsRepository(storage);
   for (const key of options.saved ?? []) {
     const card = CARDS[key];
@@ -111,6 +113,15 @@ describe('List review: the table', () => {
     await screen.findByRole('table', { name: copy.review.tableLabel('Lifegain Commander') });
     const heads = screen.getAllByRole('columnheader').map(h => h.textContent).filter(Boolean);
     expect(heads).toEqual(Object.values(copy.review.columns));
+  });
+
+  it('shows the price of the print it names, not the typical price across all prints', async () => {
+    await setup([['Giada, Font of Hope']], { saved: ['giada'] });
+    await screen.findByRole('table');
+    await waitFor(() => expect(text(tableRow('Giada, Font of Hope'))).toContain('FDN 141'));
+    const giada = text(tableRow('Giada, Font of Hope'));
+    expect(giada).toContain('$0.56');
+    expect(giada).not.toContain('$3.00');   // the median of the three prints
   });
 
   it('sends each card to the binder the engine picks, with the printing found there and a price', async () => {

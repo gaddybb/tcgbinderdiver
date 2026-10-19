@@ -37,7 +37,7 @@ Card-level inputs from the app: card name, needed copies per list, which lists a
 | --- | --- | --- |
 | usesDisplayCase | true | off: expensive printings fall through |
 | displayCaseMin | 15 | USD at or above goes to Display case |
-| hasCommanderSection | true | off: Commander products route like other sets (and so to Ask an associate) |
+| hasCommanderSection | false in the app (true in the fixed profile) | the shop keeps one combined Commander box. The player's "Shop has a combined Commander library" switch sets it; off, Commander products route like other sets: a Commander set within setBinderMaxAgeYears gets its own binder, an older one goes to Ask an associate |
 | usesSetBinders | true | off: no set binders |
 | setBinderMaxAgeYears | 3 | main sets newer than this get their own binder |
 | usesValueBinders | false | on: value tier becomes its own stop instead of Ask an associate |
@@ -66,7 +66,7 @@ Everything the player can flip alone comes first; the counter is visited once wi
    1. usesDisplayCase and price at or above displayCaseMin: display_case.
    2. hasCommanderSection and setType is `commander`: commander_box.
    3. usesSetBinders and set code in a binder group: set_binder for that group (no age check).
-   4. usesSetBinders, setType in (core, expansion, draft_innovation, masters) and age at most setBinderMaxAgeYears: set_binder for that set.
+   4. usesSetBinders, setType in (core, expansion, draft_innovation, masters), or `commander` when hasCommanderSection is off, and age at most setBinderMaxAgeYears: set_binder for that set.
    5. price at or above valueBinderMin: value_binder.
    6. otherwise bulk.
 3. **Score** = base(location) x rarity x finish x special x frame x unknown-price x age x price-fit, clamped 0 to 1 (table below).
@@ -81,6 +81,7 @@ Everything the player can flip alone comes first; the counter is visited once wi
 | Rarity | all but display_case | common 1.0, uncommon 1.0, rare 0.9, mythic 0.8, special or bonus 0.6 |
 | Finish | every candidate | nonfoil 1.0, foil 0.7, etched 0.5 |
 | Special printing | promo, any promo_types, set_type box, masterpiece, promo, memorabilia, funny, token, or set plst | 0.5 |
+| Other product set | set types outside core, expansion, masters and commander that are not already special (Jumpstart, Duel Decks and the like, which often carry their own art) | 0.96 |
 | Frame | showcase, extendedart, inverted, borderless, full art | 0.7 |
 | Unknown price | that finish's price is null | 0.8 |
 | Age | set_binder reached by the age rule (not groups) | max(0.6, 1 - years / 7.5) |
@@ -97,6 +98,8 @@ Worked example: a Foundations common, nonfoil, 1 year old, $0.25 and the cheapes
 - Confidences are guesses until real Found data exists. Cutoffs ($15, 3 years, $5) are assumptions to check with store staff.
 - Commander detection is by `set_type` only; some Commander cards appear in non-Commander sets (and vice versa). Accepting that for v1.
 - Stores that sort by color or A to Z are approximated by the hints on Ask an associate.
+- With the switch off (the default), the player has said the shop has no combined Commander library, so a recent Commander set is just another set binder. Owner decision after v1 feedback.
+- The 0.96 factor on other product sets is a near-tie breaker: Giada in Foundations Jumpstart ($0.55) no longer beats the ordinary Foundations print ($0.56) by a cent, so the picture is the card everyone knows.
 - Commander box sits below set binders (0.65 against 0.75; it was 0.80, above them). Owner feedback after v1: a box of mixed singles is a weaker place to send someone than a recent set binder, and a card that is also in a recent set (a Foundations card with a Foundations Commander reprint) belongs in that set's binder. A card whose only recent prints are Commander products still goes to the Commander box, which beats Ask an associate.
 
 ## Fixes versus the AI-drafted specs

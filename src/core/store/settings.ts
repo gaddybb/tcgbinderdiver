@@ -7,11 +7,12 @@ export interface StoreSettings {
   binderGroups: BinderGroup[];
   notCarried: string[];          // set codes, lowercase
   includeBasicLands: boolean;
+  combinedCommander: boolean;    // the shop keeps all its Commander singles in one box; off, Commander sets are binders like any other
   pull: PullSettings;
 }
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
-  binderGroups: [], notCarried: [], includeBasicLands: false, pull: DEFAULT_PULL_SETTINGS,
+  binderGroups: [], notCarried: [], includeBasicLands: false, combinedCommander: false, pull: DEFAULT_PULL_SETTINGS,
 };
 
 // The profile the routing engine runs with: the fixed v1 store plus what the player set.
@@ -20,6 +21,7 @@ export const storeProfile = (settings: StoreSettings): StoreProfile => ({
   binderGroups: settings.binderGroups,
   notCarried: settings.notCarried,
   includeBasicLands: settings.includeBasicLands,
+  hasCommanderSection: settings.combinedCommander,
 });
 
 const code = (setCode: string): string => setCode.trim().toLowerCase();
@@ -98,6 +100,8 @@ export function setPullRule(settings: StoreSettings, rule: Partial<PullSettings>
     },
   };
 }
+
+export const setCombinedCommander = (settings: StoreSettings, on: boolean): StoreSettings => ({ ...settings, combinedCommander: on });
 
 export const resetPull = (settings: StoreSettings): StoreSettings => ({ ...settings, pull: DEFAULT_PULL_SETTINGS });
 

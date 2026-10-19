@@ -17,6 +17,9 @@ export { pullVerdict } from './pullVerdict';
 export type { PullSettings, PullVerdict } from './types';
 
 const MAIN_SET_TYPES = new Set(['core', 'expansion', 'draft_innovation', 'masters']);
+// Sets whose prints look like the card everyone knows. Prints from other product sets (Jumpstart, Duel Decks and the like) often
+// carry their own art, so they rank a little lower, all else equal.
+const ORDINARY_SET_TYPES = new Set(['core', 'expansion', 'masters']);
 const SPECIAL_SET_TYPES = new Set(['box', 'masterpiece', 'promo', 'memorabilia', 'funny', 'token']);
 const SPECIAL_FRAMES = new Set(['showcase', 'extendedart', 'inverted']);
 const STOP_ORDER: Record<StopKind, number> = { set_binder: 0, commander_box: 1, value_binder: 2, display_case: 3, ask_associate: 4 };
@@ -53,10 +56,12 @@ export function classify(p: Printing, price: number | null, store: StoreProfile,
   const code = p.setCode.toLowerCase();
   if (store.usesDisplayCase && price !== null && price >= store.displayCaseMin) return { location: 'display_case', viaAge: false };
   if (store.hasCommanderSection && p.setType === 'commander') return { location: 'commander_box', viaAge: false };
+  // With no combined Commander library, a recent Commander set is a binder of its own, like any other set.
   if (store.usesSetBinders) {
     const group = store.binderGroups.find(g => g.setCodes.map(c => c.toLowerCase()).includes(code));
     if (group) return { location: 'set_binder', groupId: group.id, viaAge: false };
-    if (MAIN_SET_TYPES.has(p.setType) && ageYears(p.releasedAt, now) <= store.setBinderMaxAgeYears)
+    const bindered = MAIN_SET_TYPES.has(p.setType) || (!store.hasCommanderSection && p.setType === 'commander');
+    if (bindered && ageYears(p.releasedAt, now) <= store.setBinderMaxAgeYears)
       return { location: 'set_binder', viaAge: true };
   }
   if (price !== null && price >= store.valueBinderMin) return { location: 'value_binder', viaAge: false };
@@ -111,6 +116,7 @@ export function routeCard(card: CardInput, store: StoreProfile, now: Date): Card
     if (c.location !== 'display_case') s *= WEIGHTS.rarity[p.rarity] ?? WEIGHTS.rarity.special;
     s *= WEIGHTS.finish[c.finish];
     if (isSpecial(p)) s *= WEIGHTS.special;
+    else if (!ORDINARY_SET_TYPES.has(p.setType) && p.setType !== 'commander') s *= WEIGHTS.altProduct;
     if (hasSpecialFrame(p)) s *= WEIGHTS.frame;
     if (c.price === null) s *= WEIGHTS.unknownPrice;
     if (meta.get(c)) {

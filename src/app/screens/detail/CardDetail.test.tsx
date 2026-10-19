@@ -39,6 +39,7 @@ async function setup(path: string, lists: Spec[], trip?: Trip) {
   const storage = new MemoryStorage();
   (storage as { persistent: boolean }).persistent = true;
   for (const spec of lists) { const list = makeList(spec); await storage.put('lists', list.id, list); }
+  await storage.put('settings', 'store-settings', { combinedCommander: true });   // these fixtures have a combined Commander library
   if (trip) await storage.put('trips', 'current', trip);
   const repo = new CardsRepository(storage);
   for (const card of Object.values(CARDS)) {

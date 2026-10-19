@@ -472,6 +472,8 @@ export const en = {
     note: 'Binders under both are marked Buy online. You can still pull them.',
     basics: 'Include basic lands',
     basicsNote: 'Off: most stores sell basics separately, so Plains, Forest and friends stay off your hunt.',
+    commander: 'Shop has a combined Commander library',
+    commanderNote: 'On: every Commander product goes into one Commander box. Off: each recent Commander set is a binder of its own, like any other set.',
     preview: (worth: number, buyOnline: number) =>
       `With these settings: ${worth} ${worth === 1 ? 'binder' : 'binders'} worth a pull, ${buyOnline} marked Buy online.`,
     reset: 'Reset to defaults',
@@ -551,7 +553,7 @@ export const en = {
     tabsLabel: 'Your lists',
     pricesUpdated: (date: string) => `Prices from Scryfall, updated ${date}. They are estimates.`,
     pricesOffline: 'You are offline, so these are the prices saved on this device.',
-    columns: { image: 'Image', card: 'Card', status: 'Status', target: 'Target binder', set: 'Set and #', price: 'Avg online' },
+    columns: { image: 'Image', card: 'Card', status: 'Status', target: 'Target binder', set: 'Set and #', price: 'Price' },
     sort: {
       label: 'Sort',
       status: 'Needed first',
@@ -588,7 +590,7 @@ export const en = {
     next: 'Next card',
     position: (n: number, total: number) => `Card ${n} of ${total}`,
     positionIn: (place: string, n: number, total: number) => `${place} · card ${n} of ${total}`,
-    subtitle: (typeLine: string, price: string | null) => (price ? `${typeLine} · avg online ${price}` : typeLine),
+    subtitle: (typeLine: string, price: string | null) => (price ? `${typeLine} · typical price across prints ${price}` : typeLine),
     loading: 'Loading card data…',
     imageLabel: (name: string) => `${name}, card picture`,
     need: 'Need',
