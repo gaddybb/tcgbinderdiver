@@ -1,5 +1,4 @@
 import { copy } from '../copy/en';
-import { KOFI_URL } from '../links';
 import { Link } from '../router';
 import styles from './Footer.module.css';
 
@@ -8,9 +7,6 @@ export function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
-        <p className={styles.text}>
-          {copy.footerLinks.free} <a href={KOFI_URL} target="_blank" rel="noreferrer" className={styles.link}>{copy.footerLinks.coffee}</a>
-        </p>
         <nav aria-label={copy.footerLinks.label} className={styles.links}>
           <Link to="/about" className={styles.link}>{copy.footerLinks.about}</Link>
           <Link to="/privacy" className={styles.link}>{copy.footerLinks.privacy}</Link>

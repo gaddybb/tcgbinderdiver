@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeConnector, fakeSummary } from '../../../connectors/fakeConnector';
 import { pr } from '../../../core/engine/fixtures';
 import { startTrip } from '../../../core/trip';
@@ -47,7 +47,6 @@ describe('Site navigation', () => {
     open('/');
     const footer = screen.getByRole('navigation', { name: copy.footerLinks.label });
     expect(within(footer).getAllByRole('link').map(a => a.textContent)).toEqual([copy.footerLinks.about, copy.footerLinks.privacy, copy.footerLinks.walkthrough, copy.footerLinks.kit]);
-    expect(screen.getByRole('link', { name: copy.footerLinks.coffee }).getAttribute('href')).toContain('ko-fi.com');
     expect(screen.getByTestId('fan-content-disclaimer').textContent).toBe(copy.footer.fanContentDisclaimer);
   });
 
@@ -78,6 +77,32 @@ describe('Home', () => {
     expect(screen.getByLabelText(copy.homePage.formLabel)).toBeTruthy();
     expect(screen.getAllByRole('link', { name: copy.homePage.takeWalkthrough })).toHaveLength(1);
     expect(screen.getAllByRole('heading', { level: 3 }).map(h => h.textContent)).toEqual(copy.homePage.steps.map(s => s.title));
+  });
+
+  it('explains itself before the box, shows an example as the hint, and keeps the walkthrough link in the box with the buttons', () => {
+    open('/');
+    const box = screen.getByLabelText(copy.homePage.formLabel) as HTMLTextAreaElement;
+    expect(screen.getByText(copy.homePage.primer)).toBeTruthy();
+    expect(box.placeholder.startsWith('Example')).toBe(true);
+    expect(box.value).toBe('');
+    const form = box.closest('form')!;
+    expect(within(form).getByRole('link', { name: copy.homePage.takeWalkthrough })).toBeTruthy();
+    expect(within(form).getByRole('button', { name: copy.homePage.plan })).toBeTruthy();
+  });
+
+  it('says why it helps, with the no-guarantee note under the steps', () => {
+    open('/');
+    expect(screen.getByText(copy.homePage.whyLead)).toBeTruthy();
+    expect(screen.getByText(copy.homePage.stepsNote)).toBeTruthy();
+    expect(screen.getByRole('button', { name: new RegExp(copy.homePage.whyCue) })).toBeTruthy();
+  });
+
+  it('has a Ko-fi button at the bottom of the page', () => {
+    const opened = vi.spyOn(window, 'open').mockReturnValue(null);
+    open('/');
+    fireEvent.click(screen.getByRole('button', { name: copy.homePage.support.action }));
+    expect(opened).toHaveBeenCalledWith(expect.stringContaining('ko-fi.com'), '_blank', 'noopener,noreferrer');
+    opened.mockRestore();
   });
 
   it('carries a pasted list into the import, which opens with it filled in', async () => {

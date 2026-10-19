@@ -1,9 +1,11 @@
-// The home page: the pitch, a box to paste a decklist into, and the four steps in a line each.
+// The home page: the pitch, a box to paste a decklist into, why it helps, the four steps in a line each, and Ko-fi.
 import { useState } from 'react';
 import { Button, GameAnchor, Input, StandaloneLink } from '../components';
 import { copy } from '../copy/en';
+import { KOFI_URL } from '../links';
 import { useLayout } from '../layout/useLayout';
 import { navigate } from '../router';
+import { InstallBanner } from './dive/InstallBanner';
 import { setImportText } from './import/handoff';
 import { SampleDeckButton } from './pages/SampleDeckButton';
 import styles from './pages/Pages.module.css';
@@ -22,17 +24,24 @@ export function Home() {
 
   return (
     <div className={`${styles.page} ${styles.wide}`}>
+      <InstallBanner />
       <section className={styles.hero} aria-label={copy.app.name}>
         <GameAnchor />
         <p className={styles.eyebrow}>{t.eyebrow(copy.games.magic)}</p>
         <h1 className={phone ? styles.heroTitleSmall : styles.heroTitle}>{t.title}</h1>
         <p className={styles.lead}>{t.lead}</p>
+        <p className={styles.primer}>{t.primer}</p>
         <form className={styles.form} onSubmit={e => { e.preventDefault(); plan(); }}>
           <Input label={t.formLabel} multiline rows={4} placeholder={t.placeholder} value={text} onChange={e => setText(e.target.value)} />
-          <Button size="lg" onClick={plan}>{t.plan}</Button>
-          <SampleDeckButton size="lg" />
+          <div className={`${styles.formActions} ${phone ? styles.formActionsPhone : ''}`}>
+            <Button size="lg" onClick={plan}>{t.plan}</Button>
+            <SampleDeckButton size="lg" />
+            <p className={styles.formNote}>{t.firstDive} <StandaloneLink to="/walkthrough">{t.takeWalkthrough}</StandaloneLink></p>
+          </div>
         </form>
-        <p className={styles.text}>{t.firstDive} <StandaloneLink to="/walkthrough">{t.takeWalkthrough}</StandaloneLink></p>
+        <Button variant="text" onClick={() => document.getElementById('why-title')?.scrollIntoView?.({ behavior: 'smooth' })}>
+          {t.whyCue} <span aria-hidden="true">↓</span>
+        </Button>
       </section>
 
       <section className={styles.intro} aria-labelledby="why-title">
@@ -48,7 +57,13 @@ export function Home() {
             </li>
           ))}
         </ol>
+        <p className={styles.stepsNote}>{t.stepsNote}</p>
         <StandaloneLink to="/walkthrough">{t.fullWalkthrough}</StandaloneLink>
+      </section>
+
+      <section className={styles.support}>
+        <p className={styles.text}>{t.support.text}</p>
+        <Button variant="secondary" onClick={() => { window.open(KOFI_URL, '_blank', 'noopener,noreferrer'); }}>{t.support.action}</Button>
       </section>
     </div>
   );

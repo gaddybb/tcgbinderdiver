@@ -64,11 +64,19 @@ describe('the install offer', () => {
     expect(screen.queryByText(copy.install.title)).toBeNull();
   });
 
-  it('is not shown anywhere but the trip summary', async () => {
+  it('is shown on the home page too, once the browser has offered', async () => {
     offerInstall();
     window.history.replaceState(null, '', '/');
     render(<App storage={new MemoryStorage()} clock={() => T0} connector={fakeConnector([]).connector} />);
     await screen.findByRole('heading', { level: 1, name: copy.homePage.title });
+    expect(await screen.findByText(copy.install.title)).toBeTruthy();
+  });
+
+  it('is not shown on other pages', async () => {
+    offerInstall();
+    window.history.replaceState(null, '', '/lists');
+    render(<App storage={new MemoryStorage()} clock={() => T0} connector={fakeConnector([]).connector} />);
+    await screen.findByRole('heading', { level: 1 });
     expect(screen.queryByText(copy.install.title)).toBeNull();
   });
 });
