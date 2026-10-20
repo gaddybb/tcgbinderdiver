@@ -24,6 +24,7 @@ export function Home() {
 
   return (
     <div className={`${styles.page} ${styles.wide}`}>
+      <div className={styles.heroBackdrop} aria-hidden="true" />
       <InstallBanner />
       <section className={styles.hero} aria-label={copy.app.name}>
         <GameAnchor />
