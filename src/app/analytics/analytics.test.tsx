@@ -134,7 +134,7 @@ describe('the events', () => {
     const { sent, config } = setup();
     await open('/dive', config, new MemoryStorage(), prepare);
     fireEvent.click(await screen.findByRole('button', { name: copy.cardTile.foundPlusOne }));
-    fireEvent.click(screen.getByRole('button', { name: copy.storeDive.finishBinder }));
+    fireEvent.click(screen.getAllByRole('button', { name: copy.storeDive.finishBinder })[0]);
     await waitFor(() => expect(sent).toEqual([
       { event: 'card_found', stop_type: 'set_binder' },
       { event: 'stop_finished', stop_type: 'set_binder', found: 1, unfound: 1 },

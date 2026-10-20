@@ -56,6 +56,8 @@ async function setup(options: Options = {}) {
 }
 
 const press = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }));
+// Finish binder is above the cards and below them; either one does it.
+const pressFinish = () => fireEvent.click(screen.getAllByRole('button', { name: t.finishBinder })[0]);
 const setWidth = (width: number) => act(() => { window.innerWidth = width; window.dispatchEvent(new Event('resize')); });
 const tile = (name: string) => screen.getByText(name, { selector: 'div' }).closest('li') as HTMLElement;
 const picker = () => screen.getByLabelText(t.pickerHint(true)) as HTMLSelectElement;
@@ -91,6 +93,16 @@ describe('Store dive: a binder', () => {
     expect(ajani.textContent).toContain('FDN 135');
     expect(ajani.textContent).toContain('$1.00');
     expect(ajani.textContent).toContain('Lifegain, Zombies');
+  });
+
+  it('has Finish binder above the cards and below them, so a long binder never means a long scroll', async () => {
+    await setup();
+    await onFoundations();
+    const buttons = screen.getAllByRole('button', { name: t.finishBinder });
+    expect(buttons).toHaveLength(2);
+    const firstCard = tile("Ajani's Pridemate");
+    expect(buttons[0].compareDocumentPosition(firstCard) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(buttons[1].compareDocumentPosition(firstCard) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   });
 
   it('Found marks a card and Undo takes it back, with progress counted in copies', async () => {
@@ -130,8 +142,8 @@ describe('Store dive: a binder', () => {
     const { storage } = await setup();
     await onFoundations();
     fireEvent.click(within(tile('Soul Warden')).getByRole('button', { name: copy.cardTile.found }));
-    expect(screen.getByText(t.cardsLeft(4))).toBeTruthy();
-    press(t.finishBinder);
+    expect(screen.getAllByText(t.cardsLeft(4))).toHaveLength(2);   // in both Finish binder bars
+    pressFinish();
     expect(await screen.findByText(t.finishedToast('Foundations'))).toBeTruthy();
     expect(await screen.findByText(t.stopOf(1, 3))).toBeTruthy();
     expect(screen.getByText('Command Tower')).toBeTruthy();
@@ -141,7 +153,7 @@ describe('Store dive: a binder', () => {
   it('lists finished binders in the picker, and choosing one reopens it', async () => {
     await setup();
     await onFoundations();
-    press(t.finishBinder);
+    pressFinish();
     await screen.findByText(t.stopOf(1, 3));
     const groups = picker().querySelectorAll('optgroup');
     expect(groups).toHaveLength(1);
@@ -206,7 +218,7 @@ describe('Store dive: a binder', () => {
   it('says when every binder is done', async () => {
     await setup({ lists: [{ ...DECK, cards: [['Soul Warden']] }], trip: startTrip('t', T0, ['a']) });
     await screen.findByText(t.stopOf(1, 1));
-    press(t.finishBinder);
+    pressFinish();
     expect(await screen.findByRole('heading', { name: t.allDone.title })).toBeTruthy();
   });
 });
@@ -430,7 +442,7 @@ describe('Ending the trip', () => {
     const { storage } = await setup();
     await onFoundations();
     fireEvent.click(within(tile('Soul Warden')).getByRole('button', { name: copy.cardTile.found }));
-    press(t.finishBinder);
+    pressFinish();
     await screen.findByText(t.stopOf(1, 3));
     press(copy.storeDive.endTrip);
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.endDialog.end }));
