@@ -763,7 +763,6 @@ export const en = {
     kit: 'Component kit',
   },
   homePage: {
-    eyebrow: (game: string) => game,
     title: 'Stop researching. Start finding.',
     lead: 'See which store binders to pull first, and what to look for in each.',
     primer: "Paste your deck and Binder Diver builds a plan for your local game store: which binders to dig through first, and which cards to look for in each. It does the print-history research so you don't have to.",
