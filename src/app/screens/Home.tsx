@@ -27,8 +27,7 @@ export function Home() {
       <div className={styles.heroBackdrop} aria-hidden="true" />
       <InstallBanner />
       <section className={styles.hero} aria-label={copy.app.name}>
-        <GameAnchor />
-        <p className={styles.eyebrow}>{t.eyebrow(copy.games.magic)}</p>
+       
         <h1 className={phone ? styles.heroTitleSmall : styles.heroTitle}>{t.title}</h1>
         <p className={styles.primer}>{t.primer}</p>
         <form className={styles.form} onSubmit={e => { e.preventDefault(); plan(); }}>
