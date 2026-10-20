@@ -59,6 +59,7 @@ describe('the QR code', () => {
   it('draws one for a short link, and none for a link that is too long', () => {
     expect(qrSvg('https://x.example/open#0.abc')).toContain('<svg');
     expect(qrSvg('x'.repeat(QR_MAX_CHARS + 1))).toBeNull();
+    expect(qrSvg('https://x.example/open#' + 'a'.repeat(QR_MAX_CHARS - 23))).toContain('<svg');   // the longest link still makes a code
   });
 
   it('shows beside the list, labelled, with a link to copy', async () => {

@@ -13,8 +13,9 @@ import { encodeHandoff, handoffLink } from '../../handoff/codec';
 import styles from './Dive.module.css';
 
 const t = copy.qr;
-// Past this many characters the code gets too dense to scan quickly in a store.
-export const QR_MAX_CHARS = 1400;
+// Past this many characters the code gets too dense to scan. 2400 is about a 36th-size code (169 squares across), which a phone
+// reads fine from a screen when the code is shown this large (see --size-qr): about 330 cards in a compact link.
+export const QR_MAX_CHARS = 2400;
 // In modules: the blank border a scanner needs, the gap between blocks, and how round each block's corners are.
 const QUIET_ZONE = 2;
 const BLOCK_GAP = 0.1;

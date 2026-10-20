@@ -80,7 +80,7 @@
   --size-banner: 6rem;     /* the deck art strip on a list card */
   --size-banner-page: 15rem;  /* the same over a list's page: tall enough to show most of the art, which is shown at its real size */
   --size-banner-art-w: 39rem; /* the art on a list's page is shown no wider than its real size (about 626 px), so it stays sharp */
-  --size-qr: 15rem;        /* the QR code beside the dive plan */
+  --size-qr: 22rem;        /* the QR code beside the dive plan */
   --size-preview-w: 18rem; /* the larger card picture shown on hover in tables */
   --size-prose: 44rem;     /* reading width for text pages */
   --size-detail-w: 28.75rem;     /* the card detail panel beside the list, on tablet and desktop */

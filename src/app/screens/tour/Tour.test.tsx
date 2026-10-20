@@ -47,8 +47,8 @@ describe('Tour', () => {
 
     const other = show('plan');
     await screen.findByRole('region', { name: copy.tourFlow.plan.label }, { timeout: 5000 });
-    fireEvent.keyDown(document, { key: 'Escape' });
-    expect(region('plan')).toBeNull();
+    // The Escape listener is attached by an effect that can run just after the region shows, so press until it takes.
+    await waitFor(() => { fireEvent.keyDown(document, { key: 'Escape' }); expect(region('plan')).toBeNull(); });
     await waitFor(async () => expect(await other.storage.get('settings', 'pref:tour-plan')).toBe('yes'));
   });
 
