@@ -1,9 +1,10 @@
 // /open: the page a hand-off link or QR code lands on. It shows what is in the link and adds it to this device on request.
 import { useEffect, useState } from 'react';
-import { handoffCards, toIncoming } from '../../../core/handoff';
+import { handoffCards, resolveFingerprints, toIncoming } from '../../../core/handoff';
 import type { Handoff } from '../../../core/handoff';
 import { Banner, Button, EmptyState, PageHeader, SkeletonRow, useToast } from '../../components';
 import { copy } from '../../copy/en';
+import { useConnector } from '../../data/CardDataProvider';
 import { useLists } from '../../data/ListsProvider';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
 import { decodeHandoff } from '../../handoff/codec';
@@ -16,17 +17,26 @@ export function OpenHandoff() {
   const lists = useLists();
   const store = useStoreSettings();
   const toast = useToast();
-  const [state, setState] = useState<{ status: 'reading' } | { status: 'bad' } | { status: 'ready'; handoff: Handoff }>({ status: 'reading' });
+  const connector = useConnector();
+  const [state, setState] = useState<{ status: 'reading' } | { status: 'bad' } | { status: 'ready'; handoff: Handoff; unmatched: number }>({ status: 'reading' });
   const [limit, setLimit] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let current = true;
-    void decodeHandoff(window.location.hash.slice(1)).then(handoff => {
-      if (current) setState(handoff ? { status: 'ready', handoff } : { status: 'bad' });
-    });
+    void (async () => {
+      let handoff = await decodeHandoff(window.location.hash.slice(1));
+      let unmatched = 0;
+      // A compact link names cards by fingerprint: this device's card catalog turns them back into names.
+      if (handoff?.lists.some(l => l.entries.some(e => e.fp !== undefined))) {
+        const index = await connector.fingerprintIndex?.();
+        if (!index) handoff = null;
+        else if (handoff) ({ handoff, unmatched } = resolveFingerprints(handoff, index));
+      }
+      if (current) setState(handoff && handoff.lists.length > 0 ? { status: 'ready', handoff, unmatched } : { status: 'bad' });
+    })();
     return () => { current = false; };
-  }, []);
+  }, [connector]);
 
   if (state.status === 'reading') return <SkeletonRow />;
   if (state.status === 'bad') {
@@ -63,6 +73,7 @@ export function OpenHandoff() {
         <ul className={screen.plain}>
           {handoff.lists.map(list => <li key={list.name}>{t.listLine(list.name, list.entries.length)}</li>)}
         </ul>
+        {state.unmatched > 0 && <Banner tone="info" title={t.unmatched(state.unmatched)}>{t.unmatchedNote}</Banner>}
         {handoff.settings && <p className={screen.lead}>{t.settingsNote}</p>}
         <div>
           <Button disabled={busy} onClick={() => { void add(); }}>{t.add}</Button>

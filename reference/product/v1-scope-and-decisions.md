@@ -10,7 +10,7 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 - [x] Four import steps: Name it, Look up cards, Fix names, What you own. Wishlist import has three (no What you own) and skips cards already on the wishlist.
 - [x] Step 1 asks where cards go: New deck (named) or Wishlist (no name field). Sideboard and maybeboard sections are off by default with a toggle each. Duplicate lines combine into one entry with a quantity.
 - [ ] Fix names: several matches grouped under "Needs your pick" (tabs on desktop, 1-of-N pager on phone); not-found names use live card-name autocomplete; spellings fixed automatically show with Undo.
-- [x] Per-card status at import: Needed, In collection, Ordered, Proxy, Out of deck, with Set all to and Reset to needed.
+- [x] Per-card status at import: Needed, In collection, Ordered, Proxy, Out of deck, with Set all to and Reset to needed. One See my list button finishes the step (there is no separate Skip: with nothing marked it already leaves everything Needed, and Reset to needed clears marks).
 - [x] Limits and errors: 250 cards per list (split in two or keep first 250), empty paste, no card names found, Scryfall trouble with retry, resume banners on My lists if a lookup was interrupted.
 - [x] Sample deck: a small built-in set of popular decks, one picked at random; skips import, opens the plan with a banner (Paste my own list, Try another).
 

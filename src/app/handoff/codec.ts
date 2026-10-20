@@ -24,8 +24,9 @@ async function run(bytes: Uint8Array<ArrayBuffer>, stream: CompressionStream | D
   return new Uint8Array(await new Response(stream.readable).arrayBuffer());
 }
 
-export async function encodeHandoff(handoff: Handoff): Promise<string> {
-  const plain = encoder.encode(toWire(handoff));
+// `compact`: cards go as fingerprints, not names (far shorter; the receiver needs its card catalog).
+export async function encodeHandoff(handoff: Handoff, compact = false): Promise<string> {
+  const plain = encoder.encode(toWire(handoff, compact));
   const asIs = `0.${toBase64Url(plain)}`;
   if (typeof CompressionStream === 'undefined') return asIs;
   try {

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { fakeConnector } from '../../../connectors/fakeConnector';
-import { buildHandoff } from '../../../core/handoff';
+import { buildHandoff, fingerprint } from '../../../core/handoff';
 import { DEFAULT_STORE_SETTINGS, addGroup } from '../../../core/store';
 import { ListsRepository, MemoryStorage } from '../../../storage';
 import { App } from '../../App';
@@ -17,11 +17,14 @@ afterEach(() => { window.innerWidth = 1024; goTo('/'); Object.defineProperty(nav
 
 const DECK: Spec = { id: 'a', name: 'Lifegain', cards: [['Sol Ring', 2], ['Cultivate']] };
 
-async function open(path: string, specs: Spec[] = [DECK], storage = new MemoryStorage()) {
+// A connector with the whole card catalog on the device, as the app has after its card data loads.
+const withCatalog = (names: readonly string[]) => ({ ...fakeConnector([]).connector, fingerprintIndex: async () => new Map(names.map(n => [fingerprint(n), n] as const)) });
+
+async function open(path: string, specs: Spec[] = [DECK], storage = new MemoryStorage(), connector: ReturnType<typeof fakeConnector>['connector'] = fakeConnector([]).connector) {
   (storage as { persistent: boolean }).persistent = true;
   for (const spec of specs) { const list = makeList(spec); await storage.put('lists', list.id, list); }
   goTo(path);
-  const view = render(<App storage={storage} clock={() => T0} connector={fakeConnector([]).connector} />);
+  const view = render(<App storage={storage} clock={() => T0} connector={connector} />);
   return { storage, repo: new ListsRepository(storage), ...view };
 }
 
@@ -100,6 +103,39 @@ describe('the QR code', () => {
     await open('/lists/a', [{ ...DECK, cards: [['Sol Ring', 1, 'in_collection']] }]);
     await screen.findByRole('complementary', { name: copy.divePanel.title });
     expect(screen.queryByRole('img', { name: copy.qr.label })).toBeNull();
+  });
+});
+
+describe('the compact link', () => {
+  it('is what the QR code carries when this device has the card catalog, so a big deck still fits', async () => {
+    let copied = '';
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t: string) => { copied = t; } }, configurable: true });
+    window.innerWidth = 1280;
+    const cards = Array.from({ length: 125 }, (_, i) => [`Some Card Name Number ${i} of the Deep`, 1] as [string, number]);
+    await open('/lists/big', [{ id: 'big', name: 'Big', cards }], new MemoryStorage(), withCatalog(cards.map(c => c[0])));
+    const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
+    expect(await within(aside).findByRole('img', { name: copy.qr.label }, { timeout: 5000 })).toBeTruthy();   // it fits: 125 cards by name would not
+    fireEvent.click(within(aside).getByRole('button', { name: copy.qr.copyLink }));
+    await waitFor(() => expect(copied).toContain('/open#'));
+    const decoded = await decodeHandoff(copied.split('#')[1]);
+    expect(decoded!.lists[0].entries[0]).toMatchObject({ name: '', fp: fingerprint(cards[0][0]) });
+  });
+
+  it('opens on a device with the catalog: names come back, and cards it does not know are counted', async () => {
+    const big = { id: 'big', name: 'Big', cards: [['Sol Ring'], ['Cultivate'], ['Brand New Card']] as [string][] };
+    const path = `/open#${await encodeHandoff(buildHandoff([makeList(big)], DEFAULT_STORE_SETTINGS), true)}`;
+    const { repo } = await open(path, [], new MemoryStorage(), withCatalog(['Sol Ring', 'Cultivate']));
+    expect(await screen.findByText(copy.openHandoff.unmatched(1))).toBeTruthy();
+    expect(screen.getByText(copy.openHandoff.detail(1, 2))).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.openHandoff.add }));
+    await waitFor(() => expect(window.location.pathname).toBe('/plan'));
+    expect((await repo.all()).find(l => l.name === 'Big')!.entries.map(e => e.name)).toEqual(['Sol Ring', 'Cultivate']);
+  });
+
+  it('says it cannot be read on a device without the catalog', async () => {
+    const path = `/open#${await encodeHandoff(buildHandoff([makeList(DECK)], DEFAULT_STORE_SETTINGS), true)}`;
+    await open(path, []);
+    expect(await screen.findByText(copy.openHandoff.bad.title)).toBeTruthy();
   });
 });
 

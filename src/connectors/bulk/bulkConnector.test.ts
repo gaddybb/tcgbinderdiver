@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from 'vitest';
 import { buildManifest, decodeCatalog, encodeScryfallCards } from '../../core/catalog';
+import { fingerprint } from '../../core/handoff';
 import fixture from '../../core/catalog/fixtures/default-cards.sample.jsonl?raw';
 import { pr } from '../../core/engine/fixtures';
 import { fakeConnector } from '../fakeConnector';
@@ -246,6 +247,15 @@ describe('BulkConnector: loading', () => {
   it('says there is no catalog when it could not be loaded', async () => {
     const { connector } = setup({ load: () => Promise.reject(new Error('x')) });
     expect(await connector.catalogInfo()).toBeNull();
+  });
+
+  it('has every catalog card name by fingerprint, for the compact phone link, and none when the live API is in use', async () => {
+    const { connector } = setup();
+    const index = (await connector.fingerprintIndex())!;
+    expect(index.get(fingerprint('Sol Ring'))).toBe('Sol Ring');
+    expect(index.size).toBeGreaterThan(1);
+    const { connector: live } = setup({ load: () => Promise.reject(new Error('x')) });
+    expect(await live.fingerprintIndex()).toBeNull();
   });
 
   it('is a GameConnector for Magic', () => {

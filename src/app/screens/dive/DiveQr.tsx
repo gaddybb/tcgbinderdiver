@@ -6,6 +6,7 @@ import { buildHandoff } from '../../../core/handoff';
 import { Button, useToast } from '../../components';
 import { copyText } from '../../clipboard';
 import { copy } from '../../copy/en';
+import { useConnector } from '../../data/CardDataProvider';
 import { useLists } from '../../data/ListsProvider';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
 import { encodeHandoff, handoffLink } from '../../handoff/codec';
@@ -44,15 +45,21 @@ export function DiveQr() {
   const { lists } = useLists();
   const { settings } = useStoreSettings();
   const toast = useToast();
+  const connector = useConnector();
   const handoff = useMemo(() => buildHandoff(lists, settings), [lists, settings]);
   const [link, setLink] = useState<string | null>(null);
 
   useEffect(() => {
     let current = true;
     if (handoff.lists.length === 0) return;
-    void encodeHandoff(handoff).then(encoded => { if (current) setLink(handoffLink(window.location.origin, encoded)); });
+    // With the card catalog on this device the link carries card fingerprints, so even a big deck fits in the code; without it, names.
+    void (async () => {
+      const index = await connector.fingerprintIndex?.();
+      const encoded = await encodeHandoff(handoff, index != null);
+      if (current) setLink(handoffLink(window.location.origin, encoded));
+    })();
     return () => { current = false; };
-  }, [handoff]);
+  }, [handoff, connector]);
 
   if (handoff.lists.length === 0 || link === null) return null;
   const svg = qrSvg(link);

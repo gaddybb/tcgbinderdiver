@@ -298,7 +298,6 @@ export const en = {
       setAll: 'Set all to',
       reset: 'Reset to needed',
       legend: 'In collection: you own it. Ordered: on the way. Proxy: playing a stand-in. Out of deck: cut, kept for reference. Only Needed cards go on your hunt.',
-      skip: 'Skip, I need them all',
       later: 'You can change any of this later.',
       finish: 'See my list',
     },
@@ -720,7 +719,9 @@ export const en = {
     add: 'Add to my deck lists',
     cancel: 'Cancel',
     added: (lists: number) => `Added ${lists} ${lists === 1 ? 'list' : 'lists'}.`,
-    bad: { title: "This link can't be read", text: 'Ask for a fresh QR code or link from the other device.', action: 'Go to my deck lists' },
+    unmatched: (n: number) => `${n} ${n === 1 ? 'card is' : 'cards are'} newer than the card data on this device`,
+    unmatchedNote: 'They are left out. Refresh card data on the other device and this one, then scan again to include them.',
+    bad: { title: "This link can't be read", text: 'Ask for a fresh QR code or link from the other device. If the link is a short one, wait for card data to finish loading here and try again.', action: 'Go to my deck lists' },
   },
   sample: {
     button: 'Try a sample deck',

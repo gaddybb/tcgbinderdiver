@@ -36,7 +36,6 @@ export function OwnStep({ entries, choices, onChange, busy, onBack, onFinish }: 
       <div className={styles.actions}>
         <Button variant="secondary" onClick={onBack}>{copy.importFlow.back}</Button>
         <span className={styles.actionsEnd}>
-          <Button variant="text" disabled={busy} onClick={() => onFinish(resetStatuses())}>{t.skip}</Button>
           <Button disabled={busy} onClick={() => onFinish(choices)}>{t.finish}</Button>
         </span>
       </div>
