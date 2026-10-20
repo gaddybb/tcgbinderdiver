@@ -1015,8 +1015,11 @@ describe('List review: tabs, the dive plan and the binder groups beside the list
   it('starts a store dive from the plan, with the lists that have cards', async () => {
     const { storage } = await setup(undefined, { lists: TWO, saved: ['ajani', 'warden', 'greaves'] });
     const aside = await screen.findByRole('complementary', { name: copy.divePanel.title });
-    const start = await within(aside).findByRole('button', { name: copy.dive.startDive });
+    // Start store dive is at the top of the plan and at its end; either starts the dive.
+    await waitFor(() => expect(within(aside).getAllByRole('button', { name: copy.dive.startDive })).toHaveLength(2));
+    const [start, end] = within(aside).getAllByRole('button', { name: copy.dive.startDive });
     await waitFor(() => expect((start as HTMLButtonElement).disabled).toBe(false));
+    expect(start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(start);
     expect(window.location.pathname).toBe('/dive');
     expect((await storage.get<{ listIds: string[] }>('trips', 'current'))!.listIds).toEqual(['a', 'b']);

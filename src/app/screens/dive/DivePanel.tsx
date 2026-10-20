@@ -52,6 +52,10 @@ export function DivePanel({ compact, records }: DivePanelProps) {
       </div>
 
       {!compact || !open ? <p className={styles.sectionDetail}>{t.summary(stops.reduce((n, s) => n + s.cards, 0), stops.length)}</p> : null}
+      {/* Start is at the top of the plan as well as at its end, so starting never means scrolling past the whole plan. */}
+      {!compact && (active
+        ? <Button onClick={() => navigate('/dive')}>{copy.dive.resumeDive}</Button>
+        : <Button disabled={stops.length === 0} onClick={() => startDive(tripApi, next)}>{copy.dive.startDive}</Button>)}
       {compact && !open && <Button onClick={() => navigate(active ? '/dive' : '/plan')}>{active ? copy.dive.resumeDive : t.build}</Button>}
 
       {shown && (
