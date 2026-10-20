@@ -44,7 +44,7 @@ export function DivePanel({ compact, records }: DivePanelProps) {
   const shown = open || !compact;
 
   return (
-    <aside className={styles.panelCard} aria-label={t.title}>
+    <aside className={styles.panelCard} aria-label={t.title} data-tour="list-plan">
       <div className={styles.toolbar}>
         <h2 className={styles.sectionTitle}>{t.title}</h2>
         <Button variant="secondary" onClick={() => setSettings(true)}>{copy.dive.pullSettings}</Button>

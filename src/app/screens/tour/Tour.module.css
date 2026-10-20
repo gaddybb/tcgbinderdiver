@@ -1,0 +1,17 @@
+.root { position: fixed; inset: 0; z-index: var(--z-toast); }
+.backdrop { position: absolute; inset: 0; }
+.dim { background: var(--color-scrim); }
+/* The lit-up target: a ring, and a shadow big enough to darken the rest of the screen. */
+.hole {
+  position: absolute;
+  border-radius: var(--radius-card);
+  border: var(--border-thin) solid var(--color-brass);
+  box-shadow: 0 0 0 100vmax var(--color-scrim);
+  pointer-events: none;
+  transition: top 0.2s, left 0.2s, width 0.2s, height 0.2s;
+}
+.tip { position: absolute; width: var(--size-tip-w); max-width: calc(100vw - 2 * var(--space-3)); }
+.docked { position: absolute; width: var(--size-tip-w); max-width: calc(100vw - 2 * var(--space-3)); left: 50%; bottom: calc(var(--space-4) + var(--tabbar-offset, 0rem)); transform: translateX(-50%); }
+.centered { position: absolute; width: var(--size-tip-w); max-width: calc(100vw - 2 * var(--space-3)); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.welcome { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); background: var(--color-deep); border: var(--border-thin) solid var(--color-border-strong); border-radius: var(--radius-card); box-shadow: var(--shadow-toast); }
+.welcomeActions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
