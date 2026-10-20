@@ -66,9 +66,13 @@ describe('Tour', () => {
     try {
       show('list', new MemoryStorage(), ['list-controls']);
       fireEvent.click(await screen.findByRole('button', { name: copy.tourFlow.show }));
-      expect(screen.getByTestId('tour-spotlight')).toBeTruthy();
+      const spotlight = await screen.findByTestId('tour-spotlight');
+      expect(spotlight.style.top).toContain('100px');
+      // The page moves under the tour (data arriving, a banner appearing) without a resize or scroll: the light follows.
+      rect.top = 300;
+      await waitFor(() => expect(screen.getByTestId('tour-spotlight').style.top).toContain('300px'));
       fireEvent.click(screen.getByRole('button', { name: copy.tour.next }));   // list-cards is not on this page
-      expect(screen.queryByTestId('tour-spotlight')).toBeNull();
+      await waitFor(() => expect(screen.queryByTestId('tour-spotlight')).toBeNull());
       expect(screen.getByText(copy.tourFlow.list.tips[1].title)).toBeTruthy();
     } finally {
       Element.prototype.getBoundingClientRect = original;

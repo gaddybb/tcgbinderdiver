@@ -72,9 +72,7 @@ export function DivePlan() {
           <Button variant="text" onClick={() => setConfirmNew(true)}>{t.newTrip}</Button>
         </span>
       ) : (
-        <span data-tour="plan-start">
-          <Button disabled={total === 0} onClick={startTrip}>{t.startDive}</Button>
-        </span>
+        <Button data-tour="plan-start" disabled={total === 0} onClick={startTrip}>{t.startDive}</Button>
       )}
     />
   );
