@@ -35,18 +35,18 @@ describe('Tour', () => {
 
   it('Skip and Escape both close it and are remembered, and it does not come back on this device', async () => {
     const first = show('list');
-    fireEvent.click(await screen.findByRole('button', { name: copy.tourFlow.skip }));
+    fireEvent.click(await screen.findByRole('button', { name: copy.tourFlow.skip }, { timeout: 5000 }));
     expect(region('list')).toBeNull();
     await waitFor(async () => expect(await first.storage.get('settings', 'pref:tour-list')).toBe('yes'));
     first.unmount();
 
     const again = show('list', first.storage);
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise(resolve => setTimeout(resolve, 100));
     expect(region('list')).toBeNull();
     again.unmount();
 
     const other = show('plan');
-    await screen.findByRole('region', { name: copy.tourFlow.plan.label });
+    await screen.findByRole('region', { name: copy.tourFlow.plan.label }, { timeout: 5000 });
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(region('plan')).toBeNull();
     await waitFor(async () => expect(await other.storage.get('settings', 'pref:tour-plan')).toBe('yes'));

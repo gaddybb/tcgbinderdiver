@@ -78,7 +78,7 @@
   --size-end-tile: 7.5rem; /* a card still wanted, on the trip summary */
   --size-hero-bg: 46rem;   /* the home page's background picture, from the top of the page */
   --size-banner: 6rem;     /* the deck art strip on a list card */
-  --size-banner-page: 9rem;   /* the same over a list's page */
+  --size-banner-page: 15rem;  /* the same over a list's page: tall enough to show most of the art, which is shown at its real size */
   --size-banner-art-w: 39rem; /* the art on a list's page is shown no wider than its real size (about 626 px), so it stays sharp */
   --size-qr: 15rem;        /* the QR code beside the dive plan */
   --size-preview-w: 18rem; /* the larger card picture shown on hover in tables */
