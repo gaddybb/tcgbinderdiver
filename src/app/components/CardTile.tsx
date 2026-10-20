@@ -49,6 +49,8 @@ export function CardTile({ name, setLabel, price, lists, imageUrl, fallbackUrl, 
       <span className={styles.lists}>{lists}</span>
       {hint && <span className={styles.hint}>{hint}</span>}
 
+      {/* The controls sit at the bottom of the tile, and tiles in a row stretch to the same height, so every Found button is level. */}
+      <div className={styles.controls}>
       {many && (
         <ProgressBar size="sm" value={found} max={quantity} label={copy.progress.copiesLabel(name)} caption={copy.progress.copiesOf(found, quantity)} />
       )}
@@ -71,6 +73,7 @@ export function CardTile({ name, setLabel, price, lists, imageUrl, fallbackUrl, 
             : <span className={styles.grow}><Button fullWidth onClick={onFound}>{copy.cardTile.foundPlusOne}</Button></span>}
         </div>
       )}
+      </div>
     </li>
   );
 }

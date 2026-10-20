@@ -52,3 +52,4 @@
   font-weight: var(--weight-bold);
   font-size: var(--text-body-sm);
 }
+.controls { margin-top: auto; display: flex; flex-direction: column; gap: 0.375rem; }
