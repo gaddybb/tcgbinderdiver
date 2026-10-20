@@ -76,7 +76,7 @@
   --size-list-card: 22rem;
   --size-aside: 24rem;
   --size-end-tile: 7.5rem; /* a card still wanted, on the trip summary */
-  --size-hero-bg: 34rem;   /* the home page's background picture, from the top of the page */
+  --size-hero-bg: 46rem;   /* the home page's background picture, from the top of the page */
   --size-banner: 6rem;     /* the deck art strip on a list card */
   --size-banner-page: 9rem;   /* the same over a list's page */
   --size-banner-art-w: 39rem; /* the art on a list's page is shown no wider than its real size (about 626 px), so it stays sharp */

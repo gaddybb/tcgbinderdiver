@@ -1,6 +1,6 @@
 // The home page: the pitch, a box to paste a decklist into, why it helps, the four steps in a line each, and Ko-fi.
 import { useState } from 'react';
-import { Button, GameAnchor, Input, StandaloneLink } from '../components';
+import { Button, Input, StandaloneLink } from '../components';
 import { copy } from '../copy/en';
 import { KOFI_URL } from '../links';
 import { useLayout } from '../layout/useLayout';
@@ -27,7 +27,6 @@ export function Home() {
       <div className={styles.heroBackdrop} aria-hidden="true" />
       <InstallBanner />
       <section className={styles.hero} aria-label={copy.app.name}>
-       
         <h1 className={phone ? styles.heroTitleSmall : styles.heroTitle}>{t.title}</h1>
         <p className={styles.primer}>{t.primer}</p>
         <form className={styles.form} onSubmit={e => { e.preventDefault(); plan(); }}>
