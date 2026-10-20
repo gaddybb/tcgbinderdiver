@@ -177,6 +177,16 @@ export function StoreDive() {
   const foundHere = current.cards.reduce((n, c) => { const p = cards.parts.get(c.key); return n + (p ? foundCopies(trip, p) : 0); }, 0);
   const leftHere = totalHere - foundHere;
 
+  // The bar with Finish binder. The pinned one (the bottom copy on a phone) is the one the tour points at.
+  const finishBar = (pinned: boolean) => (
+    <SummaryBar
+      sticky={pinned}
+      label={t.finishBinder}
+      title={leftHere > 0 ? t.cardsLeft(leftHere) : t.nothingLeft}
+      action={<Button size="lg" data-tour={pinned || !phone ? 'dive-finish' : undefined} onClick={() => finish(current, t.finishedToast)}>{t.finishBinder}</Button>}
+    />
+  );
+
   return (
     <>
       {header}
@@ -241,6 +251,9 @@ export function StoreDive() {
               </div>
             )}
 
+            {/* Finish binder is above the cards as well as below them, so a long binder never means a long scroll to finish it. */}
+            {shown.length > 0 && finishBar(false)}
+
             {shown.length === 0 ? <p className={styles.note}>{t.noMatches}</p> : (
               <ul className={gridClass} data-tour="dive-cards">
                 {shown.map(e => (
@@ -264,12 +277,7 @@ export function StoreDive() {
               </ul>
             )}
 
-            <SummaryBar
-              sticky={phone}
-              label={t.finishBinder}
-              title={leftHere > 0 ? t.cardsLeft(leftHere) : t.nothingLeft}
-              action={<Button size="lg" data-tour="dive-finish" onClick={() => finish(current, t.finishedToast)}>{t.finishBinder}</Button>}
-            />
+            {finishBar(phone)}
           </>
         ) : (
           <CounterStop

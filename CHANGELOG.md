@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - The phone QR code no longer disappears when you are trying a sample deck: a sample deck now goes into the phone link like any other list. The code is bigger and drawn as rounded blocks instead of the plain pixel grid; how fine the grid is still depends on how many cards are in the link.
 
 ### Changed
+- Store dive: **Finish binder** is above the cards as well as below them (with the count of cards left), so a long binder no longer means a long scroll to finish it. On a phone the bottom one stays pinned as before.
 - **The phone QR code now fits big decks.** With the card catalog on the device, the link carries a five-byte fingerprint per card instead of its name, about 40% of the size, so a deck of 125 cards fits in the code (by name it did not) and about 190 do. The phone turns the fingerprints back into names with its own card catalog and counts any card newer than its data (shown on the open page). Links people already have still work; a device without the card catalog makes name links as before.
 - **One See my list button** on the import's What you own step: the separate Skip is gone (with nothing marked See my list already leaves everything Needed, and Reset to needed clears marks). The v1 scope file says so.
 - **`?sample` on the home address** (for example `/?sample`) shows Try a sample deck even when you have lists of your own, for testing. Noted in `docs/PLAN.md`.
