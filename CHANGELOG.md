@@ -12,6 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - The phone QR code no longer disappears when you are trying a sample deck: a sample deck now goes into the phone link like any other list. The code is bigger and drawn as rounded blocks instead of the plain pixel grid; how fine the grid is still depends on how many cards are in the link.
 
 ### Changed
+- **The phone QR code now fits big decks.** With the card catalog on the device, the link carries a five-byte fingerprint per card instead of its name, about 40% of the size, so a deck of 125 cards fits in the code (by name it did not) and about 190 do. The phone turns the fingerprints back into names with its own card catalog and counts any card newer than its data (shown on the open page). Links people already have still work; a device without the card catalog makes name links as before.
+- **One See my list button** on the import's What you own step: the separate Skip is gone (with nothing marked See my list already leaves everything Needed, and Reset to needed clears marks). The v1 scope file says so.
+- **`?sample` on the home address** (for example `/?sample`) shows Try a sample deck even when you have lists of your own, for testing. Noted in `docs/PLAN.md`.
 - The banner over a list's page is taller (15 rem, was 9) so more of the art shows, still at its real size so it stays sharp, and the art's own left edge now fades out, so it melts into the page instead of ending in a hard line against a darker box.
 - Home page: the small emblem and the Magic: The Gathering label above the headline are gone, and the first screen is larger: the hero fills the screen (the Why Binder Diver section starts below the fold) and the sea-floor picture runs the full height of it.
 - The home page has the Magic sea-floor picture behind its first screen, full width, fading into the page (a `--image-hero` token in the Magic theme file, so each game can bring its own).

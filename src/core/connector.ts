@@ -59,4 +59,7 @@ export interface GameConnector {
   // Store order: the category a card is filed under, and the order of categories (Magic: color).
   readonly sortOrder: readonly string[];
   sortCategory(card: CardSummary): string;
+  // Card names by fingerprint, for the compact phone link. Only a connector with the whole card catalog on the device has it;
+  // null (or no method) means the link has to carry names.
+  fingerprintIndex?(): Promise<ReadonlyMap<number, string> | null>;
 }

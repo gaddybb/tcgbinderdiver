@@ -21,6 +21,8 @@ export interface CatalogInfo {
   offline: boolean;
 }
 
+import { fingerprint } from '../../core/handoff';
+
 interface Ready { catalog: Catalog; manifest: Manifest; offline: boolean; byOracle: Map<string, CatalogCard> }
 
 export class BulkConnector implements GameConnector {
@@ -41,6 +43,14 @@ export class BulkConnector implements GameConnector {
       () => null,
     );
     return this.ready;
+  }
+
+  private fingerprints?: Promise<ReadonlyMap<number, string> | null>;
+
+  // Every card name in the catalog by fingerprint, or null when the live API is in use.
+  fingerprintIndex(): Promise<ReadonlyMap<number, string> | null> {
+    this.fingerprints ??= this.state().then(s => s && new Map(s.catalog.cards.map(c => [fingerprint(c.name), c.name])));
+    return this.fingerprints;
   }
 
   // Which catalog is in use, or null when the live API is. Used to show "prices updated".

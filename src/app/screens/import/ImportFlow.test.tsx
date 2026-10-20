@@ -155,27 +155,29 @@ describe('Import: a deck where every name matches', () => {
     expect((await repo.all()).find(l => l.kind === 'deck')!.entries.map(e => e.status)).toEqual(['in_collection', 'in_collection', 'in_collection']);
   });
 
-  it('has Back, Skip and See my list above the cards, so a long list never hides them', async () => {
+  it('has Back and See my list above the cards, so a long list never hides them, and no separate Skip', async () => {
     await setup();
     fill('Deck', '1 Sol Ring\n1 Cultivate');
     lookUp(2);
     const title = await heading(t.own.title);
     const rows = screen.getByText('Sol Ring');
-    for (const name of [t.own.skip, t.own.finish]) {
+    for (const name of [copy.importFlow.back, t.own.finish]) {
       const button = screen.getByRole('button', { name });
       expect(title.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(button.compareDocumentPosition(rows) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
+    expect(screen.queryByRole('button', { name: /skip/i })).toBeNull();
   });
 
-  it('"Skip, I need them all" leaves everything needed', async () => {
+  it('See my list straight away leaves everything needed, and Reset to needed clears marks first', async () => {
     const { repo } = await setup();
     fill('Deck', '1 Sol Ring\n1 Cultivate');
     lookUp(2);
     await heading(t.own.title);
     press(t.own.setAll);
     fireEvent.click(within(screen.getByRole('menu', { name: t.own.setAll })).getByRole('menuitem', { name: copy.status.proxy }));
-    press(t.own.skip);
+    press(t.own.reset);
+    press(t.own.finish);
     await waitFor(async () => expect((await repo.all()).some(l => l.kind === 'deck')).toBe(true));
     expect((await repo.all()).find(l => l.kind === 'deck')!.entries.map(e => e.status)).toEqual(['needed', 'needed']);
   });

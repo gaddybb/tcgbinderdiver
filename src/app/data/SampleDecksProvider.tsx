@@ -9,7 +9,7 @@ import { useLists } from './ListsProvider';
 
 interface SamplesApi {
   decks: readonly SampleDeck[];
-  available: boolean;                       // there are decks, and the player has no lists of their own yet
+  available: boolean;                       // there are decks, and the player has no lists of their own yet (or the address ends in ?sample)
   start: (avoid?: string) => Promise<void>; // opens a random sample deck in the dive plan
 }
 
@@ -24,6 +24,8 @@ interface SampleDecksProviderProps {
 export function SampleDecksProvider({ decks = SAMPLE_DECKS, random = Math.random, children }: SampleDecksProviderProps) {
   const lists = useLists();
   const hasOwn = lists.lists.some(l => !l.sample && l.entries.length > 0);
+  // For testing: an address ending in ?sample shows the sample deck buttons even to someone with lists of their own.
+  const forced = new URLSearchParams(window.location.search).has('sample');
 
   const start = useCallback(async (avoid?: string) => {
     const deck = pickSample(decks, random(), avoid);
@@ -34,7 +36,7 @@ export function SampleDecksProvider({ decks = SAMPLE_DECKS, random = Math.random
     navigate('/plan');
   }, [decks, random, lists]);
 
-  const value = useMemo<SamplesApi>(() => ({ decks, available: decks.length > 0 && !hasOwn, start }), [decks, hasOwn, start]);
+  const value = useMemo<SamplesApi>(() => ({ decks, available: decks.length > 0 && (!hasOwn || forced), start }), [decks, hasOwn, forced, start]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 

@@ -88,6 +88,11 @@ describe('Sample decks', () => {
     await waitFor(() => expect(screen.queryByRole('button', { name: copy.sample.button })).toBeNull());
   });
 
+  it('is offered even to a player with lists of their own when the address ends in ?sample', async () => {
+    await open('/?sample', { own: true });
+    expect(await screen.findByRole('button', { name: copy.sample.button })).toBeTruthy();
+  });
+
   it('shows the sample on My lists with its own label', async () => {
     const { repo } = await open('/');
     fireEvent.click(await screen.findByRole('button', { name: copy.sample.button }));

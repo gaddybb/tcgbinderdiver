@@ -105,3 +105,4 @@ interface Storage { get; put; delete; list }   // per collection; IndexedDB now,
 - A keep-my-print choice: lists do not record which print a player owns yet.
 - Guided tour: dim the screen and highlight what is explained, on more pages, remembered per device.
 - With accounts (v3): small per-device choices (finished tours, the Gallery or Table view, install answers) move to the account so they follow a player across devices; they already go through the storage seam, so it is a storage change, not a screen change.
+- Testing: add `?sample` to the home address (for example `/?sample`) to show Try a sample deck even when you have lists of your own.
