@@ -854,18 +854,41 @@ export const en = {
       contact: { title: 'Contact', text: 'Privacy questions: support@tcgbinderdiver.com' },
     },
   },
+  // The guided tours: a dim screen with the thing each tip talks about lit up. One entry per tour (dive, list, plan).
   tourFlow: {
-    label: 'Store dive tour',
-    welcomeTitle: 'First dive?',
-    welcomeText: 'Take a 30-second tour of how to work through the store.',
     skip: 'Skip',
     show: 'Show me',
     replayNote: 'Replay it anytime from the Walkthrough page.',
-    tips: [
-      { title: 'This is the place to look', text: 'Places go largest first. Use the arrows or the dropdown to jump to another.' },
-      { title: 'Tap Found when you spot one', text: 'The card fades and drops off. Tapped by mistake? Tap again to undo.' },
-      { title: 'Done flipping this binder?', text: "Finish binder. Anything you didn't find moves to its next-best place." },
-    ],
+    dive: {
+      label: 'Store dive tour',
+      welcomeTitle: 'First dive?',
+      welcomeText: 'Take a 30-second tour of how to work through the store.',
+      tips: [
+        { title: 'This is the place to look', text: 'Places go largest first. Use the arrows or the dropdown to jump to another.' },
+        { title: 'Tap Found when you spot one', text: 'The card fades and drops off. Tapped by mistake? Tap again to undo.' },
+        { title: 'Done flipping this binder?', text: "Finish binder. Anything you didn't find moves to its next-best place." },
+      ],
+    },
+    list: {
+      label: 'Deck list tour',
+      welcomeTitle: 'New to your list?',
+      welcomeText: 'A quick look at what you can do on this page.',
+      tips: [
+        { title: 'Find a card fast', text: 'Sort, search or filter by price and color to narrow the list.' },
+        { title: 'Mark what you already own', text: 'Set each card to Needed, Owned and so on. Only the cards you still need go into your dive.' },
+        { title: 'Your dive plan', text: 'Binder Diver guesses which store binders to check, from print history. It never sees what the store has in stock.' },
+      ],
+    },
+    plan: {
+      label: 'Dive plan tour',
+      welcomeTitle: 'Your dive plan',
+      welcomeText: 'A quick look at how to read this page.',
+      tips: [
+        { title: 'Places to check, in order', text: 'Each place shows how many of your cards might be there. Work down the list.' },
+        { title: 'Adjust it to your store', text: 'Pull settings and Binder groups let you match how your store sorts its binders.' },
+        { title: 'Ready to go?', text: 'Start store dive when you are at the store, ready to flip through binders.' },
+      ],
+    },
   },
   offline: {
     title: "You're offline",

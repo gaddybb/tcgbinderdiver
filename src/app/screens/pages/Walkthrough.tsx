@@ -3,7 +3,7 @@ import { Button } from '../../components';
 import { copy } from '../../copy/en';
 import { useLayout } from '../../layout/useLayout';
 import { navigate } from '../../router';
-import { TourDock } from '../tour/TourDock';
+import { TourPlayer } from '../tour/Tour';
 import { SampleDeckButton } from './SampleDeckButton';
 import { PageIntro } from './PageParts';
 import styles from './Pages.module.css';
@@ -50,7 +50,7 @@ export function Walkthrough() {
         </div>
       </section>
 
-      {replay && <TourDock onDone={() => setReplay(false)} />}
+      {replay && <TourPlayer id="dive" onDone={() => setReplay(false)} />}
     </div>
   );
 }

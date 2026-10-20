@@ -27,6 +27,7 @@ import { printingLabel } from '../printingLabel';
 import { Link, navigate } from '../router';
 import { ListCardDetail } from './detail/ListCardDetail';
 import { DivePanel } from './dive/DivePanel';
+import { Tour } from './tour/Tour';
 import { neededCards } from './dive/planData';
 import review from './Review.module.css';
 import styles from './Screen.module.css';
@@ -233,6 +234,7 @@ function ReviewBody({ list }: { list: CardList }) {
 
   return (
     <>
+      {list.entries.length > 0 && <Tour id="list" />}
       <DeckBanner size="page" src={bannerName ? bannerImageUrl(bannerName) : null} />
       <PageHeader
         title={list.name}
@@ -277,7 +279,7 @@ function ReviewBody({ list }: { list: CardList }) {
 
         {list.entries.length === 0 ? <p className={styles.lead}>{copy.listView.emptyList}</p> : (
           <>
-            <div className={styles.controls}>
+            <div className={styles.controls} data-tour="list-controls">
               <Select label={t.sort.label} value={sort} onChange={e => setSort(e.target.value as SortMode)}>
                 {SORT_MODES.map(mode => <option key={mode} value={mode}>{t.sort[mode]}</option>)}
               </Select>
@@ -311,6 +313,7 @@ function ReviewBody({ list }: { list: CardList }) {
             )}
             {!phone && !none && <SelectionBar ariaLabel={b.selectedCards(picked.length)} label={b.selectedCards(picked.length)} actions={actions} />}
 
+            <div data-tour="list-cards">
             {shown.length === 0 ? <p className={styles.lead}>{f.noMatches}</p> : phone ? (
               <ul className={styles.plain}>
                 {shown.map(row => (
@@ -344,6 +347,7 @@ function ReviewBody({ list }: { list: CardList }) {
                 }))}
               />
             )}
+            </div>
             {catalog && <p className={styles.lead}>{t.pricesUpdated(formatDate(catalog.scryfallUpdatedAt))}{catalog.offline && ` ${t.pricesOffline}`}</p>}
             {openKey && <ListCardDetail list={list} cardKey={openKey} keys={shownKeys} records={data.records} onOpen={setOpenKey} onClose={() => setOpenKey(null)} />}
             {phone && selecting && <SelectionBar placement="bottom" ariaLabel={b.selectedCards(picked.length)} label={b.selectedCards(picked.length)} actions={actions} />}

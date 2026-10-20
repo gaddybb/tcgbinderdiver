@@ -16,6 +16,7 @@ import styles from './Dive.module.css';
 import { BasicsNote } from './BasicsNote';
 import { SampleBanner } from './SampleBanner';
 import { PullSettingsPanel } from './PullSettingsPanel';
+import { Tour } from '../tour/Tour';
 import { startDive } from './startDive';
 import { useDive } from './useDive';
 
@@ -65,12 +66,12 @@ export function DivePlan() {
       sticky={phone}
       title={t.listsUsed(joinNames(contributing.map(l => l.name)))}
       action={active ? (
-        <span className={styles.toolbar}>
+        <span className={styles.toolbar} data-tour="plan-start">
           <Button onClick={() => navigate('/dive')}>{t.resumeDive}</Button>
           <Button variant="text" onClick={() => setConfirmNew(true)}>{t.newTrip}</Button>
         </span>
       ) : (
-        <span className={styles.startBlock}>
+        <span className={styles.startBlock} data-tour="plan-start">
           <Button disabled={total === 0} onClick={startTrip}>{t.startDive}</Button>
           <span className={styles.hint}>{t.startHint}</span>
         </span>
@@ -84,7 +85,7 @@ export function DivePlan() {
         title={t.title}
         subtitle={t.subtitle(total, stops.length)}
         actions={
-          <span className={styles.toolbar}>
+          <span className={styles.toolbar} data-tour="plan-settings">
             <Button variant="secondary" onClick={() => setPanel(true)}>{t.pullSettings}</Button>
             <Button variant="secondary" onClick={() => navigate('/groups')}>{t.binderGroups}</Button>
           </span>
@@ -112,7 +113,7 @@ export function DivePlan() {
               <EmptyState title={t.nothingNeeded.title}>{t.nothingNeeded.text}</EmptyState>
             ) : (
               <>
-                <div role="list" aria-label={t.stopsLabel} className={screen.stack}>
+                <div role="list" aria-label={t.stopsLabel} className={screen.stack} data-tour="plan-stops">
                   {groups.map(group => (
                     <section key={group.kind} role="listitem" className={styles.section} aria-labelledby={`kind-${group.kind}`}>
                       <div className={styles.sectionHead}>
@@ -147,6 +148,7 @@ export function DivePlan() {
         )}
       </div>
 
+      {dive.ready && dive.neededCount > 0 && <Tour id="plan" />}
       <PullSettingsPanel open={panel} onClose={() => setPanel(false)} stops={stops} />
 
       <Dialog
