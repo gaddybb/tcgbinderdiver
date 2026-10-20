@@ -69,6 +69,14 @@ describe('Dive plan', () => {
     expect(await screen.findByRole('heading', { name: t.nothingNeeded.title })).toBeTruthy();
   });
 
+  it('puts Start store dive above the stops on a desktop, with the hint beside it in the bar', async () => {
+    await setup({ lists: [DECK] });
+    const heading = await screen.findByRole('heading', { name: t.kind.set_binder.title });
+    const start = screen.getByRole('button', { name: t.startDive });
+    expect(start.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(start.closest('section') as HTMLElement).getByText(t.startHint)).toBeTruthy();
+  });
+
   it('groups stops by type in walking order, with count, value and verdict', async () => {
     await setup({ lists: [DECK] });
     await screen.findByRole('heading', { name: t.kind.set_binder.title });
