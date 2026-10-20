@@ -37,9 +37,6 @@
 .faq summary { cursor: pointer; font-weight: var(--weight-bold); min-height: var(--tap-min); display: flex; align-items: center; }
 .menuList { list-style: none; margin: 0; padding: 0; }
 .menuList a { display: flex; align-items: center; min-height: var(--tap-min); border-bottom: var(--border-thin) solid var(--color-divider); color: var(--color-text); text-decoration: none; font-weight: var(--weight-bold); }
-.tour { position: fixed; left: 0; right: 0; bottom: calc(var(--space-4) + var(--tabbar-offset, 0rem)); display: flex; justify-content: center; padding: 0 var(--space-4); z-index: var(--z-toast); }
-.welcome { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); max-width: var(--size-tip-w); background: var(--color-deep); border: var(--border-thin) solid var(--color-border-strong); border-radius: var(--radius-card); box-shadow: var(--shadow-toast); }
-.welcomeActions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .offline { position: sticky; top: 0; z-index: var(--z-menu); }
 .heroTitleSmall { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-h1); line-height: 1.08; }
 .primer { margin: 0; max-width: var(--size-prose); font-size: var(--text-md); line-height: 1.5; }

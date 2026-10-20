@@ -29,7 +29,7 @@ import { navigate } from '../../router';
 import { StoreCardDetail } from '../detail/StoreCardDetail';
 import screen from '../Screen.module.css';
 import { BasicsNote } from './BasicsNote';
-import { TourDock, useTourDone } from '../tour/TourDock';
+import { Tour } from '../tour/Tour';
 import { CounterStop } from './CounterStop';
 import styles from './StoreDive.module.css';
 import { useTripPlan } from './useTripPlan';
@@ -46,7 +46,6 @@ export function StoreDive() {
   const store = useStoreSettings();
   const { ready, trip, lists, data, cards, plan, update } = useTripPlan();
   const { end } = useTrip();
-  const tour = useTourDone();
   const analytics = useAnalytics();
 
   const [selected, setSelected] = useState<string | null>(null);
@@ -185,7 +184,7 @@ export function StoreDive() {
         {loading && <Banner tone="info" title={t.loading(data.progress.done, data.progress.total)} />}
         <BasicsNote count={plan.skipped.length} />
 
-        <div className={styles.picker}>
+        <div className={styles.picker} data-tour="dive-picker">
           <Button variant="icon" aria-label={t.previous} disabled={index <= 0} onClick={() => go(stops[index - 1]?.stop.id)}>‹</Button>
           <Select label={t.pickerHint(true)} value={current.stop.id} onChange={e => pick(e.target.value)}>
             {stops.map((s, i) => (
@@ -243,7 +242,7 @@ export function StoreDive() {
             )}
 
             {shown.length === 0 ? <p className={styles.note}>{t.noMatches}</p> : (
-              <ul className={gridClass}>
+              <ul className={gridClass} data-tour="dive-cards">
                 {shown.map(e => (
                   <CardTile
                     key={e.key}
@@ -269,7 +268,7 @@ export function StoreDive() {
               sticky={phone}
               label={t.finishBinder}
               title={leftHere > 0 ? t.cardsLeft(leftHere) : t.nothingLeft}
-              action={<Button size="lg" onClick={() => finish(current, t.finishedToast)}>{t.finishBinder}</Button>}
+              action={<Button size="lg" data-tour="dive-finish" onClick={() => finish(current, t.finishedToast)}>{t.finishBinder}</Button>}
             />
           </>
         ) : (
@@ -288,7 +287,7 @@ export function StoreDive() {
           />
         )}
       </div>
-      {tour.done === false && !detail && <TourDock onDone={tour.markDone} />}
+      {!detail && <Tour id="dive" />}
       {detail && (
         <StoreCardDetail
           stop={current}

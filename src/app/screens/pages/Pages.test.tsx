@@ -142,20 +142,20 @@ describe('Walkthrough', () => {
   it('replays the tour in place: a welcome, three tips, then it closes', () => {
     open('/walkthrough');
     fireEvent.click(screen.getByRole('button', { name: copy.walkthroughPage.replay }));
-    expect(screen.getByText(copy.tourFlow.welcomeTitle)).toBeTruthy();
+    expect(screen.getByText(copy.tourFlow.dive.welcomeTitle)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: copy.tourFlow.show }));
-    for (const tip of copy.tourFlow.tips) {
+    for (const tip of copy.tourFlow.dive.tips) {
       expect(screen.getByText(tip.title)).toBeTruthy();
       fireEvent.click(screen.getByRole('button', { name: screen.queryByRole('button', { name: copy.tour.next }) ? copy.tour.next : copy.tour.done }));
     }
-    expect(screen.queryByRole('region', { name: copy.tourFlow.label })).toBeNull();
+    expect(screen.queryByRole('region', { name: copy.tourFlow.dive.label })).toBeNull();
   });
 
   it('Skip closes the replay at once', () => {
     open('/walkthrough');
     fireEvent.click(screen.getByRole('button', { name: copy.walkthroughPage.replay }));
     fireEvent.click(screen.getByRole('button', { name: copy.tourFlow.skip }));
-    expect(screen.queryByRole('region', { name: copy.tourFlow.label })).toBeNull();
+    expect(screen.queryByRole('region', { name: copy.tourFlow.dive.label })).toBeNull();
   });
 });
 
@@ -203,23 +203,23 @@ describe('First-time tour on the store dive', () => {
   it('welcomes a first visit, and Skip is remembered on this device', async () => {
     const { storage, unmount } = await dive();
     fireEvent.click(await screen.findByRole('button', { name: copy.tourFlow.skip }));
-    expect(screen.queryByRole('region', { name: copy.tourFlow.label })).toBeNull();
-    await waitFor(async () => expect(await storage.get('settings', 'tour-done')).toBe(true));
+    expect(screen.queryByRole('region', { name: copy.tourFlow.dive.label })).toBeNull();
+    await waitFor(async () => expect(await storage.get('settings', 'pref:tour-dive')).toBe('yes'));
     unmount();
     await dive(storage);
     await screen.findByText(copy.storeDive.stopOf(1, 1));
-    expect(screen.queryByRole('region', { name: copy.tourFlow.label })).toBeNull();
+    expect(screen.queryByRole('region', { name: copy.tourFlow.dive.label })).toBeNull();
   });
 
   it('Show me goes through the three tips, and finishing it is remembered too', async () => {
     const { storage } = await dive();
     fireEvent.click(await screen.findByRole('button', { name: copy.tourFlow.show }));
-    expect(screen.getByText(copy.tourFlow.tips[0].title)).toBeTruthy();
+    expect(screen.getByText(copy.tourFlow.dive.tips[0].title)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: copy.tour.next }));
     fireEvent.click(screen.getByRole('button', { name: copy.tour.next }));
     fireEvent.click(screen.getByRole('button', { name: copy.tour.done }));
-    expect(screen.queryByRole('region', { name: copy.tourFlow.label })).toBeNull();
-    await waitFor(async () => expect(await storage.get('settings', 'tour-done')).toBe(true));
+    expect(screen.queryByRole('region', { name: copy.tourFlow.dive.label })).toBeNull();
+    await waitFor(async () => expect(await storage.get('settings', 'pref:tour-dive')).toBe('yes'));
   });
 });
 
