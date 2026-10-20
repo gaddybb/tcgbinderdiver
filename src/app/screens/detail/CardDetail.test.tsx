@@ -77,6 +77,50 @@ describe('Card detail from the list review', () => {
     expect(panel.queryByText('Online Set')).toBeNull();
   });
 
+  it('chooses a version, which locks it: the plan then looks only for that print', async () => {
+    const { storage } = await setup('/lists/a', [DECK]);
+    fireEvent.click(await screen.findByRole('button', { name: copy.cardTile.openCard("Ajani's Pridemate") }));
+    const panel = within(await dialog());
+    fireEvent.change(panel.getByLabelText(t.version.label), { target: { value: 'cmm|15' } });
+    await waitFor(async () => expect((await savedList(storage, 'a')).entries[0]).toMatchObject({ print: { setCode: 'cmm', collectorNumber: '15' }, locked: true }));
+    expect(panel.getByText(t.version.lockedNote)).toBeTruthy();
+    const first = panel.getAllByText(t.lookFirst)[0].parentElement as HTMLElement;
+    expect(first.textContent).toContain('CMM 15');
+    expect(first.textContent).toContain('Commander box');
+  });
+
+  it('turns the lock off but keeps the choice, and goes back to any version', async () => {
+    const { storage } = await setup('/lists/a', [DECK]);
+    fireEvent.click(await screen.findByRole('button', { name: copy.cardTile.openCard("Ajani's Pridemate") }));
+    const panel = within(await dialog());
+    fireEvent.change(panel.getByLabelText(t.version.label), { target: { value: 'cmm|15' } });
+    fireEvent.click(await panel.findByRole('switch', { name: t.version.lock }));
+    await waitFor(async () => expect((await savedList(storage, 'a')).entries[0].locked).toBeUndefined());
+    expect((await savedList(storage, 'a')).entries[0].print).toEqual({ setCode: 'cmm', collectorNumber: '15' });
+    expect(panel.getByText(t.version.chosenNote)).toBeTruthy();
+    fireEvent.change(panel.getByLabelText(t.version.label), { target: { value: '' } });
+    await waitFor(async () => expect((await savedList(storage, 'a')).entries[0].print).toBeUndefined());
+  });
+
+  it('offers the print a pasted line named, without having locked it', async () => {
+    const { storage } = await setup('/lists/a', [{ ...DECK, listed: { "ajani's pridemate": { setCode: 'cmm', collectorNumber: '15' } } }]);
+    fireEvent.click(await screen.findByRole('button', { name: copy.cardTile.openCard("Ajani's Pridemate") }));
+    const panel = within(await dialog());
+    expect(panel.getByText(t.version.listed('CMM 15'))).toBeTruthy();
+    expect((await savedList(storage, 'a')).entries[0].locked).toBeUndefined();
+    fireEvent.click(panel.getByRole('button', { name: t.version.useListed }));
+    await waitFor(async () => expect((await savedList(storage, 'a')).entries[0]).toMatchObject({ print: { setCode: 'cmm', collectorNumber: '15' }, locked: true }));
+  });
+
+  it('makes a card the deck banner', async () => {
+    const { storage } = await setup('/lists/a', [DECK]);
+    fireEvent.click(await screen.findByRole('button', { name: copy.cardTile.openCard('Soul Warden') }));
+    const panel = within(await dialog());
+    fireEvent.click(panel.getByRole('button', { name: t.banner.use }));
+    await waitFor(async () => expect((await savedList(storage, 'a')).banner).toBe('Soul Warden'));
+    expect(await panel.findByText(t.banner.is)).toBeTruthy();
+  });
+
   it('never shows odds labels', async () => {
     await setup('/lists/a', [DECK]);
     fireEvent.click(await screen.findByRole('button', { name: copy.cardTile.openCard("Ajani's Pridemate") }));

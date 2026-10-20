@@ -14,6 +14,7 @@ export type Spec = {
   updated?: Date;
   on?: boolean;
   banner?: string;
+  listed?: Record<string, { setCode: string; collectorNumber: string }>;   // by lower-cased card name: the printing the pasted line named
   cards?: [name: string, quantity?: number, status?: CardStatus][];
 };
 
@@ -25,5 +26,6 @@ export function makeList(spec: Spec): CardList {
     list = addEntries(list, [{ cardKey: name.toLowerCase(), name, quantity }], created).list;
     if (status !== 'needed') list = setEntryStatus(list, name.toLowerCase(), status, created);
   }
+  if (spec.listed) list = { ...list, entries: list.entries.map(e => (spec.listed?.[e.cardKey] ? { ...e, listed: spec.listed[e.cardKey] } : e)) };
   return { ...list, updatedAt: (spec.updated ?? created).toISOString(), inNextDive: spec.on ?? true, ...(spec.banner ? { banner: spec.banner } : {}) };
 }

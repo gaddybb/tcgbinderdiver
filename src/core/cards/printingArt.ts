@@ -1,3 +1,4 @@
+import { priceFor } from '../engine/engine';
 import type { Printing } from '../engine/engine';
 
 // A printing's picture from its set and collector number alone: the catalog keeps no picture id for every printing, and
@@ -10,6 +11,21 @@ export function printingImageUrl(p: Pick<Printing, 'setCode' | 'collectorNumber'
 // The cropped art of a card, found by its name, for the banner over a deck. Any print of the card will do.
 export function bannerImageUrl(name: string): string {
   return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}&format=image&version=art_crop`;
+}
+
+// The printings a card is routed from: only the locked version when the player locked one (and it is a known printing),
+// else all of them.
+export function lockedPrintings(printings: readonly Printing[], lock?: { setCode: string; collectorNumber: string }): readonly Printing[] {
+  if (!lock) return printings;
+  const only = printings.filter(p => p.setCode === lock.setCode && p.collectorNumber === lock.collectorNumber);
+  return only.length > 0 ? only : printings;
+}
+
+// The printing a pasted line named: exact when it gave a collector number, else the cheapest paper printing in that set.
+export function listedPrinting(printings: readonly Printing[], listed: { setCode: string; collectorNumber: string }): Printing | undefined {
+  if (listed.collectorNumber) return printings.find(p => p.setCode === listed.setCode && p.collectorNumber.toLowerCase() === listed.collectorNumber.toLowerCase());
+  const price = (p: Printing): number => Math.min(...p.finishes.map(f => priceFor(p, f) ?? Number.POSITIVE_INFINITY));
+  return printings.filter(p => p.setCode === listed.setCode && !p.digital).sort((a, b) => price(a) - price(b))[0];
 }
 
 export type ArtKind = 'borderless' | 'showcase' | 'extendedart' | 'fullart' | 'promo';

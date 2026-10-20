@@ -1,4 +1,7 @@
+import type { PrintRef } from '../parse/parseDecklist';
 import type { CardStatus } from '../status';
+
+export type { PrintRef };
 
 // A card is one line of a list; its quantity says how many copies. Counts shown to players are counts of lines.
 export interface ListEntry {
@@ -7,6 +10,9 @@ export interface ListEntry {
   quantity: number;     // copies wanted, at least 1
   status: CardStatus;
   tags: string[];
+  listed?: PrintRef;    // the printing the pasted line named, kept as information; it does not change where to look
+  print?: PrintRef;     // the version the player chose for this card
+  locked?: boolean;     // look only for that version; unlocked, the choice is remembered but any version will do
 }
 
 export type ListKind = 'deck' | 'wishlist';
@@ -30,4 +36,7 @@ export interface IncomingEntry {
   quantity: number;
   tags?: string[];
   status?: CardStatus;
+  listed?: PrintRef;
+  print?: PrintRef;
+  locked?: boolean;
 }

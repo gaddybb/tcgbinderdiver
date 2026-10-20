@@ -2,7 +2,8 @@
 // or reopened. The plan is not stored: it is rebuilt from the cards and these events, so it always agrees with them.
 // Pure: ids and times come in as arguments.
 import { buildPlan, finishStop, reopenStop } from '../engine/engine';
-import type { NeededCard, Plan, StoreProfile } from '../engine/engine';
+import type { NeededCard, Plan, Printing, StoreProfile } from '../engine/engine';
+import { lockedPrintings } from '../cards/printingArt';
 import type { CardRecord } from '../cards/types';
 import { mergeNeeded } from '../lists';
 import type { CardList, NeededAcrossLists } from '../lists';
@@ -51,7 +52,7 @@ export function tripCards(lists: readonly CardList[], trip: Trip, records: Reado
     const record = records.get(merged.cardKey);
     if (!record) continue;
     parts.set(merged.cardKey, merged);
-    needed.push({ key: merged.cardKey, copies: merged.copies, card: { name: record.summary.name, typeLine: record.summary.typeLine, printings: record.printings } });
+    needed.push({ key: merged.cardKey, copies: merged.copies, card: { name: record.summary.name, typeLine: record.summary.typeLine, printings: lockedPrintings(record.printings, merged.lock) as Printing[] } });
   }
   return { needed, parts };
 }

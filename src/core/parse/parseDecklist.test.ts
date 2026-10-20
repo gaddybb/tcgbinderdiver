@@ -59,7 +59,16 @@ describe('parseDecklist: set codes, collector numbers, foil tags and tags', () =
   });
   it('handles the full example from the scope doc', () => {
     const r = parseDecklist('2x Sol Ring (CMM) 400 *F* #tag');
-    expect(r.entries).toEqual([{ name: 'Sol Ring', quantity: 2, section: 'main', tags: ['tag'] }]);
+    expect(r.entries).toEqual([{ name: 'Sol Ring', quantity: 2, section: 'main', tags: ['tag'], print: { setCode: 'cmm', collectorNumber: '400' } }]);
+  });
+  it('keeps the printing a line names: (CMM) 400, a set alone, or [cmm#400]', () => {
+    const print = (line: string) => parseDecklist(line).entries[0].print;
+    expect(print('1 Sol Ring (CMM) 400 *F*')).toEqual({ setCode: 'cmm', collectorNumber: '400' });
+    expect(print('1x Giada, Font of Hope (fdn) 141 [Ramp{top}] ^Have,#37d67a^')).toEqual({ setCode: 'fdn', collectorNumber: '141' });
+    expect(print('1 Sol Ring (CMM)')).toEqual({ setCode: 'cmm', collectorNumber: '' });
+    expect(print('1 Sol Ring [CMM#400]')).toEqual({ setCode: 'cmm', collectorNumber: '400' });
+    expect(print('1 Sol Ring')).toBeUndefined();
+    expect(print('1 Sol Ring [Ramp]')).toBeUndefined();   // a category, not a set
   });
   it('collects Moxfield #tags and drops the ! prefix', () => {
     const r = parseDecklist('1 Sol Ring (CMM) 400 #ramp #!Commander');
@@ -118,7 +127,7 @@ describe('combineEntries', () => {
   it('combines duplicate lines into one entry with a quantity', () => {
     const { entries } = parseDecklist('1 Sol Ring\n2x Sol Ring (CMM) 400 #ramp\n1 sol ring #ramp #staple');
     expect(combineEntries(entries, { sideboard: false, maybeboard: false })).toEqual([
-      { key: 'sol ring', name: 'Sol Ring', quantity: 4, tags: ['ramp', 'staple'] },
+      { key: 'sol ring', name: 'Sol Ring', quantity: 4, tags: ['ramp', 'staple'], print: { setCode: 'cmm', collectorNumber: '400' } },
     ]);
   });
   it('treats accents and curly apostrophes as the same card', () => {

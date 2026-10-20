@@ -32,7 +32,7 @@ export function statusCounts(entries: readonly ResolvedEntry[], choices: StatusC
 }
 
 export const toIncoming = (entries: readonly ResolvedEntry[], choices: StatusChoices): IncomingEntry[] =>
-  entries.map(e => ({ cardKey: e.cardKey, name: e.name, quantity: e.quantity, tags: e.tags, status: statusOf(choices, e.cardKey) }));
+  entries.map(e => ({ cardKey: e.cardKey, name: e.name, quantity: e.quantity, tags: e.tags, status: statusOf(choices, e.cardKey), ...(e.print ? { listed: e.print } : {}) }));
 
 // Lines are counted, as everywhere else: the limit is 250 lines in one list.
 export const overLimit = (count: number): boolean => count > MAX_CARDS_PER_LIST;

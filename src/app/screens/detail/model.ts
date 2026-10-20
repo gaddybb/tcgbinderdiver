@@ -1,6 +1,6 @@
 // What card detail shows for a card: the places to look and the printings, from the same engine the plan uses.
 import { useMemo } from 'react';
-import { printingImageUrl, typicalOnline } from '../../../core/cards';
+import { lockedPrintings, printingImageUrl, typicalOnline } from '../../../core/cards';
 import type { CardRecord } from '../../../core/cards';
 import { cardPlaces, printingRows } from '../../../core/cardDetail';
 import type { CardPlaces, PrintingRow } from '../../../core/cardDetail';
@@ -22,13 +22,14 @@ export interface DetailModel {
 }
 
 // `hereStopId` is the binder being searched, when card detail opens from the store.
-export function useDetailModel(record: CardRecord | undefined, hereStopId?: string): DetailModel | null {
+export function useDetailModel(record: CardRecord | undefined, hereStopId?: string, lock?: { setCode: string; collectorNumber: string }): DetailModel | null {
   const { profile } = useStoreSettings();
   const { now } = useLists();
   const connector = useConnector();
+  const lockSet = lock?.setCode, lockNumber = lock?.collectorNumber;
   return useMemo(() => {
     if (!record) return null;
-    const places = cardPlaces({ name: record.summary.name, typeLine: record.summary.typeLine, printings: record.printings }, profile, now(), hereStopId);
+    const places = cardPlaces({ name: record.summary.name, typeLine: record.summary.typeLine, printings: [...lockedPrintings(record.printings, lockSet === undefined ? undefined : { setCode: lockSet, collectorNumber: lockNumber ?? '' })] }, profile, now(), hereStopId);
     const planned = places.status === 'routed' ? { setCode: places.first.printing.setCode, collectorNumber: places.first.printing.collectorNumber } : undefined;
     const category = connector.sortCategory(record.summary);
     const usual = record.summary.imageNormal ?? record.summary.imageSmall;
@@ -42,5 +43,5 @@ export function useDetailModel(record: CardRecord | undefined, hereStopId?: stri
       places,
       printings: printingRows(record.printings, profile, planned),
     };
-  }, [record, profile, now, hereStopId, connector]);
+  }, [record, profile, now, hereStopId, connector, lockSet, lockNumber]);
 }

@@ -1,10 +1,11 @@
 // Runs the routing engine over the cards on a set of lists, using the card data the app has saved.
 // This is the one place card data becomes engine input, so the list review, the dive plan and the store all agree.
 import { buildPlan } from '../engine/engine';
-import type { Finish, NeededCard, Plan, StopKind, StoreProfile } from '../engine/engine';
+import type { Finish, NeededCard, Plan, Printing, StopKind, StoreProfile } from '../engine/engine';
 import { mergeNeeded } from '../lists';
 import type { CardList } from '../lists';
 import type { CardRecord } from '../cards/types';
+import { lockedPrintings } from '../cards/printingArt';
 
 export type CardTarget =
   | { kind: 'stop'; stopId: string; stopLabel: string; stopKind: StopKind; setCode: string; collectorNumber: string; finish: Finish; price: number | null }
@@ -27,7 +28,7 @@ export function planLists(lists: readonly CardList[], records: ReadonlyMap<strin
     needed.push({
       key: merged.cardKey,
       copies: merged.copies,
-      card: { name: record.summary.name, typeLine: record.summary.typeLine, printings: record.printings },
+      card: { name: record.summary.name, typeLine: record.summary.typeLine, printings: lockedPrintings(record.printings, merged.lock) as Printing[] },
     });
   }
 
