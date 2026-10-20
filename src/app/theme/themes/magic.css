@@ -7,4 +7,5 @@
   --color-floor2: #253e4c;
   --color-accent: #6fb6e0;
   --color-tint: #5aa0d0;
+  --image-hero: url('./magic-hero.webp');   /* the home page's first screen: the sea floor and the diving bell */
 }
