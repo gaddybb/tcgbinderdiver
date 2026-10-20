@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - The phone QR code no longer disappears when you are trying a sample deck: a sample deck now goes into the phone link like any other list. The code is bigger and drawn as rounded blocks instead of the plain pixel grid; how fine the grid is still depends on how many cards are in the link.
 
 ### Changed
+- The banner over a list's page is taller (15 rem, was 9) so more of the art shows, still at its real size so it stays sharp, and the art's own left edge now fades out, so it melts into the page instead of ending in a hard line against a darker box.
 - Home page: the small emblem and the Magic: The Gathering label above the headline are gone, and the first screen is larger: the hero fills the screen (the Why Binder Diver section starts below the fold) and the sea-floor picture runs the full height of it.
 - The home page has the Magic sea-floor picture behind its first screen, full width, fading into the page (a `--image-hero` token in the Magic theme file, so each game can bring its own).
 - On the dive plan page the Start store dive bar is at the top on a tablet or desktop (it stays pinned to the bottom on a phone), and the line about starting at the store now sits in the bar beside the button instead of under it.
