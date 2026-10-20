@@ -4,11 +4,15 @@
 
 export type Section = 'main' | 'sideboard' | 'maybeboard';
 
+// One printing of a card: its set code (lowercase) and collector number ('' when the line named only a set).
+export interface PrintRef { setCode: string; collectorNumber: string }
+
 export interface ParsedEntry {
   name: string;
   quantity: number;
   section: Section;
   tags: string[];
+  print?: PrintRef;     // the printing the line named, as in "1 Sol Ring (CMM) 400"
 }
 
 export interface ParseResult {
@@ -26,6 +30,7 @@ export interface CombinedEntry {
   name: string;
   quantity: number;
   tags: string[];
+  print?: PrintRef;     // the first printing named for this card
 }
 
 const SIDEBOARD_HEADERS = new Set(['sideboard', 'side board', 'side', 'sb']);
@@ -54,20 +59,23 @@ function headerKind(line: string): Section | 'ignore' | null {
   return null;
 }
 
-// Strip trailing noise, repeatedly, so any order of foil flag, tag group and set code comes off.
-function stripSuffixes(name: string): string {
+// Strip trailing noise, repeatedly, so any order of foil flag, tag group and set code comes off. The printing that the set
+// code and number name, if any, is kept: "(CMM) 400" or "[CMM#400]".
+function stripSuffixes(name: string): { name: string; print?: PrintRef } {
   let s = name;
+  let print: PrintRef | undefined;
   for (let i = 0; i < 4; i++) {
     const before = s;
     s = s
       .replace(/\s+\*[A-Za-z]+\*\s*$/, '')                                          // *F* or *E*
       .replace(/\s+\^[^^]*\^\s*$/, '')                                               // Archidekt ^Have,#37d67a^
+      .replace(/\s+\[([A-Za-z0-9]{2,6})#([A-Za-z0-9★†-]+)\]\s*$/, (_m, set: string, num: string) => { print ??= { setCode: set.toLowerCase(), collectorNumber: num }; return ''; }) // [CMM#400]
       .replace(/\s+\[[^\]]*\]\s*$/, '')                                              // Archidekt [Ramp{top}]
-      .replace(/\s+\([A-Za-z0-9]{2,6}\)(\s+[A-Za-z]{0,3}[★†]?\d+[A-Za-z★†]*)?\s*$/, '') // (CMM) 400
+      .replace(/\s+\(([A-Za-z0-9]{2,6})\)(?:\s+([A-Za-z]{0,3}[★†]?\d+[A-Za-z★†]*))?\s*$/, (_m, set: string, num?: string) => { print ??= { setCode: set.toLowerCase(), collectorNumber: num ?? '' }; return ''; }) // (CMM) 400
       .trim();
     if (s === before) break;
   }
-  return s;
+  return print ? { name: s, print } : { name: s };
 }
 
 export function parseDecklist(text: string): ParseResult {
@@ -101,10 +109,10 @@ export function parseDecklist(text: string): ParseResult {
       for (const t of tail.match(/#[^\s#]+/g) ?? []) tags.push(t.slice(1).replace(/^!/, ''));
       return '';
     });
-    const name = stripSuffixes(rest);
+    const { name, print } = stripSuffixes(rest);
     if (!name) { skippedLines++; continue; }
 
-    entries.push({ name, quantity, section: lineSection, tags });
+    entries.push({ name, quantity, section: lineSection, tags, ...(print ? { print } : {}) });
     sectionCounts[lineSection] += quantity;
   }
   return { entries, sectionCounts, skippedLines };
@@ -127,8 +135,9 @@ export function combineEntries(entries: ParsedEntry[], include: IncludeSections)
     if (cur) {
       cur.quantity += e.quantity;
       for (const t of e.tags) if (!cur.tags.includes(t)) cur.tags.push(t);
+      if (!cur.print && e.print) cur.print = e.print;
     } else {
-      byKey.set(key, { key, name: e.name, quantity: e.quantity, tags: [...e.tags] });
+      byKey.set(key, { key, name: e.name, quantity: e.quantity, tags: [...e.tags], ...(e.print ? { print: e.print } : {}) });
     }
   }
   return [...byKey.values()];

@@ -1,7 +1,7 @@
 // Steps 2 and 3 of the import: what the card lookup found for each pasted line, and the player's fixes. Pure: the screen
 // does the lookups through the connector and hands the answers in.
 import type { CardSummary, FoundName, FuzzyResult } from '../connector';
-import type { CombinedEntry } from '../parse/parseDecklist';
+import type { CombinedEntry, PrintRef } from '../parse/parseDecklist';
 import { nameKey } from '../parse/parseDecklist';
 
 // exact: the name matched a card. fixed: not exact, but one clear match (a spelling was fixed for the player, with Undo).
@@ -13,6 +13,7 @@ export interface ImportLine {
   requested: string;            // the name as pasted
   quantity: number;
   tags: string[];
+  print?: PrintRef;             // the printing the pasted line named
   state: LineState;
   card?: CardSummary;           // for exact, fixed and chosen
   candidates?: CardSummary[];   // for pick
@@ -23,7 +24,7 @@ export interface ImportLine {
 export function resolveLines(entries: readonly CombinedEntry[], found: readonly FoundName[], fuzzy: ReadonlyMap<string, FuzzyResult>): ImportLine[] {
   const exact = new Map(found.map(f => [f.requested, f.card]));
   return entries.map((e): ImportLine => {
-    const base = { key: e.key, requested: e.name, quantity: e.quantity, tags: e.tags };
+    const base = { key: e.key, requested: e.name, quantity: e.quantity, tags: e.tags, ...(e.print ? { print: e.print } : {}) };
     const card = exact.get(e.name);
     if (card) return { ...base, state: 'exact', card };
     const guess = fuzzy.get(e.name);
@@ -80,6 +81,7 @@ export interface ResolvedEntry {
   name: string;               // the source's spelling
   quantity: number;
   tags: string[];
+  print?: PrintRef;
   card: CardSummary;
 }
 
@@ -93,8 +95,9 @@ export function resolvedEntries(lines: readonly ImportLine[]): ResolvedEntry[] {
     if (seen) {
       seen.quantity += l.quantity;
       for (const t of l.tags) if (!seen.tags.includes(t)) seen.tags.push(t);
+      if (!seen.print && l.print) seen.print = l.print;
     } else {
-      byKey.set(cardKey, { cardKey, name: l.card.name, quantity: l.quantity, tags: [...l.tags], card: l.card });
+      byKey.set(cardKey, { cardKey, name: l.card.name, quantity: l.quantity, tags: [...l.tags], card: l.card, ...(l.print ? { print: l.print } : {}) });
     }
   }
   return [...byKey.values()];

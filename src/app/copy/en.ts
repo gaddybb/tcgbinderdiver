@@ -585,6 +585,18 @@ export const en = {
   affiliate: { note: 'Affiliate link: Binder Diver may earn a small commission at no extra cost to you.' },
   // Card detail, from the list review and the store dive (reference/design: CardDetailDesk, CardDetailPhone, CardDetailDivePhone, CardSplitPhone)
   cardDetail: {
+    version: {
+      title: 'Version',
+      label: 'Version to look for',
+      any: 'Any version (the cheapest is the likeliest)',
+      lock: 'Only look for this version',
+      lockedNote: 'The plan looks only for this print, wherever it would be.',
+      chosenNote: 'Not locked: the plan still looks for the most likely print.',
+      anyNote: 'The plan looks for the print most likely to be in the store. Pick one to look for a specific print.',
+      listed: (label: string) => `Your list names ${label}.`,
+      useListed: 'Use this version',
+    },
+    banner: { use: 'Use as deck banner', is: 'This card heads the deck', set: (name: string) => `Banner art set to ${name}.` },
     close: 'Close card detail',
     previous: 'Previous card',
     next: 'Next card',

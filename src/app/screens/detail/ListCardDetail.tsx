@@ -2,6 +2,7 @@
 // places to try and every printing. Opens from the list review; previous and next walk the cards shown there.
 import type { CardRecord } from '../../../core/cards';
 import type { CardList } from '../../../core/lists';
+import { bannerCardName } from '../../../core/lists';
 import type { CardStatus } from '../../../core/status';
 import { Button, StatusPicker, Stepper, useToast } from '../../components';
 import { copy } from '../../copy/en';
@@ -10,6 +11,7 @@ import { joinNames } from '../../format';
 import { CardDetailShell } from './CardDetailShell';
 import { useDetailModel } from './model';
 import { AlsoTry, BuyButton, FirstPlace, Heading, Picture, Printings, subtitleFor } from './Sections';
+import { VersionPicker } from './VersionPicker';
 import styles from './CardDetail.module.css';
 
 const t = copy.cardDetail;
@@ -28,7 +30,8 @@ export function ListCardDetail({ list, cardKey, keys, records, onOpen, onClose }
   const lists = useLists();
   const toast = useToast();
   const entry = list.entries.find(e => e.cardKey === cardKey);
-  const model = useDetailModel(records.get(cardKey));
+  const lock = entry?.locked && entry.print ? entry.print : undefined;
+  const model = useDetailModel(records.get(cardKey), undefined, lock);
   if (!entry) return null;
 
   const at = keys.indexOf(cardKey);
@@ -44,6 +47,13 @@ export function ListCardDetail({ list, cardKey, keys, records, onOpen, onClose }
     const previous = entry.quantity;
     await lists.setQuantity(list.id, cardKey, quantity);
     toast.show({ message: t.quantityChanged(entry.name, quantity), onAction: () => { void lists.setQuantity(list.id, cardKey, previous); } });
+  };
+  const paper = (records.get(cardKey)?.printings ?? []).filter(p => !p.digital && p.games.includes('paper'));
+  const isBanner = bannerCardName(list) === entry.name;
+  const makeBanner = async () => {
+    const previous = list.banner ?? null;
+    await lists.setBanner(list.id, entry.name);
+    toast.show({ message: t.banner.set(entry.name), onAction: () => { void lists.setBanner(list.id, previous); } });
   };
   const remove = async () => {
     const result = await lists.removeCards(list.id, [cardKey]);
@@ -73,6 +83,12 @@ export function ListCardDetail({ list, cardKey, keys, records, onOpen, onClose }
               <StatusPicker cardName={entry.name} status={entry.status} onChange={status => changeStatus(status)} />
             </span>
           </div>
+          {paper.length > 0 && <VersionPicker entry={entry} printings={paper} onChange={version => { void lists.setVersion(list.id, cardKey, version); }} />}
+          {list.kind === 'deck' && (
+            <p className={styles.note}>
+              {isBanner ? t.banner.is : <Button variant="text" onClick={() => { void makeBanner(); }}>{t.banner.use}</Button>}
+            </p>
+          )}
           <p className={styles.note}>
             {t.onLists}{' '}
             <strong className={styles.strong}>

@@ -3,14 +3,14 @@
 import { DEFAULT_PULL_SETTINGS } from '../engine/engine';
 import type { BinderGroup } from '../engine/engine';
 import { MAX_CARDS_PER_LIST, MAX_LISTS } from '../lists/limits';
-import type { CardList, IncomingEntry, ListKind } from '../lists';
+import type { CardList, IncomingEntry, ListKind, PrintRef } from '../lists';
 import { nameKey } from '../parse/parseDecklist';
 import type { StoreSettings } from '../store';
 
 export interface HandoffList {
   name: string;
   kind: ListKind;
-  entries: { name: string; quantity: number }[];   // only the cards still needed: that is all a dive uses
+  entries: { name: string; quantity: number; lock?: PrintRef }[];   // only the cards still needed: that is all a dive uses; lock: the one version to look for
 }
 
 export interface Handoff {
@@ -24,7 +24,7 @@ export function buildHandoff(lists: readonly CardList[], settings: StoreSettings
   return {
     lists: lists
       .filter(l => l.inNextDive)
-      .map(l => ({ name: l.name, kind: l.kind, entries: l.entries.filter(e => e.status === 'needed').map(e => ({ name: e.name, quantity: e.quantity })) }))
+      .map(l => ({ name: l.name, kind: l.kind, entries: l.entries.filter(e => e.status === 'needed').map(e => ({ name: e.name, quantity: e.quantity, ...(e.locked && e.print ? { lock: e.print } : {}) })) }))
       .filter(l => l.entries.length > 0),
     settings,
   };
@@ -35,7 +35,7 @@ export function toWire(handoff: Handoff): string {
   const s = handoff.settings;
   return JSON.stringify({
     v: 1,
-    l: handoff.lists.map(l => [l.name, l.kind === 'wishlist' ? 1 : 0, l.entries.map(e => [e.name, e.quantity])]),
+    l: handoff.lists.map(l => [l.name, l.kind === 'wishlist' ? 1 : 0, l.entries.map(e => (e.lock ? [e.name, e.quantity, e.lock.setCode, e.lock.collectorNumber] : [e.name, e.quantity]))]),
     ...(s ? { s: [s.binderGroups.map(g => [g.id, g.name, g.setCodes]), s.notCarried, s.includeBasicLands ? 1 : 0, s.pull.worthPullMinCards, s.pull.worthPullMinUsd, s.combinedCommander ? 1 : 0] } : {}),
   });
 }
@@ -59,8 +59,11 @@ export function fromWire(text: string): Handoff | null {
     if (!isText(name) || (kind !== 0 && kind !== 1) || !Array.isArray(entries) || entries.length > MAX_CARDS_PER_LIST) return null;
     const cleaned: HandoffList['entries'] = [];
     for (const e of entries as unknown[]) {
-      if (!Array.isArray(e) || e.length !== 2 || !isText(e[0]) || !isCount(e[1])) return null;
-      cleaned.push({ name: e[0], quantity: e[1] });
+      if (!Array.isArray(e) || (e.length !== 2 && e.length !== 4) || !isText(e[0]) || !isCount(e[1])) return null;
+      if (e.length === 4) {
+        if (!isCodes([e[2]]) || !isText(e[3]) || (e[3] as string).length > 20) return null;
+        cleaned.push({ name: e[0], quantity: e[1], lock: { setCode: (e[2] as string).toLowerCase(), collectorNumber: e[3] as string } });
+      } else cleaned.push({ name: e[0], quantity: e[1] });
     }
     lists.push({ name, kind: kind === 1 ? 'wishlist' : 'deck', entries: cleaned });
   }
@@ -91,4 +94,4 @@ export function fromWire(text: string): Handoff | null {
 
 export const handoffCards = (handoff: Handoff): number => handoff.lists.reduce((n, l) => n + l.entries.length, 0);
 
-export const toIncoming = (list: HandoffList): IncomingEntry[] => list.entries.map(e => ({ cardKey: nameKey(e.name), name: e.name, quantity: e.quantity }));
+export const toIncoming = (list: HandoffList): IncomingEntry[] => list.entries.map(e => ({ cardKey: nameKey(e.name), name: e.name, quantity: e.quantity, ...(e.lock ? { print: e.lock, locked: true } : {}) }));

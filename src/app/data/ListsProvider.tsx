@@ -1,10 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
-  WISHLIST_ID, addEntries, clearEntries, copyEntries, removeEntries, renameList, setEntriesStatus, setEntryQuantity, setEntryStatus,
+  WISHLIST_ID, addEntries, clearEntries, copyEntries, removeEntries, renameList, setBanner, setEntriesStatus, setEntryQuantity, setEntryStatus, setEntryVersion,
   setInNextDive as withInNextDive,
 } from '../../core/lists';
-import type { CardList, IncomingEntry } from '../../core/lists';
+import type { CardList, IncomingEntry, PrintRef } from '../../core/lists';
 import type { CardStatus } from '../../core/status';
 import { ListLimitError, ListsRepository } from '../../storage';
 import { useStorage } from './StorageProvider';
@@ -35,6 +35,9 @@ export interface ListsApi {
   setInNextDive: (id: string, on: boolean) => Promise<void>;
   setStatus: (listId: string, cardKey: string, status: CardStatus) => Promise<void>;
   setQuantity: (listId: string, cardKey: string, quantity: number) => Promise<void>;
+  // The version of a card the player chose (locked: look only for it); null clears the choice.
+  setVersion: (listId: string, cardKey: string, version: { print: PrintRef; locked: boolean } | null) => Promise<void>;
+  setBanner: (listId: string, cardName: string | null) => Promise<void>;
   // Bulk actions on a list's cards. They return undefined when a list is gone.
   setStatuses: (listId: string, cardKeys: readonly string[], status: CardStatus) => Promise<BulkStatusResult | undefined>;
   removeCards: (listId: string, cardKeys: readonly string[]) => Promise<BulkRemoveResult | undefined>;
@@ -145,6 +148,8 @@ export function ListsProvider({ children, clock = () => new Date(), makeId }: Li
       setInNextDive: (id, on) => edit(id, list => withInNextDive(list, on)),
       setStatus: (listId, cardKey, status) => edit(listId, list => setEntryStatus(list, cardKey, status, now())),
       setQuantity: (listId, cardKey, quantity) => edit(listId, list => setEntryQuantity(list, cardKey, quantity, now())),
+      setVersion: (listId, cardKey, version) => edit(listId, list => setEntryVersion(list, cardKey, version, now())),
+      setBanner: (listId, cardName) => edit(listId, list => setBanner(list, cardName)),
 
       async setStatuses(listId, cardKeys, status) {
         const previous = await repo.get(listId);

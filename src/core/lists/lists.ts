@@ -1,7 +1,7 @@
 // List operations. Pure: every function takes the list (or lists) and returns a new one; `now` is passed in.
 import type { CardStatus } from '../status';
 import { MAX_CARDS_PER_LIST, MAX_LISTS, WISHLIST_ID } from './limits';
-import type { CardList, IncomingEntry, ListEntry, ListKind } from './types';
+import type { CardList, IncomingEntry, ListEntry, ListKind, PrintRef } from './types';
 
 export const cleanName = (name: string): string => name.replace(/\s+/g, ' ').trim();
 export const isValidListName = (name: string): boolean => cleanName(name).length > 0;
@@ -59,7 +59,7 @@ export function addEntries(list: CardList, incoming: readonly IncomingEntry[], n
       overflow.push(item);
     } else {
       index.set(item.cardKey, entries.length);
-      entries.push({ cardKey: item.cardKey, name: item.name, quantity: copies(item.quantity), status: item.status ?? 'needed', tags: [...(item.tags ?? [])] });
+      entries.push({ cardKey: item.cardKey, name: item.name, quantity: copies(item.quantity), status: item.status ?? 'needed', tags: [...(item.tags ?? [])], ...(item.listed ? { listed: item.listed } : {}), ...(item.print ? { print: item.print } : {}), ...(item.locked ? { locked: true } : {}) });
       added++;
     }
   }
@@ -141,6 +141,7 @@ export interface NeededAcrossLists {
   cardKey: string;
   name: string;
   copies: number;                                                       // total copies still needed
+  lock?: PrintRef;                                                      // the one version to look for, when a list has locked one
   parts: { listId: string; listName: string; quantity: number }[];      // per list, in list order
 }
 
@@ -153,8 +154,9 @@ export function mergeNeeded(lists: readonly CardList[]): NeededAcrossLists[] {
       if (e.status !== 'needed') continue;
       const part = { listId: list.id, listName: list.name, quantity: e.quantity };
       const cur = merged.get(e.cardKey);
-      if (cur) { cur.copies += e.quantity; cur.parts.push(part); }
-      else merged.set(e.cardKey, { cardKey: e.cardKey, name: e.name, copies: e.quantity, parts: [part] });
+      const lock = e.locked && e.print ? e.print : undefined;
+      if (cur) { cur.copies += e.quantity; cur.parts.push(part); if (!cur.lock && lock) cur.lock = lock; }
+      else merged.set(e.cardKey, { cardKey: e.cardKey, name: e.name, copies: e.quantity, parts: [part], ...(lock ? { lock } : {}) });
     }
   }
   return [...merged.values()];
@@ -166,4 +168,20 @@ export const copyAsText = (list: CardList): string => list.entries.map(e => `${e
 // The card whose art heads a list: the one chosen for it (a sample deck's commander), else the first card. Null for an empty list.
 export function bannerCardName(list: Pick<CardList, 'banner' | 'entries'>): string | null {
   return list.banner ?? list.entries[0]?.name ?? null;
+}
+
+// Chooses the version of a card for this list (locked: look only for it), or clears the choice with null.
+export const setEntryVersion = (list: CardList, cardKey: string, version: { print: PrintRef; locked: boolean } | null, now: Date): CardList =>
+  mapEntry(list, cardKey, now, e => {
+    const next = { ...e };
+    delete next.print;
+    delete next.locked;
+    return version ? { ...next, print: version.print, ...(version.locked ? { locked: true } : {}) } : next;
+  });
+
+// The card whose art heads a list is chosen by name; null goes back to the first card.
+export function setBanner(list: CardList, cardName: string | null): CardList {
+  const next = { ...list };
+  delete next.banner;
+  return cardName ? { ...next, banner: cardName } : next;
 }
