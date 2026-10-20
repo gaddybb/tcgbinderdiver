@@ -65,15 +65,15 @@ export function DivePlan() {
     <SummaryBar
       sticky={phone}
       title={t.listsUsed(joinNames(contributing.map(l => l.name)))}
+      detail={active ? undefined : t.startHint}
       action={active ? (
         <span className={styles.toolbar} data-tour="plan-start">
           <Button onClick={() => navigate('/dive')}>{t.resumeDive}</Button>
           <Button variant="text" onClick={() => setConfirmNew(true)}>{t.newTrip}</Button>
         </span>
       ) : (
-        <span className={styles.startBlock} data-tour="plan-start">
+        <span data-tour="plan-start">
           <Button disabled={total === 0} onClick={startTrip}>{t.startDive}</Button>
-          <span className={styles.hint}>{t.startHint}</span>
         </span>
       )}
     />
@@ -95,6 +95,8 @@ export function DivePlan() {
       <div className={screen.stack}>
         <StandaloneLink to="/lists">{t.backToLists}</StandaloneLink>
         <SampleBanner />
+        {/* At the top on a tablet or desktop, so a long plan never hides it; on a phone it stays pinned to the bottom. */}
+        {!phone && dive.ready && dive.lists.length > 0 && summaryBar}
 
         {!dive.ready ? <SkeletonRow /> : dive.lists.length === 0 ? (
           <EmptyState title={t.empty.title} actions={<Button onClick={() => navigate('/lists')}>{t.empty.action}</Button>}>{t.empty.text}</EmptyState>
@@ -143,7 +145,7 @@ export function DivePlan() {
                 )}
               </>
             )}
-            {summaryBar}
+            {phone && summaryBar}
           </>
         )}
       </div>
