@@ -104,3 +104,4 @@ interface Storage { get; put; delete; list }   // per collection; IndexedDB now,
 - Pick the deck banner card, and a sharper banner (Scryfall's art crop is only about 626 px wide).
 - A keep-my-print choice: lists do not record which print a player owns yet.
 - Guided tour: dim the screen and highlight what is explained, on more pages, remembered per device.
+- With accounts (v3): small per-device choices (finished tours, the Gallery or Table view, install answers) move to the account so they follow a player across devices; they already go through the storage seam, so it is a storage change, not a screen change.

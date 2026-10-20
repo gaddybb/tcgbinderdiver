@@ -18,13 +18,16 @@ const TARGETS: Record<TourId, string[]> = {
 
 interface Box { top: number; left: number; width: number; height: number }
 
-// The target's box on screen, scrolled into view first when it is off screen. null when there is nothing to point at.
-function measure(name: string | undefined): Box | null {
+const sameBox = (a: Box | null, b: Box | null): boolean =>
+  a === b || (a !== null && b !== null && a.top === b.top && a.left === b.left && a.width === b.width && a.height === b.height);
+
+// The target's box on screen. With `scroll`, an element that is off screen is scrolled into view first. null when there is nothing to point at.
+function measure(name: string | undefined, scroll: boolean): Box | null {
   const el = name ? document.querySelector<HTMLElement>(`[data-tour="${name}"]`) : null;
   if (!el) return null;
   let r = el.getBoundingClientRect();
   if (r.width === 0 || r.height === 0) return null;
-  if (r.bottom < 0 || r.top > window.innerHeight) { el.scrollIntoView?.({ block: 'center' }); r = el.getBoundingClientRect(); }
+  if (scroll && (r.bottom < 0 || r.top > window.innerHeight)) { el.scrollIntoView?.({ block: 'center' }); r = el.getBoundingClientRect(); }
   // A box taller than the screen is lit only as far as it shows.
   const top = Math.max(r.top, 0);
   const bottom = Math.min(r.bottom, window.innerHeight);
@@ -54,13 +57,19 @@ export function TourPlayer({ id, onDone }: TourPlayerProps) {
   const total = t.tips.length;
   const target = step > 0 ? TARGETS[id][step - 1] : undefined;
 
-  // Follow the target as the page resizes or scrolls.
+  // Follow the target. The page keeps moving under the tour (card data arriving, banners appearing, a phone's address bar
+  // folding away), and none of that fires a resize or scroll event, so the box is re-read every frame and only kept when it changed.
   useLayoutEffect(() => {
-    const update = () => setBox(measure(target));
-    update();
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
-    return () => { window.removeEventListener('resize', update); window.removeEventListener('scroll', update, true); };
+    let frame = 0;
+    let first = true;   // the first read may scroll the target into view; later ones only follow it
+    const follow = () => {
+      const next = measure(target, first);
+      first = false;
+      setBox(prev => (sameBox(prev, next) ? prev : next));
+      frame = window.requestAnimationFrame(follow);
+    };
+    frame = window.requestAnimationFrame(follow);
+    return () => window.cancelAnimationFrame(frame);
   }, [target]);
 
   // Escape skips. Focus moves into the tip on each step and goes back where it was when the tour ends.

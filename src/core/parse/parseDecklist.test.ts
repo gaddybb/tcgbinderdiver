@@ -61,6 +61,12 @@ describe('parseDecklist: set codes, collector numbers, foil tags and tags', () =
     const r = parseDecklist('2x Sol Ring (CMM) 400 *F* #tag');
     expect(r.entries).toEqual([{ name: 'Sol Ring', quantity: 2, section: 'main', tags: ['tag'], print: { setCode: 'cmm', collectorNumber: '400' } }]);
   });
+  it('reads the Moxfield and Archidekt export "qty name (set) number", which is the format the owner pasted', () => {
+    const { entries } = parseDecklist("1 Aang, Air Nomad (tle) 210\n1 Cenn's Tactician (mor) 5\n1 Continue? (tmc) 7\n1 Breeding Pool (rna) 246");
+    expect(entries.map(e => [e.name, e.print?.setCode, e.print?.collectorNumber])).toEqual([
+      ['Aang, Air Nomad', 'tle', '210'], ["Cenn's Tactician", 'mor', '5'], ['Continue?', 'tmc', '7'], ['Breeding Pool', 'rna', '246'],
+    ]);
+  });
   it('keeps the printing a line names: (CMM) 400, a set alone, or [cmm#400]', () => {
     const print = (line: string) => parseDecklist(line).entries[0].print;
     expect(print('1 Sol Ring (CMM) 400 *F*')).toEqual({ setCode: 'cmm', collectorNumber: '400' });
