@@ -56,17 +56,41 @@
   background: color-mix(in oklab, var(--color-ground) 70%, transparent);
   backdrop-filter: blur(var(--blur-bar));
 }
+/* The hamburger: a square button that opens the menu under the header, and closes it again. */
 .menu {
   display: inline-flex;
   align-items: center;
-  min-height: var(--tap-min);
-  padding: 0 var(--space-4);
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
   border: var(--border-thin) solid var(--color-divider);
   border-radius: var(--radius-md);
+  background: transparent;
   color: var(--color-text);
-  text-decoration: none;
-  font-weight: var(--weight-bold);
 }
+.menu[aria-expanded='true'] { background: var(--color-floor1); }
+.burger { width: var(--space-5); height: var(--space-5); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.phoneTop { position: relative; z-index: var(--z-menu); }
+.phoneMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  background: var(--color-deep);
+  border-bottom: var(--border-thin) solid var(--color-hairline);
+  box-shadow: var(--shadow-menu);
+}
+.phoneMenuList { list-style: none; margin: 0; padding: 0; }
+.phoneMenuLink { display: flex; align-items: center; min-height: var(--tap-min); color: var(--color-text); text-decoration: none; font-weight: var(--weight-medium); border-bottom: var(--border-thin) solid var(--color-hairline); }
+.phoneMenu .game { align-self: stretch; }
+.phoneMenu .select { width: 100%; background: var(--color-floor1); }
 
 /* The tab bar sits along the bottom of a phone screen; the app's page makes room for it (see App.module.css). */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-menu); padding: var(--space-2) var(--space-3); background: var(--color-deep); }

@@ -739,8 +739,9 @@ export const en = {
     dive: 'Store dive',
     game: 'Game',
     gameComing: (name: string) => `${name} (coming)`,
-    menu: 'Menu',
     menuLabel: 'Open the menu',
+    menuClose: 'Close the menu',
+    menuNav: 'Menu',
   },
   games: {
     magic: 'Magic: The Gathering',

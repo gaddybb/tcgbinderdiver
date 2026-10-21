@@ -1,5 +1,7 @@
 // The way around the site. On a tablet and desktop: a header with the logo, Walkthrough, Support, the game choice and the
-// two main places. On a phone: a slim header with the logo and a Menu link, and the tab bar along the bottom.
+// two main places. On a phone: a slim header with the logo and a hamburger that opens a menu (the other pages, and the game
+// choice), and the tab bar along the bottom.
+import { useEffect, useState } from 'react';
 import { Logo, TabBar } from '../components';
 import type { TabItem } from '../components';
 import { copy } from '../copy/en';
@@ -26,18 +28,68 @@ export function tabFor(path: string): string {
   return '';
 }
 
+function GameSelect() {
+  return (
+    <label className={styles.game}>
+      <span className={styles.srOnly}>{t.game}</span>
+      <select className={styles.select} defaultValue="magic">
+        <option value="magic">{copy.games.magic}</option>
+        <option value="pokemon" disabled>{t.gameComing(copy.games.pokemon)}</option>
+        <option value="lorcana" disabled>{t.gameComing(copy.games.lorcana)}</option>
+        <option value="yugioh" disabled>{t.gameComing(copy.games.yugioh)}</option>
+      </select>
+    </label>
+  );
+}
+
+// Three bars that become a cross while the menu is open.
+function Hamburger({ open }: { open: boolean }) {
+  return (
+    <svg aria-hidden="true" className={styles.burger} viewBox="0 0 24 24">
+      {open
+        ? <path d="M6 6l12 12M18 6L6 18" />
+        : <path d="M4 7h16M4 12h16M4 17h16" />}
+    </svg>
+  );
+}
+
 export function SiteNav() {
   const phone = useLayout() === 'phone';
   const path = usePath();
+  // The menu is open for the page it was opened on, so going anywhere closes it.
+  const [openAt, setOpenAt] = useState<string | null>(null);
+  const open = openAt === path;
   const current = (to: string) => (path === to || (to === '/lists' && path.startsWith('/lists')) ? 'page' : undefined);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenAt(null); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
 
   if (phone) {
     return (
       <>
-        <header className={styles.phoneHeader}>
-          <Link to="/" className={styles.brand} aria-label={t.home}><Logo size="sm" /><span className={styles.name}>{copy.app.name}</span></Link>
-          <Link to="/more" className={styles.menu} aria-label={t.menuLabel}>{t.menu}</Link>
-        </header>
+        <div className={styles.phoneTop}>
+          <header className={styles.phoneHeader}>
+            <Link to="/" className={styles.brand} aria-label={t.home}><Logo size="sm" /><span className={styles.name}>{copy.app.name}</span></Link>
+            <button type="button" className={styles.menu} aria-expanded={open} aria-controls="phone-menu" aria-label={open ? t.menuClose : t.menuLabel} onClick={() => setOpenAt(open ? null : path)}>
+              <Hamburger open={open} />
+            </button>
+          </header>
+          {open && (
+            <nav id="phone-menu" aria-label={t.menuNav} className={styles.phoneMenu}>
+              <ul className={styles.phoneMenuList}>
+                <li><Link to="/walkthrough" className={styles.phoneMenuLink}>{copy.more.walkthrough}</Link></li>
+                <li><Link to="/support" className={styles.phoneMenuLink}>{copy.more.support}</Link></li>
+                <li><Link to="/about" className={styles.phoneMenuLink}>{copy.more.about}</Link></li>
+                <li><Link to="/privacy" className={styles.phoneMenuLink}>{copy.more.privacy}</Link></li>
+              </ul>
+              <GameSelect />
+            </nav>
+          )}
+        </div>
         <div className={styles.tabs}><TabBar items={TABS} current={tabFor(path)} /></div>
       </>
     );
@@ -48,15 +100,7 @@ export function SiteNav() {
       <nav aria-label={t.label} className={styles.bar}>
         <Link to="/" className={styles.brand} aria-label={t.home}><Logo size="sm" /><span className={styles.name}>{copy.app.name}</span></Link>
         <span className={styles.rule} aria-hidden="true" />
-        <label className={styles.game}>
-          <span className={styles.srOnly}>{t.game}</span>
-          <select className={styles.select} defaultValue="magic">
-            <option value="magic">{copy.games.magic}</option>
-            <option value="pokemon" disabled>{t.gameComing(copy.games.pokemon)}</option>
-            <option value="lorcana" disabled>{t.gameComing(copy.games.lorcana)}</option>
-            <option value="yugioh" disabled>{t.gameComing(copy.games.yugioh)}</option>
-          </select>
-        </label>
+        <GameSelect />
         <div className={styles.links}>
           <Link to="/walkthrough" className={styles.link} aria-current={current('/walkthrough')}>{t.walkthrough}</Link>
           <Link to="/lists" className={styles.link} aria-current={current('/lists')}>{t.lists}</Link>

@@ -63,11 +63,39 @@ describe('Site navigation', () => {
   it('on a phone has a slim header and the tab bar, with the current tab named', () => {
     setWidth(375);
     open('/lists');
-    expect(screen.getByRole('link', { name: copy.siteNav.menuLabel })).toBeTruthy();
+    expect(screen.getByRole('button', { name: copy.siteNav.menuLabel })).toBeTruthy();
     const tabs = screen.getByRole('navigation', { name: copy.tabs.label });
     expect(within(tabs).getAllByRole('link').map(a => a.textContent)).toEqual([copy.tabs.lists, copy.tabs.plan, copy.tabs.dive, copy.tabs.more]);
     expect(within(tabs).getByRole('link', { name: copy.tabs.lists }).getAttribute('aria-current')).toBe('page');
     expect(screen.queryByLabelText(copy.siteNav.game)).toBeNull();
+  });
+
+  it('on a phone the hamburger opens a menu with the pages and the game choice, and a second tap closes it', () => {
+    setWidth(375);
+    open('/lists');
+    const button = screen.getByRole('button', { name: copy.siteNav.menuLabel });
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.queryByRole('navigation', { name: copy.siteNav.menuNav })).toBeNull();
+    fireEvent.click(button);
+    const menu = within(screen.getByRole('navigation', { name: copy.siteNav.menuNav }));
+    for (const name of [copy.more.walkthrough, copy.more.support, copy.more.about, copy.more.privacy]) expect(menu.getByRole('link', { name })).toBeTruthy();
+    expect((menu.getByLabelText(copy.siteNav.game) as HTMLSelectElement).value).toBe('magic');
+    const close = screen.getByRole('button', { name: copy.siteNav.menuClose });
+    expect(close.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(close);
+    expect(screen.queryByRole('navigation', { name: copy.siteNav.menuNav })).toBeNull();
+  });
+
+  it('the phone menu also closes with Escape and when you go to one of its pages', () => {
+    setWidth(375);
+    open('/lists');
+    fireEvent.click(screen.getByRole('button', { name: copy.siteNav.menuLabel }));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('navigation', { name: copy.siteNav.menuNav })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: copy.siteNav.menuLabel }));
+    fireEvent.click(within(screen.getByRole('navigation', { name: copy.siteNav.menuNav })).getByRole('link', { name: copy.more.walkthrough }));
+    expect(window.location.pathname).toBe('/walkthrough');
+    expect(screen.queryByRole('navigation', { name: copy.siteNav.menuNav })).toBeNull();
   });
 
   it('the More page lists the other pages', () => {

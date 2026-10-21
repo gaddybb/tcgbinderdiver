@@ -49,7 +49,7 @@ export function Home() {
       </section>
 
       <section className={styles.why} aria-labelledby="why-title">
-        <div className={styles.whyHead}>
+        <div className={phone ? styles.whyHeadStack : styles.whyHead}>
           <div>
             <p className={styles.eyebrow}>{t.whyEyebrow}</p>
             <h2 id="why-title" className={styles.whyTitle}>{t.whyTitle}</h2>

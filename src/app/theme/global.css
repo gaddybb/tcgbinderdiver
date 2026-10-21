@@ -17,7 +17,7 @@ body {
   background-attachment: fixed;
 }
 
-h1, h2, h3 { font-family: var(--font-display); font-optical-sizing: auto; letter-spacing: 0; }
+h1, h2, h3 { font-family: var(--font-display); font-optical-sizing: auto; letter-spacing: 0; text-wrap: balance; }   /* headings break into even lines, with no lone word at the end */
 
 a { color: var(--color-accent); }
 
