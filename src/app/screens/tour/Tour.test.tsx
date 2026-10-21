@@ -18,7 +18,7 @@ const show = (id: TourId, storage = new MemoryStorage(), targets: string[] = [])
 const region = (id: TourId) => screen.queryByRole('region', { name: copy.tourFlow[id].label });
 
 describe('Tour', () => {
-  it.each(['dive', 'list', 'plan'] as const)('the %s tour welcomes, then goes through its tips in order, then is remembered', async id => {
+  it.each(['home', 'dive', 'list', 'plan'] as const)('the %s tour welcomes, then goes through its tips in order, then is remembered', async id => {
     const { storage } = show(id);
     fireEvent.click(await screen.findByRole('button', { name: copy.tourFlow.show }));
     const tips = copy.tourFlow[id].tips;

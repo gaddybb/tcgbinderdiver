@@ -861,6 +861,15 @@ export const en = {
     skip: 'Skip',
     show: 'Show me',
     replayNote: 'Replay it anytime from the Walkthrough page.',
+    home: {
+      label: 'Home tour',
+      welcomeTitle: 'First time here?',
+      welcomeText: 'A 15-second look at where to start.',
+      tips: [
+        { title: 'Start with your deck', text: 'Paste a list from Moxfield, Archidekt or plain text, or try a sample deck. Binder Diver turns it into a plan for your store.' },
+        { title: 'Want the full picture?', text: 'The walkthrough shows each step, with answers to the usual questions.' },
+      ],
+    },
     dive: {
       label: 'Store dive tour',
       welcomeTitle: 'First dive?',

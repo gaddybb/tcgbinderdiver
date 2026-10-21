@@ -31,7 +31,7 @@ export function tabFor(path: string): string {
 function GameSelect() {
   return (
     <label className={styles.game}>
-      <span className={styles.srOnly}>{t.game}</span>
+      <span className={styles.gameLabel}>{t.game}</span>
       <select className={styles.select} defaultValue="magic">
         <option value="magic">{copy.games.magic}</option>
         <option value="pokemon" disabled>{t.gameComing(copy.games.pokemon)}</option>
