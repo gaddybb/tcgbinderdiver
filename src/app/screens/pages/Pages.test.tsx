@@ -35,6 +35,13 @@ describe('Site navigation', () => {
     expect(game.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it('shows the word Game beside the game choice, not only for screen readers', () => {
+    open('/');
+    const nav = screen.getByRole('navigation', { name: copy.siteNav.label });
+    expect(within(nav).getAllByText(copy.siteNav.game).length).toBeGreaterThan(0);
+    expect(within(nav).getByLabelText(copy.siteNav.game).tagName).toBe('SELECT');
+  });
+
   it('offers Magic now and shows the other games as coming, not choosable', () => {
     open('/');
     const select = screen.getByLabelText(copy.siteNav.game) as HTMLSelectElement;
@@ -117,6 +124,19 @@ describe('Home', () => {
     expect(screen.getByLabelText(copy.homePage.formLabel)).toBeTruthy();
     expect(screen.getAllByRole('link', { name: copy.homePage.takeWalkthrough })).toHaveLength(1);
     expect(screen.getAllByRole('heading', { level: 3 }).map(h => h.textContent)).toEqual(copy.homePage.steps.map(s => s.title));
+  });
+
+  it('offers a short first-time tour of the home page: the deck box, then the walkthrough link, and remembers it', async () => {
+    const { storage } = open('/');
+    fireEvent.click(await screen.findByRole('button', { name: copy.tourFlow.show }));
+    const tips = copy.tourFlow.home.tips;
+    expect(tips).toHaveLength(2);
+    expect(screen.getByText(tips[0].title)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.tour.next }));
+    expect(screen.getByText(tips[1].title)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: copy.tour.done }));
+    await waitFor(async () => expect(await storage.get('settings', 'pref:tour-home')).toBe('yes'));
+    expect(screen.queryByRole('region', { name: copy.tourFlow.home.label })).toBeNull();
   });
 
   it('sets the second sentence of the headline in the accent, and the heading still reads as one line', () => {

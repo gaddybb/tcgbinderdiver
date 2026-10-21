@@ -7,10 +7,11 @@ import { copy } from '../../copy/en';
 import { usePreference } from '../../data/usePreference';
 import styles from './Tour.module.css';
 
-export type TourId = 'dive' | 'list' | 'plan';
+export type TourId = 'home' | 'dive' | 'list' | 'plan';
 
 // The data-tour value of the element each tip points at, in tip order. Missing on screen means a centered tip.
 const TARGETS: Record<TourId, string[]> = {
+  home: ['home-deck', 'home-walkthrough'],
   dive: ['dive-picker', 'dive-cards', 'dive-finish'],
   list: ['list-controls', 'list-cards', 'list-plan'],
   plan: ['plan-stops', 'plan-settings', 'plan-start'],

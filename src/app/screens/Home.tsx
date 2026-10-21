@@ -6,6 +6,7 @@ import { KOFI_URL } from '../links';
 import { useLayout } from '../layout/useLayout';
 import { navigate } from '../router';
 import { InstallBanner } from './dive/InstallBanner';
+import { Tour } from './tour/Tour';
 import { setImportText } from './import/handoff';
 import { SampleDeckButton } from './pages/SampleDeckButton';
 import styles from './pages/Pages.module.css';
@@ -35,12 +36,12 @@ export function Home() {
       <section className={styles.hero} aria-label={copy.app.name}>
         <h1 className={phone ? styles.heroTitleSmall : styles.heroTitle}>{t.title.slice(0, t.title.length - t.titleAccent.length)}<span className={styles.accent}>{t.titleAccent}</span></h1>
         <p className={styles.primer}>{t.primer}</p>
-        <form className={styles.form} onSubmit={e => { e.preventDefault(); plan(); }}>
+        <form className={styles.form} data-tour="home-deck" onSubmit={e => { e.preventDefault(); plan(); }}>
           <Input label={t.formLabel} multiline rows={4} placeholder={t.placeholder} value={text} onChange={e => setText(e.target.value)} />
           <div className={`${styles.formActions} ${phone ? styles.formActionsPhone : ''}`}>
             <Button size="lg" onClick={plan}>{t.plan}</Button>
             <SampleDeckButton size="lg" />
-            <p className={styles.formNote}>{t.firstDive} <StandaloneLink to="/walkthrough">{t.takeWalkthrough}</StandaloneLink></p>
+            <p className={styles.formNote} data-tour="home-walkthrough">{t.firstDive} <StandaloneLink to="/walkthrough">{t.takeWalkthrough}</StandaloneLink></p>
           </div>
         </form>
         <Button variant="text" onClick={() => document.getElementById('why-title')?.scrollIntoView?.({ behavior: 'smooth' })}>
@@ -70,6 +71,8 @@ export function Home() {
           <StandaloneLink to="/walkthrough">{t.fullWalkthrough}</StandaloneLink>
         </div>
       </section>
+
+      <Tour id="home" />
 
       <section className={styles.support}>
         <p className={styles.supportText}>{t.support.text}</p>

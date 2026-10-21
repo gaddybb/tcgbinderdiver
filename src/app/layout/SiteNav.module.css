@@ -19,7 +19,8 @@
 .name { font-family: var(--font-display); font-weight: var(--weight-bold); font-size: var(--text-title); letter-spacing: -0.01em; color: var(--color-text); }
 .rule { width: var(--border-thin); height: var(--space-5); background: var(--color-hairline); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.game { display: inline-flex; align-items: center; }
+.game { display: inline-flex; align-items: center; gap: var(--space-2); }
+.gameLabel { font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-text-muted); }
 .select {
   font: inherit;
   font-size: var(--text-sm);
@@ -89,7 +90,7 @@
 }
 .phoneMenuList { list-style: none; margin: 0; padding: 0; }
 .phoneMenuLink { display: flex; align-items: center; min-height: var(--tap-min); color: var(--color-text); text-decoration: none; font-weight: var(--weight-medium); border-bottom: var(--border-thin) solid var(--color-hairline); }
-.phoneMenu .game { align-self: stretch; }
+.phoneMenu .game { align-self: stretch; flex-direction: column; align-items: stretch; gap: var(--space-1); }
 .phoneMenu .select { width: 100%; background: var(--color-floor1); }
 
 /* The tab bar sits along the bottom of a phone screen; the app's page makes room for it (see App.module.css). */
