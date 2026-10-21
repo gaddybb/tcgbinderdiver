@@ -3,10 +3,11 @@
 .lg { width: 5.25rem; height: 5.25rem; }
 .anchor { width: 6rem; height: 6rem; }
 
-.helmet { fill: var(--color-brass); }
-.lens { fill: var(--color-ground); stroke: var(--color-brass-dark); stroke-width: 3; }
-.crossbar { stroke: var(--color-brass-dark); stroke-width: 2; fill: none; }
-.collar { fill: var(--color-brass-mid); }
+/* The helmet mark: an outline helmet in the game's accent, with a lens, a crosshair and a collar. */
+.helmet { fill: none; stroke: var(--color-accent); stroke-width: 3.2; }
+.lens { fill: none; stroke: var(--color-accent); stroke-width: 3.2; }
+.crossbar { stroke: var(--color-accent); stroke-width: 2; fill: none; opacity: 0.6; }
+.collar { fill: var(--color-accent); opacity: 0.85; }
 
 .disc { fill: var(--color-deep); stroke: var(--color-brass); stroke-width: 3; }
 .tintDisc { fill: var(--color-tint); opacity: 0.14; }

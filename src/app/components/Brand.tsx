@@ -7,9 +7,9 @@ export function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   return (
     <svg aria-hidden="true" className={styles[size]} viewBox="0 0 64 64">
       <circle className={styles.helmet} cx="32" cy="28" r="22" />
-      <circle className={styles.lens} cx="32" cy="29" r="12" />
-      <path className={styles.crossbar} d="M20 29h24M32 17v24" />
-      <path className={styles.collar} d="M12 50h40l-4 10H16z" />
+      <circle className={styles.lens} cx="32" cy="28" r="11" />
+      <path className={styles.crossbar} d="M32 17v22M21 28h22" />
+      <path className={styles.collar} d="M14 50h36l-4 8H18z" />
     </svg>
   );
 }

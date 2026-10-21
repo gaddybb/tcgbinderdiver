@@ -25,6 +25,16 @@ describe('Site navigation', () => {
     }
   });
 
+  it('keeps the game choice on the left, beside the logo, before the links', () => {
+    open('/');
+    const nav = screen.getByRole('navigation', { name: copy.siteNav.label });
+    const logo = within(nav).getByRole('link', { name: copy.siteNav.home });
+    const game = within(nav).getByLabelText(copy.siteNav.game);
+    const first = within(nav).getByRole('link', { name: copy.siteNav.walkthrough });
+    expect(logo.compareDocumentPosition(game) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(game.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('offers Magic now and shows the other games as coming, not choosable', () => {
     open('/');
     const select = screen.getByLabelText(copy.siteNav.game) as HTMLSelectElement;
@@ -79,6 +89,13 @@ describe('Home', () => {
     expect(screen.getByLabelText(copy.homePage.formLabel)).toBeTruthy();
     expect(screen.getAllByRole('link', { name: copy.homePage.takeWalkthrough })).toHaveLength(1);
     expect(screen.getAllByRole('heading', { level: 3 }).map(h => h.textContent)).toEqual(copy.homePage.steps.map(s => s.title));
+  });
+
+  it('sets the second sentence of the headline in the accent, and the heading still reads as one line', () => {
+    open('/');
+    const h1 = screen.getByRole('heading', { level: 1 });
+    expect(h1.textContent).toBe(copy.homePage.title);
+    expect(h1.querySelector('span')!.textContent).toBe(copy.homePage.titleAccent);
   });
 
   it('explains itself before the box, shows an example as the hint, and keeps the walkthrough link in the box with the buttons', () => {

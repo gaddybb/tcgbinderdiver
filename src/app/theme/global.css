@@ -3,13 +3,21 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+html { font-size: 106.25%; }   /* 17 px: the brand's reading size; every size in the app is in rem and follows it */
+
 body {
   margin: 0;
   font-family: var(--font-body);
   font-size: var(--text-md);
   color: var(--color-text);
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
   background: var(--color-ground);
+  background: var(--page-background, var(--color-ground));
+  background-attachment: fixed;
 }
+
+h1, h2, h3 { font-family: var(--font-display); font-optical-sizing: auto; letter-spacing: 0; }
 
 a { color: var(--color-accent); }
 

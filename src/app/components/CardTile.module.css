@@ -38,7 +38,7 @@
   font-size: var(--text-caption);
   color: var(--color-text-muted);
 }
-.price { color: var(--color-text); font-weight: var(--weight-bold); }
+.price { color: var(--color-text); font-family: var(--font-mono); font-weight: var(--weight-medium); }
 .lists { font-size: var(--text-xs); color: var(--color-text-muted); }
 .actions { display: flex; gap: 0.375rem; }
 .grow { flex: 1 1 auto; }

@@ -1,9 +1,10 @@
 .card {
   list-style: none;
   position: relative;
-  background: var(--color-ground);
-  border: var(--border-thin) solid var(--color-divider);
-  border-radius: var(--radius-xl);
+  background: var(--color-deep);
+  border: var(--border-thin) solid var(--color-hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-panel);
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
@@ -12,8 +13,9 @@
 .head { display: flex; align-items: flex-start; gap: var(--space-3); }
 .titles { flex: 1 1 auto; min-width: 0; }
 .kind {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-regular);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--color-text-muted);

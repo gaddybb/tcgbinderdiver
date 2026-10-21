@@ -45,7 +45,7 @@ describe('design tokens stay in one place', () => {
   });
 
   it('has no font names outside the theme', () => {
-    expect(offenders(sourceFiles, /\b(?:Fraunces|Karla|Georgia|Arial|Helvetica|system-ui|sans-serif|serif)\b/g)).toEqual([]);
+    expect(offenders(sourceFiles, /\b(?:Fraunces|Karla|Hanken|JetBrains|Georgia|Arial|Helvetica|system-ui|sans-serif|serif)\b/g)).toEqual([]);
   });
 
   it('has no pixel sizes in component styles (1px is allowed for visually hidden inputs)', () => {
@@ -64,5 +64,15 @@ describe('design tokens stay in one place', () => {
     for (const name of ['size-button', 'size-button-lg', 'size-chip', 'size-picker', 'size-color-filter-w']) {
       expect(rem(name), name).toBeGreaterThanOrEqual(rem('tap-min'));
     }
+  });
+
+  // The brand's smallest text is 12 px: every text size token is at least 0.75rem (12 px at 16 px; the page's root is a little larger),
+  // and no component style sets a font size below it.
+  it('keeps text at least 12 px', () => {
+    const tokens = readFileSync(join(APP, 'theme', 'tokens.css'), 'utf8');
+    const sizes = [...tokens.matchAll(/--text-[\w-]+:\s*([\d.]+)rem/g)].map(m => Number(m[1]));
+    expect(sizes.length).toBeGreaterThan(10);
+    for (const size of sizes) expect(size).toBeGreaterThanOrEqual(0.75);
+    expect(offenders(styleFiles, /font-size:\s*0?\.[0-6]\d*rem|font-size:\s*0?\.7[0-4]\d*rem/g)).toEqual([]);
   });
 });
