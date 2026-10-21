@@ -1,11 +1,15 @@
-/* Magic theme: blues. Only live game in v1. Other games get their own file with the same variable names.
+/* Magic theme: blues. Only live game in v1. Other games get their own file with the same variable names; the accent is the one
+   variable that changes (--game-accent) and the tint, ring, links and buttons all follow it.
    Set as data-game on <html> (index.html), so the page background and every component pick it up. */
 [data-game='magic'] {
-  --color-ground: #172a35;
-  --color-deep: #12212a;
-  --color-floor1: #1f3542;
-  --color-floor2: #253e4c;
-  --color-accent: #6fb6e0;
-  --color-tint: #5aa0d0;
-  --image-hero: url('./magic-hero.webp');   /* the home page's first screen: the sea floor and the diving bell */
+  --game-accent: oklch(0.76 0.12 245);
+  --color-accent: var(--game-accent);
+  --color-tint: var(--game-accent);
+  --color-ground: oklch(0.235 0.022 245);   /* the sea at the surface: the page */
+  --color-deepest: oklch(0.2 0.02 245);     /* and further down, at the bottom of the page */
+  --color-deep: oklch(0.28 0.025 245);      /* a panel */
+  --color-floor1: oklch(0.34 0.028 245);    /* a field, a menu, a raised row */
+  --color-floor2: oklch(0.4 0.03 245);
+  --image-hero: url('./magic-hero.webp');   /* the home page's first screen: a diving helmet on the sea floor (a placeholder for the designer's art) */
+  --page-background: radial-gradient(120% 60% at 50% 0%, color-mix(in oklab, var(--game-accent) 12%, transparent), transparent 70%), linear-gradient(180deg, var(--color-ground), var(--color-deepest));
 }

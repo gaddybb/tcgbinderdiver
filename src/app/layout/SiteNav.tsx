@@ -46,20 +46,21 @@ export function SiteNav() {
   return (
     <header className={styles.header}>
       <nav aria-label={t.label} className={styles.bar}>
-        <Link to="/" className={styles.brand} aria-label={t.home}><Logo size="md" /><span className={styles.name}>{copy.app.name}</span></Link>
+        <Link to="/" className={styles.brand} aria-label={t.home}><Logo size="sm" /><span className={styles.name}>{copy.app.name}</span></Link>
+        <span className={styles.rule} aria-hidden="true" />
+        <label className={styles.game}>
+          <span className={styles.srOnly}>{t.game}</span>
+          <select className={styles.select} defaultValue="magic">
+            <option value="magic">{copy.games.magic}</option>
+            <option value="pokemon" disabled>{t.gameComing(copy.games.pokemon)}</option>
+            <option value="lorcana" disabled>{t.gameComing(copy.games.lorcana)}</option>
+            <option value="yugioh" disabled>{t.gameComing(copy.games.yugioh)}</option>
+          </select>
+        </label>
         <div className={styles.links}>
           <Link to="/walkthrough" className={styles.link} aria-current={current('/walkthrough')}>{t.walkthrough}</Link>
+          <Link to="/lists" className={styles.link} aria-current={current('/lists')}>{t.lists}</Link>
           <Link to="/support" className={styles.link} aria-current={current('/support')}>{t.support}</Link>
-          <label className={styles.game}>
-            {t.game}
-            <select className={styles.select} defaultValue="magic">
-              <option value="magic">{copy.games.magic}</option>
-              <option value="pokemon" disabled>{t.gameComing(copy.games.pokemon)}</option>
-              <option value="lorcana" disabled>{t.gameComing(copy.games.lorcana)}</option>
-              <option value="yugioh" disabled>{t.gameComing(copy.games.yugioh)}</option>
-            </select>
-          </label>
-          <Link to="/lists" className={cx(styles.link, styles.outline)} aria-current={current('/lists')}>{t.lists}</Link>
           <Link to="/dive" className={cx(styles.link, styles.primary)} aria-current={current('/dive')}>{t.dive}</Link>
         </div>
       </nav>

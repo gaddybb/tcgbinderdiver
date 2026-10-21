@@ -1,54 +1,67 @@
-.header { border-bottom: var(--border-thin) solid var(--color-divider); background: var(--color-ground); }
+/* The header sits over the sea: a little see-through, with the picture showing behind it on the home page. */
+.header {
+  position: relative;
+  z-index: var(--z-menu);
+  border-bottom: var(--border-thin) solid var(--color-hairline);
+  background: color-mix(in oklab, var(--color-ground) 70%, transparent);
+  backdrop-filter: blur(var(--blur-bar));
+}
 .bar {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3) var(--space-5);
+  gap: var(--space-2) var(--space-4);
 }
-.brand { display: inline-flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); color: var(--color-text); text-decoration: none; }
-.name { font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-card-title); }
-.links { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
+.brand { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap-min); color: var(--color-accent); text-decoration: none; }
+.name { font-family: var(--font-display); font-weight: var(--weight-bold); font-size: var(--text-title); letter-spacing: -0.01em; color: var(--color-text); }
+.rule { width: var(--border-thin); height: var(--space-5); background: var(--color-hairline); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.game { display: inline-flex; align-items: center; }
+.select {
+  font: inherit;
+  font-size: var(--text-sm);
+  min-height: var(--tap-min);
+  color: var(--color-text);
+  background: transparent;
+  border: var(--border-thin) solid var(--color-divider);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+}
+.select option { background: var(--color-floor1); color: var(--color-text); }
+.links { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-5); }
 .link {
   display: inline-flex;
   align-items: center;
   min-height: var(--tap-min);
-  color: var(--color-text);
+  color: var(--color-text-muted);
   text-decoration: none;
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   border-bottom: var(--border-thick) solid transparent;
 }
-.link[aria-current='page'] { border-bottom-color: var(--color-brass); }
-.outline, .primary { padding: 0 var(--space-4); border-radius: var(--radius-md); font-weight: var(--weight-bold); }
-.outline { border: var(--border-thin) solid var(--color-border-strong); }
-.primary { background: var(--color-accent); color: var(--color-on-accent); }
-.primary[aria-current='page'] { border-bottom-color: transparent; box-shadow: 0 0 0 var(--border-medium) var(--color-brass); }
-.game { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-text-muted); }
-.select {
-  font: inherit;
-  min-height: var(--tap-min);
-  color: var(--color-text);
-  background: var(--color-floor1);
-  border: var(--border-thin) solid var(--color-accent);
-  border-radius: var(--radius-md);
-  padding: 0 var(--space-3);
-}
+.link:hover { color: var(--color-text); }
+.link[aria-current='page'] { color: var(--color-text); border-bottom-color: var(--color-accent); }
+.primary { padding: 0 var(--space-4); border-radius: var(--radius-md); font-weight: var(--weight-bold); background: var(--color-accent); color: var(--color-on-accent); }
+.primary:hover { color: var(--color-on-accent); filter: brightness(1.06); }
+.primary[aria-current='page'] { border-bottom-color: transparent; box-shadow: 0 0 0 var(--border-medium) var(--color-brass); color: var(--color-on-accent); }
 .phoneHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--space-2) var(--space-4);
-  border-bottom: var(--border-thin) solid var(--color-divider);
-  background: var(--color-ground);
+  border-bottom: var(--border-thin) solid var(--color-hairline);
+  background: color-mix(in oklab, var(--color-ground) 70%, transparent);
+  backdrop-filter: blur(var(--blur-bar));
 }
 .menu {
   display: inline-flex;
   align-items: center;
   min-height: var(--tap-min);
   padding: 0 var(--space-4);
-  border: var(--border-thin) solid var(--color-border-strong);
+  border: var(--border-thin) solid var(--color-divider);
   border-radius: var(--radius-md);
   color: var(--color-text);
   text-decoration: none;

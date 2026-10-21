@@ -3,7 +3,8 @@
    Per-game colors (ground, accent and so on) live in themes/<game>.css with the same variable names. */
 :root {
   --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'Karla', system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;   /* numbers, small labels, the decklist box */
 
   /* Type scale */
   --text-xs: 0.75rem;
@@ -21,9 +22,9 @@
   --text-display: 3.75rem;
   --weight-regular: 400;
   --weight-medium: 500;
-  --weight-bold: 700;
-  --weight-display: 800;
-  --tracking-label: 0.12em;
+  --weight-bold: 600;      /* Hanken Grotesk's heaviest weight in use */
+  --weight-display: 500;   /* Fraunces at a medium weight reads finer than the old heavy one */
+  --tracking-label: 0.18em;
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -35,13 +36,13 @@
   --space-7: 3rem;
 
   /* Shape */
-  --radius-xs: 0.25rem;
-  --radius-sm: 0.375rem;
-  --radius-card: 0.5rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-sheet: 1.25rem;
+  --radius-xs: 0.1875rem;
+  --radius-sm: 0.25rem;
+  --radius-card: 0.5rem;    /* panels */
+  --radius-md: 0.375rem;    /* buttons and fields: the base radius of the brand */
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-sheet: 1rem;
   --radius-pill: 999px;
   --border-thin: 1px;
   --border-medium: 1.5px;
@@ -94,35 +95,42 @@
   --z-toast: 40;
 
   /* Colour that is the same in every game */
-  --color-text: #f1f3f2;
-  --color-text-muted: #c3cccc;
-  --color-on-accent: #14191c;
+  --color-text: oklch(0.94 0.007 90);          /* bone */
+  --color-text-muted: oklch(0.8 0.015 240);
+  --color-on-accent: oklch(0.17 0.006 250);
   --color-on-danger: #1c0d0a;
   --color-disabled: #8a9494;
   --color-placeholder: #808b8b;
   --color-tab: #dde3e3;
   --color-paper: #f1f3f2;          /* toast and tour tip background */
   --color-on-paper: #14191c;
-  --color-error: #e2a08f;
-  --color-warning: #e8c35e;
-  --color-brass: #c8a96a;
-  --color-brass-mid: #a98d55;
-  --color-brass-dark: #8e7442;
-  --color-divider: rgba(230, 236, 236, 0.16);
+  --color-error: oklch(0.78 0.1 35);
+  --color-warning: oklch(0.84 0.13 90);
+  /* "Brass" is the game's accent: one variable (--game-accent, set per game in themes/) drives it all. */
+  --color-brass: var(--color-accent);
+  --color-brass-mid: color-mix(in oklab, var(--color-accent) 70%, var(--color-ground));
+  --color-brass-dark: color-mix(in oklab, var(--color-accent) 45%, var(--color-ground));
+  --color-found: oklch(0.78 0.14 155);
+  --color-hairline: oklch(0.85 0.03 220 / 9%);     /* panel edges */
+  --color-divider: oklch(0.85 0.03 220 / 14%);     /* rules between rows */
   --color-border-strong: rgba(230, 236, 236, 0.4);
   --color-border-overlay: rgba(230, 236, 236, 0.28);
   --color-step-line: rgba(230, 236, 236, 0.2);
   --color-handle: rgba(230, 236, 236, 0.3);
   --color-scrim: rgba(0, 0, 0, 0.55);
+  --shadow-panel: 0 1px 0 oklch(1 0 0 / 5%) inset, 0 24px 60px -24px oklch(0.05 0.02 230 / 80%);   /* a panel: a faint top highlight and a deep soft shadow */
+  --blur-bar: 0.5rem;     /* what shows through the see-through header */
+  --blur-panel: 0.375rem;
+  --shadow-hero-text: 0 0.125rem 1.125rem color-mix(in oklab, var(--color-deepest) 60%, transparent);   /* keeps the headline clear of the picture */
   --shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.45);
   --shadow-toast: 0 8px 24px rgba(0, 0, 0, 0.4);
 
   /* Card colour edge, by store-sort category */
-  --color-edge-white: #e9e2c8;
-  --color-edge-blue: #6fa8d6;
-  --color-edge-black: #8a7f8c;
-  --color-edge-red: #d77a5a;
-  --color-edge-green: #6fa37a;
+  --color-edge-white: oklch(0.93 0.04 90);
+  --color-edge-blue: oklch(0.7 0.12 240);
+  --color-edge-black: oklch(0.45 0.02 300);
+  --color-edge-red: oklch(0.65 0.18 35);
+  --color-edge-green: oklch(0.65 0.13 150);
   --color-edge-multicolor: #e8c35e;
   --color-edge-colorless: #a7aeae;
   --color-edge-land: #a08a62;

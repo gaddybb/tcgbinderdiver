@@ -1,7 +1,7 @@
 .page { display: flex; flex-direction: column; gap: var(--space-5); max-width: var(--size-prose); margin: 0 auto; }
 .wide { max-width: var(--content-max); }
 .intro { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); text-align: center; }
-.eyebrow { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-brass); }
+.eyebrow { margin: 0; font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-accent); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .title { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-h1); line-height: 1.08; }
 .lead { margin: 0; font-size: var(--text-md); color: var(--color-text-muted); }
@@ -11,12 +11,22 @@
 .list { margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); color: var(--color-text-muted); }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
 .hero { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); text-align: center; justify-content: center; min-height: 80svh; padding: var(--space-7) 0 var(--space-6); }   /* the first screen is the hero, so the Why section starts below the fold */
-.heroTitle { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-display); line-height: 1.05; }
-.form { width: 100%; max-width: var(--size-prose); display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); text-align: left; border: var(--border-thin) solid var(--color-divider); border-radius: var(--radius-card); background: var(--color-deep); }
-.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--size-list-card)), 1fr)); }
-.step { display: flex; flex-direction: column; gap: var(--space-1); padding-top: var(--space-3); border-top: var(--border-medium) solid var(--color-accent); }
-.stepNo { font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-xl); color: var(--color-accent); }
-.stepTitle { margin: 0; font-size: var(--text-md); }
+.heroTitle { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-display); line-height: 1.06; max-width: 20ch; text-shadow: var(--shadow-hero-text); }
+/* The deck box is a panel over the sea: a little see-through, the label a quiet mono line, the list typed in mono. */
+.form { width: 100%; max-width: var(--size-prose); display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); text-align: left; border: var(--border-thin) solid var(--color-hairline); border-radius: var(--radius-card); background: color-mix(in oklab, var(--color-deep) 88%, transparent); backdrop-filter: blur(var(--blur-panel)); box-shadow: var(--shadow-panel); }
+.form label { font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-text-muted); }
+.form textarea { font-family: var(--font-mono); font-size: var(--text-sm); }
+/* The four steps are one bordered strip, split by hairlines. */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--border-thin); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); overflow: hidden; border: var(--border-thin) solid var(--color-hairline); border-radius: var(--radius-card); background: var(--color-hairline); }
+.step { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5); background: var(--color-ground); text-align: left; }
+.stepNo { font-family: var(--font-mono); font-size: var(--text-caption); color: var(--color-accent); }
+.stepTitle { margin: 0; font-size: var(--text-title); font-weight: var(--weight-display); }
+.stepText { margin: 0; font-size: var(--text-sm); line-height: 1.5; color: var(--color-text-muted); }
+.why { display: flex; flex-direction: column; gap: var(--space-6); padding-top: var(--space-6); }
+.whyHead { display: grid; gap: var(--space-5); grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: end; text-align: left; }
+.whyTitle { margin: var(--space-3) 0 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: var(--text-h1); line-height: 1.1; }
+.whyLead { margin: 0; font-size: var(--text-lg); line-height: 1.55; color: var(--color-text-muted); }
+.whyFoot { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
 .walk { list-style: none; margin: 0; padding: 0; }
 .walkItem { display: grid; gap: var(--space-4); align-items: center; padding: var(--space-5) 0; border-top: var(--border-thin) solid var(--color-divider); }
 .walkWide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -43,8 +53,15 @@
 .formActions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .formActionsPhone { flex-direction: column; align-items: stretch; }
 .formNote { margin: 0; font-size: var(--text-sm); color: var(--color-text-muted); }
-.stepsNote { margin: 0; max-width: var(--size-prose); font-style: italic; color: var(--color-text-muted); }
-.support { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-5) 0; text-align: center; }
-/* The home page's picture, across the full width behind the first screen and fading into the page. */
-.heroBackdrop { position: absolute; top: 0; left: 50%; width: 100vw; margin-left: -50vw; height: max(var(--size-hero-bg), 100svh); z-index: -1; pointer-events: none; background-image: var(--image-hero); background-size: cover; background-position: center bottom; }
-.heroBackdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 55%, var(--color-ground)); }
+.stepsNote { margin: 0; max-width: var(--size-prose); padding-left: var(--space-4); border-left: var(--border-medium) solid color-mix(in oklab, var(--color-accent) 40%, transparent); font-size: var(--text-sm); color: var(--color-text-muted); }
+.support { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-4) var(--space-5); border: var(--border-thin) solid var(--color-hairline); border-radius: var(--radius-card); }
+.supportText { margin: 0; font-size: var(--text-sm); }
+/* The home page's picture: the sea floor across the full width, from the top of the page (behind the header), tinted by the game's
+   accent, fading into the page, with a few bubbles rising at the edges. */
+.heroBackdrop { position: absolute; top: 0; left: 0; right: 0; height: max(var(--size-hero-bg), 100svh); z-index: -1; pointer-events: none; overflow: hidden; background-image: var(--image-hero); background-size: cover; background-position: center bottom; }
+.heroDepth { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in oklab, var(--color-deepest) 45%, transparent) 0%, color-mix(in oklab, var(--color-deepest) 30%, transparent) 45%, var(--color-ground) 100%); }
+.heroTint { position: absolute; inset: 0; background: color-mix(in oklab, var(--game-accent) 14%, transparent); mix-blend-mode: color; }
+.bubbles { position: absolute; inset: 0; overflow: hidden; }
+.bubbles span { position: absolute; bottom: calc(-1 * var(--space-3)); width: var(--space-2); height: var(--space-2); border-radius: var(--radius-pill); border: var(--border-thin) solid color-mix(in oklab, var(--color-text) 25%, transparent); opacity: 0; animation: bubble-rise 14s linear infinite; }
+@keyframes bubble-rise { from { transform: translateY(0); opacity: 0; } 15% { opacity: 0.7; } to { transform: translateY(-110vh); opacity: 0; } }
+.accent { display: block; color: var(--color-accent); }   /* the headline breaks after its first sentence */
