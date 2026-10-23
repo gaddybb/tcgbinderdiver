@@ -59,6 +59,16 @@ describe('loadCatalog: a first visit', () => {
     expect(loaded.catalog.find('Sol Ring')?.printings.length).toBeGreaterThan(0);
   });
 
+  it('still loads a manifest from before it named its game, variants and details', async () => {
+    const old: Partial<Manifest> = { ...A.manifest };
+    for (const added of ['game', 'variants', 'details'] as const) delete old[added];
+    const files = new Map(A.files);
+    files.set(CATALOG_BASE + MANIFEST_FILE, JSON.stringify(old));
+    const loaded = await loadCatalog({ storage: new MemoryStorage(), fetch: server(files).fetch });
+    expect(loaded.manifest.game).toBeUndefined();
+    expect(loaded.catalog.cards).toHaveLength(built.counts.cards);
+  });
+
   it('asks for the manifest fresh each time, because it is the only file that changes in place', async () => {
     const s = server(A.files);
     await loadCatalog({ storage: new MemoryStorage(), fetch: s.fetch });

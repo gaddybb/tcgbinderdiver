@@ -310,7 +310,8 @@ describe('manifest', () => {
   it('names the hashed files and carries the counts', () => {
     const manifest = buildManifest({ builtAt: '2026-10-18T10:00:00.000Z', scryfallUpdatedAt: '2026-10-18T09:06:08.225+00:00', counts: encoded.counts, cardsHash: 'aaaa', pricesHash: 'bbbb' });
     expect(manifest).toEqual({
-      format: FORMAT_VERSION, builtAt: '2026-10-18T10:00:00.000Z', scryfallUpdatedAt: '2026-10-18T09:06:08.225+00:00',
+      format: FORMAT_VERSION, game: 'magic', variants: ['nonfoil', 'foil', 'etched'], details: ['borderColor', 'promoTypes', 'frameEffects', 'games'],
+      builtAt: '2026-10-18T10:00:00.000Z', scryfallUpdatedAt: '2026-10-18T09:06:08.225+00:00',
       counts: { cards: 15, printings: 36, sets: encoded.counts.sets }, files: { cards: 'cards.aaaa.json', prices: 'prices.bbbb.json' },
     });
     expect(dataFileName('prices', '12')).toBe('prices.12.json');
