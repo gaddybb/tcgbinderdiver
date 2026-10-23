@@ -51,6 +51,11 @@ export interface PricesFile {
 
 export interface Manifest {
   format: number;
+  // Which game the files are for, and what the price slots and details columns mean (see src/core/games). Manifests built before
+  // these were added lack them, and mean Magic.
+  game?: string;
+  variants?: string[];
+  details?: string[];
   builtAt: string;              // ISO time the files were built
   scryfallUpdatedAt: string;    // the bulk file's updated_at, as Scryfall reports it
   counts: { cards: number; printings: number; sets: number };

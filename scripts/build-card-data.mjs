@@ -18,6 +18,7 @@ import { brotliCompressSync, constants, createGunzip, gzipSync } from 'node:zlib
 import { fileURLToPath } from 'node:url';
 import { encodeCatalog, slimCard } from '../src/core/catalog/encode.ts';
 import { MANIFEST_FILE, buildManifest } from '../src/core/catalog/manifest.ts';
+import { MAGIC } from '../src/core/games/magic.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE = path.join(root, 'src/core/catalog/fixtures/default-cards.sample.jsonl');
@@ -132,7 +133,7 @@ async function main() {
   const pricesText = JSON.stringify(encoded.prices);
   const manifest = buildManifest({
     builtAt: new Date().toISOString(), scryfallUpdatedAt: updatedAt, counts: encoded.counts,
-    cardsHash: hashOf(cardsText), pricesHash: hashOf(pricesText),
+    cardsHash: hashOf(cardsText), pricesHash: hashOf(pricesText), game: MAGIC,
   });
 
   await mkdir(opts.out, { recursive: true });
