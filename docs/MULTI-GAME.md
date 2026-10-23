@@ -229,13 +229,13 @@ Answered by the owner on 2026-10-23:
 - **Pokémon's source: the TCGdex API read nightly**, as Magic reads Scryfall. The repo stays the fallback if the API proves unstable or too
   slow to crawl.
 - **Lorcana: use Lorcast** (it has prices and a Scryfall-like shape); LorcanaJSON stays the fallback.
-- **Pokémon goes first.** Lorcana follows. **Yu-Gi-Oh! is tabled to a later version (v5)** until picture hosting has an answer.
+- **Pokémon goes first.** Lorcana follows. **Yu-Gi-Oh! is sidelined (v5)** until the app is shown to be wanted by Yu-Gi-Oh! players: its picture rules and hosting are too much to take on before that.
+- **Pokémon crawl rate:** if TCGdex publishes no limit, a steady 10 calls a second for the nightly or weekly crawl is acceptable (the same pace Lorcast asks for). Still ask them once, as courtesy, and back off at once on any 429.
 
 Still open:
 
 - **Yu-Gi-Oh! pictures:** host them ourselves (Cloudflare R2 and a sync job; needs the licence read), or launch Yu-Gi-Oh! with no pictures
   at first (name, set code and rarity on each tile). Both are workable; neither is chosen.
-- **Pokémon crawl rate:** ask TCGdex what they allow before the first nightly run.
 - **Prices in euros:** Pokémon has Cardmarket euro prices too; they are left out until there is a reason (one currency per game).
 
 ## 11. Risks
