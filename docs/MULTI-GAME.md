@@ -8,8 +8,10 @@ per game, 92 licences and policies, 93 stores publishing their own setup.
 
 ## 1. What has to hold
 
-1. **Magic does not change.** Its data files, their paths, the routing result for every card and what a player sees stay the same at
-   every step. This is checked, not hoped (section 8).
+1. **Magic does not change for the player.** The content of its data files, the routing result for every card and what a player sees stay
+   the same at every step. This is checked, not hoped (section 8). The one visible-to-the-machine change is deliberate (owner decision,
+   2026-10-23): every game, Magic included, keeps its data in its own folder, so Magic's files move from `/data/` to `/data/magic/`.
+   A returning Magic player downloads the card data once more (about 3 MB gzip) after that step.
 2. **A game is a first-class thing, chosen once.** One list belongs to one game. Everything a screen shows (cards, prices, binders,
    copy, accent) comes from the chosen game's definition.
 3. **Data for a game is loaded only when that game is chosen.** The first load for a Magic player does not grow.
@@ -25,7 +27,7 @@ per game, 92 licences and policies, 93 stores publishing their own setup.
 | --- | --- | --- |
 | `src/core/catalog/types.ts`, `encode.ts`, `decode.ts` | Scryfall card fields; finishes are nonfoil, foil, etched; prices are USD triples; `colors`; `borderColor` and `frameEffects` in the details table | Rows are mostly neutral already (section 3). The Scryfall mapping moves into a source module; the meaning of each column moves into a per-game schema |
 | `scripts/build-card-data.mjs` | Downloads Scryfall's Default Cards | Takes `--game`; the Scryfall part becomes one source among several (section 5) |
-| `src/connectors/bulk/*`, `catalogLoader.ts` | Files at `/data/`, storage keys `catalog:*` | Take a game definition for the base path and the keys; Magic keeps `/data/` and its current keys |
+| `src/connectors/bulk/*`, `catalogLoader.ts` | Files at `/data/`, storage keys `catalog:*` | Take a game definition for the base path and the keys: `/data/<game>/` and `catalog:<game>:*`, Magic included |
 | `src/connectors/scryfall/*` | The live fallback for names the catalog does not know | Stays Magic's fallback. Each game names its own fallback, or none |
 | `src/core/connector.ts` (`GameConnector`) | Already per game (`game`, `sortOrder`, `sortCategory`) | Gains nothing but a contract written down (section 4) |
 | `src/core/engine/*` | `Printing` has Magic fields; stops include the Commander box; weights and cutoffs are Magic's | Rules become a per-game object, Magic's is the default (section 7) |
@@ -34,7 +36,7 @@ per game, 92 licences and policies, 93 stores publishing their own setup.
 | `src/core/parse/parseDecklist.ts` | Moxfield, Archidekt, MTGO text | Per-game line grammars (section 7) |
 | `src/app/components/colors.ts` | Store-sort categories are the five colours, land, colorless, multicolour | Per-game categories and edge colours from the definition |
 | `src/app/copy/en.ts` | "Magic", "Commander box", "card" wording in places | Per-game copy where it names the game |
-| `public/sw.js` | Hashed data files matched at `/data/(cards\|prices)\.` | Matches `/data/<game>/` too |
+| `public/sw.js`, `public/_headers`, `scripts/prebuild-data.mjs` | Hashed data files matched, cached and cleaned up at `/data/` | The same rules at `/data/<game>/` |
 | `.github/workflows/refresh-data.yml` | One Scryfall build | One build per live game, with last-good data kept (section 6) |
 | Lists, trips, store settings, hand-off link | No game on them | A `game` field, default `magic` (section 5) |
 
@@ -45,7 +47,7 @@ The current format (`FORMAT_VERSION` 1) is almost game-neutral already. A card i
 prices are one row of cents per printing, aligned to the printings. Those columns fit every game below.
 
 **Decision: keep format 1 and its files byte for byte; add what is missing to the manifest, not to the files.** Then Magic's
-`cards.<hash>.json` and `prices.<hash>.json` cannot change by accident, and a golden test can prove it.
+`cards.<hash>.json` and `prices.<hash>.json` cannot change by accident (only their folder does, section 5), and a golden test can prove it.
 
 Manifest additions (all optional for old manifests, so a cached old manifest still loads):
 
@@ -73,7 +75,7 @@ How each column means something per game (a game's **schema** says it, and also 
 | variants (finish bits and price slots) | nonfoil, foil, etched | normal, reverse holo, holo | regular, foil | one slot (the rarity is the variant) |
 | `flags` | promo, full art | promo | promo | none |
 | details table | border, promo types, frame effects, games | regulation mark, variants | foil types | none (kept empty) |
-| price unit | USD | USD (TCGplayer) and EUR (Cardmarket) | none in the source: a second source | USD (TCGplayer, Cardmarket and others, per card and per set) |
+| price unit | USD | USD (TCGplayer) and EUR (Cardmarket) | USD and USD foil (Lorcast), once a day | USD (TCGplayer, Cardmarket and others, per card and per set) |
 
 Things this does **not** try to solve now: a second price currency. A game picks one price column (US dollars where a source has it), and
 the manifest says which. Cardmarket euros for Pokémon wait for a real need.
@@ -90,7 +92,7 @@ interface GameDefinition {
   id: 'magic' | 'pokemon' | 'lorcana' | 'yugioh';
   name: string;                 // 'Magic: The Gathering'; the header and copy use it
   live: boolean;                // false: shown as "coming", not choosable (today's behaviour for the three)
-  dataBase: string;             // '/data/' for Magic (never changes); '/data/pokemon/' for the others
+  dataBase: string;             // '/data/magic/', '/data/pokemon/' and so on: one folder per game
   variants: readonly string[];  // the same list the manifest carries
   schema: CatalogSchema;        // rows -> Printing, details meaning, set types
   facets: readonly string[];    // the store-sort categories in order, and their edge colour tokens
@@ -114,7 +116,7 @@ The theme is separate and already per game: a file in `src/app/theme/themes/<gam
 ## 5. The build script and where the data goes
 
 ```
-node scripts/build-card-data.mjs --game magic            # default; output exactly as today
+node scripts/build-card-data.mjs --game magic            # default; the same files as today, in public/data/magic/
 node scripts/build-card-data.mjs --game pokemon          # public/data/pokemon/
 npm run data                                             # every live game, one after another
 ```
@@ -125,15 +127,23 @@ npm run data                                             # every live game, one 
 - The pure part (mapping a source record to a slim printing) lives in `src/core/catalog/sources/<game>.ts`, with a small fixture and tests,
   so nothing needs the network to be checked. Magic's `slimCard` moves there unchanged.
 - `encodeCatalog` and the manifest builder gain the game and its variants; the encoding itself is the same code.
-- Output: Magic's files stay in `public/data/`. Any other game writes to `public/data/<game>/`. Nothing is committed to the repo.
+- Output: every game writes to `public/data/<game>/`. Nothing is committed to the repo.
+- **Moving Magic into its folder** (step 3) is the one change to a live path. Old clients are safe: a stale tab that asks for
+  `/data/manifest.json` gets a 404, and the loader already answers that with its saved copy or the live API; the next page load gets the new
+  build. The old saved copy (`catalog:*`) is deleted on first load, and the new one is downloaded once. No legacy copy of the files is kept.
 
-**What each source gives** (checked 2026-10-21):
+**What each source gives** (checked 2026-10-21 and 2026-10-23, against the live services and their own documentation):
 
-| Game | Source | Shape | Prices | Notes |
+| Game | Source | Shape | Prices | Rules and notes |
 | --- | --- | --- | --- | --- |
-| Pokémon | TCGdex, `api.tcgdex.net/v2`, free JSON; the repo `tcgdex/cards-database` is MIT | Sets, then one card call each (or a card list per set); the repo's `data/` is **TypeScript**, not JSON, so it needs a build step | Per card: Cardmarket (EUR) and TCGplayer (USD) | A nightly job should read the API (about 24,000 cards in 220 sets, English), paced; check the terms and image hosting first |
-| Lorcana | LorcanaJSON, `lorcanajson.org/files/current/en/allCards.json`, MIT | One file, about 9.5 MB, 3,556 cards, with sets, dates, rarities and TCGplayer, Cardmarket and CardTrader product ids | None | Needs a price source joined by the TCGplayer id, or ships without prices at first |
-| Yu-Gi-Oh! | YGOPRODeck v7, `db.ygoprodeck.com/api/v7/cardinfo.php` | One call for all cards, each with its sets (rarity and a price per set printing) and per-card prices | Per card and per set | Read their rules on rate limit and on hosting card images ourselves instead of linking to theirs; that may mean image hosting we pay for |
+| Pokémon | TCGdex, `api.tcgdex.net/v2`, free JSON. The repo `tcgdex/cards-database` (MIT) is the fallback | A set lists its cards briefly; **detail and prices are one call per card**. The bulk GraphQL has no price field. The repo's `data/` is **TypeScript**, so it needs a build step | Per card: Cardmarket (EUR) and TCGplayer (USD) | About 24,000 cards in 220 English sets, so a full crawl is about 24,000 calls (about 40 minutes at 10 a second). The rate limit is not published: ask them before the first nightly run, and see "Crawl budget" below |
+| Lorcana | **Lorcast**, `api.lorcast.com/v0` (REST, beta, free). LorcanaJSON (MIT, one 9.5 MB file, no prices) is the fallback | 26 sets; `/sets/{id}/cards` returns a whole set in one call (216 cards for set 1). Card fields look like Scryfall's: `prices.usd` and `usd_foil`, `rarity`, `collector_number`, `tcgplayer_id`, `released_at`, `image_uris` | Per card, USD and USD foil, **updated once a day** | About 30 calls a night. They ask for 50 to 100 ms between calls and caching for at least 24 hours; pictures come from `*.lorcast.io`, which has no rate limit. v0 is beta ("safe for production", breaking changes are announced on their Discord). Content is used under Ravensburger's Community Code Policy, which forbids charging for it: Binder Diver is free |
+| Yu-Gi-Oh! | YGOPRODeck v7, `db.ygoprodeck.com/api/v7/cardinfo.php` | One call returns every card: its sets (set code, rarity, a price per set printing), per-card prices and picture links | Per card (Cardmarket, TCGplayer, eBay, Amazon, CoolStuffInc) and per set printing | **20 requests a second, and a one-hour block if exceeded.** They require data to be stored locally. **They forbid hotlinking pictures ("download and re-host the images yourself", or an IP blacklist).** Re-hosting about 13,000 cards' pictures needs somewhere to host them (Cloudflare R2 is the likely place), a sync job for new and changed pictures, and a licence check, because the pictures are Konami's |
+
+**Crawl budget (Pokémon).** The one-call-per-card shape decides how it is refreshed. A weekly full crawl of the card data, and a nightly
+price refresh for the sets of the last few years (the ones with set binders) plus any card whose last price was over the display-case
+cutoff, keeps each night to a few thousand calls. The split is settled in step 7 after measuring, and after asking TCGdex what rate they
+allow. The job runs in chunks and keeps what it has fetched in the Actions cache, so a failed night resumes instead of starting over.
 
 An unconfirmed claim in the research note, "PokéWallet" covering twelve games on a free key, could not be checked (its site redirects). It is
 not part of this design; revisit if a single price source for all games is wanted.
@@ -195,34 +205,44 @@ and `3x Name` text). A print named on a line becomes a `PrintRef`, whose set and
    today. No behaviour change. Adds `game`, `variants` and `details` to the manifest; the golden data test lands here.
 2. **The build script takes `--game`.** Magic's source moves into `scripts/sources/scryfall.mjs` and `src/core/catalog/sources/scryfall.ts`.
    `npm run data` loops the live games (just Magic). Golden test proves identical files.
-3. **The loader and connector take a definition.** Base path and storage keys come from it; the service worker matches `/data/<game>/`.
-   Magic's paths and keys are unchanged. Cold and warm cache checked in a browser.
+3. **The loader and connector take a definition, and Magic moves into `/data/magic/`.** Base path and storage keys come from the definition;
+   the service worker, `_headers` and the build's clean-up use `/data/<game>/`; the old saved copy is deleted on first load. The card data
+   is byte-identical, only its folder changes. Checked in a browser on a cold cache, a warm one with the old copy, and offline.
 4. **The game on lists, trips, store settings and the hand-off link; the chosen game as a preference.** Default `magic`; old data and old
    links work. The header select drives the preference (only Magic is choosable still).
 5. **`GameRules` for the engine.** Magic's extracted unchanged; golden routing test.
 6. **Last-good data and failure issues** in the nightly workflow (needs the two Cloudflare secrets already in use; adds an Actions cache and an
    issue step).
-7. **Pokémon, behind a flag** (issue 86): source, fixture, schema, grammar, connector, rules from step 5's defaults, theme file, per-game copy,
-   no switch on in the header until staff research (89) and policy checks (92) are done.
-8. **Lorcana** (87) and **Yu-Gi-Oh!** (88), the same shape; each needs its price decision (Lorcana) or image-hosting decision (Yu-Gi-Oh!) first.
+7. **Pokémon, behind a flag** (issue 86): source (the TCGdex API with the crawl budget above), fixture, schema, grammar, connector, rules from
+   step 5's defaults, theme file, per-game copy, no switch on in the header until staff research (89) and policy checks (92) are done.
+8. **Lorcana** (87): the same shape from Lorcast, a small and cheap source. **Yu-Gi-Oh!** (88) is moved to a later version (v5): it needs
+   picture hosting and a licence check first.
 9. **A look per game and the live game choice** (90), then **stores publish their own setup** (93) when the earlier work is in.
 
 Steps 1 to 6 change nothing a player sees. A game is first visible at step 7 and only when its flag is turned on.
 
-## 10. Decisions for the owner
+## 10. Decisions
 
-- **Keep Magic at `/data/` for good** (recommended) or move it to `/data/magic/` with the others. Moving costs a service-worker change and
-  a cache migration and gains only tidiness.
-- **Pokémon's source:** the TCGdex API read nightly (recommended) or building from the repo.
-- **Lorcana prices:** ship without prices at first, or join a TCGplayer price source by the ids in the data (needs a source found and its
-  terms read).
-- **Card images:** link to each source's pictures where allowed, or host them ourselves (Yu-Gi-Oh! asks for it). Hosting has a cost.
-- **Which game second.** Pokémon has the best data (prices included); Yu-Gi-Oh! is a close second; Lorcana's data is clean but has no prices.
+Answered by the owner on 2026-10-23:
+
+- **Magic moves to `/data/magic/`** with every other game: tidiness is worth the one-time move (step 3, above).
+- **Pokémon's source: the TCGdex API read nightly**, as Magic reads Scryfall. The repo stays the fallback if the API proves unstable or too
+  slow to crawl.
+- **Lorcana: use Lorcast** (it has prices and a Scryfall-like shape); LorcanaJSON stays the fallback.
+- **Pokémon goes first.** Lorcana follows. **Yu-Gi-Oh! is sidelined (v5)** until the app is shown to be wanted by Yu-Gi-Oh! players: its picture rules and hosting are too much to take on before that.
+- **Pokémon crawl rate:** if TCGdex publishes no limit, a steady 10 calls a second for the nightly or weekly crawl is acceptable (the same pace Lorcast asks for). Still ask them once, as courtesy, and back off at once on any 429.
+
+Still open:
+
+- **Yu-Gi-Oh! pictures:** host them ourselves (Cloudflare R2 and a sync job; needs the licence read), or launch Yu-Gi-Oh! with no pictures
+  at first (name, set code and rarity on each tile). Both are workable; neither is chosen.
+- **Prices in euros:** Pokémon has Cardmarket euro prices too; they are left out until there is a reason (one currency per game).
 
 ## 11. Risks
 
 - **Store habits differ per game** and Magic's rules may not carry over; step 7 does not switch a game on before issue 89 is answered.
 - **Licences and policies** differ per game and per data source (issue 92): a disclaimer per publisher, attribution, and image rules.
+- **A beta API** (Lorcast v0) can change without much notice; the LorcanaJSON fallback and the source module's fixture test limit the damage.
 - **Data size:** Magic is about 3.0 MB gzip. Another game is loaded only when chosen, but a very large source would need the same
   measuring Magic got (`docs/DATA-PLAN.md`) before it ships.
 - **A source changes its format.** Each source module has a fixture and a test that fails on a changed shape, and a failure is
