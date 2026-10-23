@@ -1,5 +1,6 @@
 export * from './types.ts';
-export { encodeCatalog, encodeScryfallCards, priceToCents, slimCard } from './encode.ts';
+export { encodeCatalog, priceToCents } from './encode.ts';
+export { encodeScryfallCards, slimCard } from './sources/scryfall.ts';
 export type { EncodeResult, SlimPrinting } from './encode.ts';
 export { CatalogFormatError, applyPrices, cardImageUrl, decodeCatalog } from './decode.ts';
 export type { Catalog, CatalogCard } from './decode.ts';
