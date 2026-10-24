@@ -5,6 +5,10 @@ name: Refresh card data
 #   CLOUDFLARE_API_TOKEN   a token that can edit Workers
 #   CLOUDFLARE_ACCOUNT_ID  the Cloudflare account id
 # Without them the deploy step fails and the site simply keeps its last data.
+#
+# More than one game (docs/MULTI-GAME.md, section 6): public/data is restored from the cache before the build, so a game whose
+# build fails keeps its last good data, and it is saved again after a good run. Only a Magic failure stops the deploy. Every
+# failure is reported in one GitHub issue labelled `data`.
 
 on:
   schedule:
@@ -13,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: refresh-data
@@ -30,6 +35,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Restore the last good card data
+        uses: actions/cache@v4
+        with:
+          path: public/data
+          key: card-data-${{ github.run_id }}
+          restore-keys: card-data-
       - run: npm run build
         env:
           CARD_DATA: '1'
@@ -39,3 +50,17 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.151.1'
           command: deploy
+      - name: Report card data failures
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f .cache/data-failures.json ] || exit 0
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body="The card data refresh had a failure: $run_url"$'\n\n'"$(jq -r '.[] | "- \(.game): \(.message)"' .cache/data-failures.json)"
+          existing=$(gh issue list --label data --state open --search "Card data refresh failed in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "Card data refresh failed" --label data --body "$body"
+          fi

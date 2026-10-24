@@ -3,6 +3,9 @@
 //   npm run data           every live game, real download (Magic: about 80 MB) -> public/data/<game>/
 //   npm run data:fixture   small sample in src/core/catalog/fixtures, no network
 //
+// With no --game, one game failing does not stop the others (its folder keeps what was there, which the nightly workflow restores
+// from its cache), and only a Magic failure fails the script; every failure is listed in .cache/data-failures.json for the workflow
+// to report. With --game, any failure fails the script.
 // Options: --game <id> (default: every live game), --fixture, --out <dir> (default public/data/<game>), --cache <dir> (default
 // .cache/<source>; the download is kept there so a second run does not fetch it again).
 // All the format work is in src/core/catalog (pure and tested). A game's source (scripts/sources/<name>.mjs) talks to the
@@ -15,12 +18,14 @@ import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { encodeCatalog } from '../src/core/catalog/encode.ts';
 import { MANIFEST_FILE, buildManifest } from '../src/core/catalog/manifest.ts';
-import { GAMES } from '../src/core/games/index.ts';
+import { DEFAULT_GAME, GAMES } from '../src/core/games/index.ts';
+import { buildAll } from '../src/core/games/refresh.ts';
 import { scryfall } from './sources/scryfall.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // One source per game. A game with no source here cannot be built, which is the right failure for a game that is not live yet.
 const SOURCES = { magic: scryfall };
+const FAILURES_FILE = path.join(root, '.cache/data-failures.json');
 
 function parseArgs(argv) {
   const opts = { game: null, fixture: false, out: null, cache: null };
@@ -87,7 +92,16 @@ async function main() {
     if (!one) throw new Error(`Unknown game ${opts.game}; the games are ${Object.keys(GAMES).join(', ')}`);
     games = [one];
   }
-  for (const game of games) await buildGame(game, opts, headers);
+  if (opts.game) return buildGame(games[0], opts, headers);
+
+  await mkdir(path.dirname(FAILURES_FILE), { recursive: true });
+  await rm(FAILURES_FILE, { force: true });
+  const outcome = await buildAll(games, (game) => buildGame(game, opts, headers), DEFAULT_GAME);
+  if (outcome.failures.length > 0) {
+    await writeFile(FAILURES_FILE, JSON.stringify(outcome.failures, null, 2) + '\n');
+    for (const f of outcome.failures) console.error(`${f.game}: card data build failed: ${f.message}`);
+  }
+  if (outcome.stop) throw new Error(`${DEFAULT_GAME} failed, so there is nothing safe to deploy`);
 }
 
 main().catch((err) => {

@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -28,6 +28,19 @@ describe('the card data build script', () => {
       expect(readdirSync('public/data/magic')).toContain('manifest.json');
     } finally {
       rmSync('public/data/magic', { recursive: true, force: true });
+    }
+  });
+
+  it('fails when Magic fails, and lists the failure for the nightly workflow to report', () => {
+    const failures = path.join('.cache', 'data-failures.json');
+    const blocked = path.join(out, 'blocker');   // a file where the output folder should be
+    writeFileSync(blocked, 'x');
+    try {
+      const result = run('--fixture', '--out', blocked);
+      expect(result.status).not.toBe(0);
+      expect(JSON.parse(readFileSync(failures, 'utf8'))).toMatchObject([{ game: 'magic' }]);
+    } finally {
+      rmSync(failures, { force: true });
     }
   });
 
