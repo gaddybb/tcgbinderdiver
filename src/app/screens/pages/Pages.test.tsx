@@ -189,12 +189,13 @@ describe('Home', () => {
 });
 
 describe('Walkthrough', () => {
-  it('has the five steps with screenshot placeholders and the questions', () => {
+  it('has the five steps, each with a real screenshot, and the questions', () => {
     open('/walkthrough');
     expect(screen.getByRole('heading', { level: 1, name: copy.walkthroughPage.title })).toBeTruthy();
     expect(screen.getAllByRole('heading', { level: 2 }).map(h => h.textContent).slice(0, 5)).toEqual(copy.walkthroughPage.steps.map(s => s.title));
-    expect(screen.getAllByRole('img').map(i => i.getAttribute('aria-label'))).toContain('[SCREENSHOT: store dive]');
-    expect(screen.getAllByText(/\[SCREENSHOT/)).toHaveLength(5);
+    const shots = copy.walkthroughPage.steps.map(s => screen.getByAltText(s.shot.alt));
+    expect(shots.map(i => i.getAttribute('src'))).toEqual(copy.walkthroughPage.steps.map(s => s.shot.src));
+    expect(document.body.textContent).not.toContain('[SCREENSHOT');
     for (const item of copy.walkthroughPage.faq) expect(screen.getByText(item.q)).toBeTruthy();
   });
 
@@ -225,12 +226,12 @@ describe('Walkthrough', () => {
 });
 
 describe('About, Support and Privacy', () => {
-  it('About says what it does and how it picks binders, and keeps the placeholders visible, unfilled', () => {
+  it('About says what it does, how it picks binders and who made it, with no placeholder left', () => {
     open('/about');
     expect(screen.getByRole('heading', { level: 1, name: copy.aboutPage.title })).toBeTruthy();
     expect(screen.getByText(copy.aboutPage.howText)).toBeTruthy();
     expect(screen.getByText(copy.aboutPage.whoText)).toBeTruthy();
-    expect(screen.getByText(copy.aboutPage.whoText).textContent).toContain('[ABOUT BEN');
+    expect(screen.getByText(copy.aboutPage.whoText).textContent).not.toContain('[');
     expect(screen.getByText(copy.aboutPage.credits[0])).toBeTruthy();
     expect(screen.getAllByText(copy.footer.fanContentDisclaimer).length).toBeGreaterThan(0);
   });

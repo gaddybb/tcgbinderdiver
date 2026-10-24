@@ -24,7 +24,7 @@ verified reference implementation (`engine/`). Nothing is built yet. Turn each u
 ### Plan and stops
 - [ ] Routing engine exactly as `engine/routing-engine-spec.md`. Four stops: set binders, Commander box, Display case, Ask an associate. Starting values: display case at $15, set binders for sets under 3 years old, Commander is one box.
 - [x] Dive plan grouped by stop type with counts, value and verdict: Worth a pull or Buy online for flip stops, Show staff for the counter stops. Walking order: set binders (most copies first), Commander box, Display case, Ask an associate.
-- [ ] Pull settings: pull order (Balanced, Most cards, Newest sets), worth-a-pull rule (at least N cards OR at least $X), basic lands, with a live preview.
+- [x] Pull settings: worth-a-pull rule (at least N cards OR at least $X), basic lands, with a live preview. The pull order choice (Balanced, Most cards, Newest sets) is **moved to v2 with saved stores** (owner decision, 2026-10-24); until then the order is fixed: most copies first, then newest, then name.
 - [x] Binder groups editor: named groups of sets that share one binder, Not carried group, sets-without-a-group list, suggestions (Commander sets first). Match on Scryfall set codes.
 - [ ] No-binder cards list with reasons, Buy on TCGplayer, See printings.
 - [ ] Lists in this dive switches (same setting on My lists, the plan and the store).

@@ -26,7 +26,7 @@ export function Walkthrough() {
               <h2 className={styles.h2}>{step.title}</h2>
               <p className={styles.text}>{step.text}</p>
             </div>
-            <div role="img" aria-label={step.shot} className={styles.shot}>{step.shot}</div>
+            <img src={step.shot.src} alt={step.shot.alt} loading="lazy" className={styles.shot} />
           </li>
         ))}
       </ol>
