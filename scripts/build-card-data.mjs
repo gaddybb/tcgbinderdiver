@@ -1,9 +1,9 @@
 // Builds the slimmed card data (docs/DATA-PLAN.md, docs/MULTI-GAME.md) for a game from its source.
 //
-//   npm run data           every live game, real download (Magic: about 80 MB) -> public/data/
+//   npm run data           every live game, real download (Magic: about 80 MB) -> public/data/<game>/
 //   npm run data:fixture   small sample in src/core/catalog/fixtures, no network
 //
-// Options: --game <id> (default: every live game), --fixture, --out <dir> (default public/data), --cache <dir> (default
+// Options: --game <id> (default: every live game), --fixture, --out <dir> (default public/data/<game>), --cache <dir> (default
 // .cache/<source>; the download is kept there so a second run does not fetch it again).
 // All the format work is in src/core/catalog (pure and tested). A game's source (scripts/sources/<name>.mjs) talks to the
 // network and the disk and hands back slim printings; this script encodes and writes them. It runs in Node, so it sends an
@@ -23,7 +23,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCES = { magic: scryfall };
 
 function parseArgs(argv) {
-  const opts = { game: null, fixture: false, out: path.join(root, 'public/data'), cache: null };
+  const opts = { game: null, fixture: false, out: null, cache: null };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--game') opts.game = argv[++i];
     else if (argv[i] === '--fixture') opts.fixture = true;
@@ -46,6 +46,7 @@ async function buildGame(game, opts, headers) {
   const source = SOURCES[game.id];
   if (!source) throw new Error(`There is no card data source for ${game.id} yet`);
   const started = Date.now();
+  const outDir = opts.out ?? path.join(root, 'public/data', game.id);
   const cacheDir = opts.cache ?? path.join(root, '.cache', source.cacheName);
   const { slims, read, updatedAt } = await source.load({ headers, cacheDir, fixture: opts.fixture });
   const encoded = encodeCatalog(slims);
@@ -58,13 +59,13 @@ async function buildGame(game, opts, headers) {
     cardsHash: hashOf(cardsText), pricesHash: hashOf(pricesText), game,
   });
 
-  await mkdir(opts.out, { recursive: true });
-  for (const old of await readdir(opts.out)) {
-    if (/^(cards|prices)\.[0-9a-f]+\.json$/.test(old)) await rm(path.join(opts.out, old));
+  await mkdir(outDir, { recursive: true });
+  for (const old of await readdir(outDir)) {
+    if (/^(cards|prices)\.[0-9a-f]+\.json$/.test(old)) await rm(path.join(outDir, old));
   }
-  await writeFile(path.join(opts.out, manifest.files.cards), cardsText);
-  await writeFile(path.join(opts.out, manifest.files.prices), pricesText);
-  await writeFile(path.join(opts.out, MANIFEST_FILE), JSON.stringify(manifest, null, 2) + '\n');
+  await writeFile(path.join(outDir, manifest.files.cards), cardsText);
+  await writeFile(path.join(outDir, manifest.files.prices), pricesText);
+  await writeFile(path.join(outDir, MANIFEST_FILE), JSON.stringify(manifest, null, 2) + '\n');
 
   console.log(`\n${game.id}: read ${read} lines, kept ${encoded.counts.printings} paper printings of ${encoded.counts.cards} cards in ${encoded.counts.sets} sets.`);
   console.log(`Source updated_at ${updatedAt}\n`);
@@ -74,7 +75,7 @@ async function buildGame(game, opts, headers) {
     const br = brotliCompressSync(text, { params: { [constants.BROTLI_PARAM_QUALITY]: 11, [constants.BROTLI_PARAM_SIZE_HINT]: text.length } }).length;
     console.log(name.padEnd(26) + mb(Buffer.byteLength(text)).padStart(12) + mb(gz).padStart(12) + mb(br).padStart(12));
   }
-  console.log(`\nWrote ${path.relative(root, opts.out)}/ in ${((Date.now() - started) / 1000).toFixed(1)} s (encode ${((afterEncode - started) / 1000).toFixed(1)} s incl. read).`);
+  console.log(`\nWrote ${path.relative(root, outDir)}/ in ${((Date.now() - started) / 1000).toFixed(1)} s (encode ${((afterEncode - started) / 1000).toFixed(1)} s incl. read).`);
 }
 
 async function main() {

@@ -14,11 +14,11 @@
 /data/*
   X-Robots-Tag: noindex
 
-/data/cards.*
+/data/*/cards.*
   Cache-Control: public, max-age=31536000, immutable
 
-/data/prices.*
+/data/*/prices.*
   Cache-Control: public, max-age=31536000, immutable
 
-/data/manifest.json
+/data/*/manifest.json
   Cache-Control: public, max-age=300

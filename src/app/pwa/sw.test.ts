@@ -83,20 +83,20 @@ describe('the service worker', () => {
 
   it('treats the hashed card data files the same way', async () => {
     const w = worker();
-    await w.ask(w.request('/data/cards.3a1a6faee2.json'));
+    await w.ask(w.request('/data/magic/cards.3a1a6faee2.json'));
     w.network.up = false;
-    expect((await w.ask(w.request('/data/cards.3a1a6faee2.json')))!.ok).toBe(true);
-    await expect(async () => { const r = await w.ask(w.request('/data/prices.zzz.json')); if (r!.type === 'error') throw new Error('offline'); }).rejects.toThrow();
+    expect((await w.ask(w.request('/data/magic/cards.3a1a6faee2.json')))!.ok).toBe(true);
+    await expect(async () => { const r = await w.ask(w.request('/data/magic/prices.zzz.json')); if (r!.type === 'error') throw new Error('offline'); }).rejects.toThrow();
   });
 
   it('asks the network first for the data manifest, so a new build is noticed, and falls back to the kept one', async () => {
     const w = worker();
     w.network.body = 'manifest v1';
-    await w.ask(w.request('/data/manifest.json'));
+    await w.ask(w.request('/data/magic/manifest.json'));
     w.network.body = 'manifest v2';
-    expect(await (await w.ask(w.request('/data/manifest.json')))!.text()).toBe('manifest v2');
+    expect(await (await w.ask(w.request('/data/magic/manifest.json')))!.text()).toBe('manifest v2');
     w.network.up = false;
-    expect(await (await w.ask(w.request('/data/manifest.json')))!.text()).toBe('manifest v2');
+    expect(await (await w.ask(w.request('/data/magic/manifest.json')))!.text()).toBe('manifest v2');
   });
 
   it('does not keep a failed answer', async () => {

@@ -4,7 +4,7 @@ import type { GameDefinition } from './types.ts';
 export const MAGIC: GameDefinition = {
   id: 'magic',
   live: true,
-  dataBase: '/data/',   // moves to /data/magic/ with the loader step of the design
+  dataBase: '/data/magic/',
   variants: ['nonfoil', 'foil', 'etched'],
   details: ['borderColor', 'promoTypes', 'frameEffects', 'games'],
 };

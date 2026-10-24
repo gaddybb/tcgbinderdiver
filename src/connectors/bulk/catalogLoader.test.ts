@@ -4,7 +4,7 @@ import { FORMAT_VERSION, MANIFEST_FILE, buildManifest, encodeScryfallCards } fro
 import type { Manifest } from '../../core/catalog';
 import fixture from '../../core/catalog/fixtures/default-cards.sample.jsonl?raw';
 import { MemoryStorage } from '../../storage';
-import { CATALOG_BASE, CatalogUnavailableError, loadCatalog } from './catalogLoader';
+import { CatalogUnavailableError, loadCatalog } from './catalogLoader';
 
 const raws = fixture.split('\n').filter(l => l.trim()).map(l => JSON.parse(l) as unknown);
 const built = encodeScryfallCards(raws);
@@ -21,9 +21,9 @@ function site(build: { cardsHash: string; pricesHash: string; at?: string; price
     pricesHash: build.pricesHash,
   });
   const files = new Map<string, string>([
-    [CATALOG_BASE + MANIFEST_FILE, JSON.stringify(manifest)],
-    [CATALOG_BASE + manifest.files.cards, JSON.stringify(built.cards)],
-    [CATALOG_BASE + manifest.files.prices, JSON.stringify(prices)],
+    ['/data/magic/' + MANIFEST_FILE, JSON.stringify(manifest)],
+    ['/data/magic/' + manifest.files.cards, JSON.stringify(built.cards)],
+    ['/data/magic/' + manifest.files.prices, JSON.stringify(prices)],
   ]);
   return { manifest, files };
 }
@@ -52,18 +52,26 @@ describe('loadCatalog: a first visit', () => {
   it('fetches the manifest, then both files, and returns the decoded catalog', async () => {
     const s = server(A.files);
     const loaded = await loadCatalog({ storage: new MemoryStorage(), fetch: s.fetch });
-    expect(s.urls()).toEqual(['/data/manifest.json', `/data/${A.manifest.files.cards}`, `/data/${A.manifest.files.prices}`]);
+    expect(s.urls()).toEqual(['/data/magic/manifest.json', `/data/magic/${A.manifest.files.cards}`, `/data/magic/${A.manifest.files.prices}`]);
     expect(loaded.offline).toBe(false);
     expect(loaded.manifest).toEqual(A.manifest);
     expect(loaded.catalog.cards).toHaveLength(built.counts.cards);
     expect(loaded.catalog.find('Sol Ring')?.printings.length).toBeGreaterThan(0);
   });
 
+  it('deletes the copy saved before each game had its own folder, and saves the new one under the game', async () => {
+    const storage = new MemoryStorage();
+    for (const k of ['manifest', 'cards', 'prices']) await storage.put('cache', `catalog:${k}`, { old: true });
+    await loadCatalog({ storage, fetch: server(A.files).fetch });
+    for (const k of ['manifest', 'cards', 'prices']) expect(await storage.get('cache', `catalog:${k}`)).toBeUndefined();
+    expect(await storage.get('cache', 'catalog:magic:manifest')).toEqual(A.manifest);
+  });
+
   it('still loads a manifest from before it named its game, variants and details', async () => {
     const old: Partial<Manifest> = { ...A.manifest };
     for (const added of ['game', 'variants', 'details'] as const) delete old[added];
     const files = new Map(A.files);
-    files.set(CATALOG_BASE + MANIFEST_FILE, JSON.stringify(old));
+    files.set('/data/magic/' + MANIFEST_FILE, JSON.stringify(old));
     const loaded = await loadCatalog({ storage: new MemoryStorage(), fetch: server(files).fetch });
     expect(loaded.manifest.game).toBeUndefined();
     expect(loaded.catalog.cards).toHaveLength(built.counts.cards);
@@ -85,13 +93,13 @@ describe('loadCatalog: a first visit', () => {
   it('keeps what it downloaded on the device', async () => {
     const storage = new MemoryStorage();
     await loadCatalog({ storage, fetch: server(A.files).fetch });
-    expect(await storage.get('cache', 'catalog:manifest')).toEqual(A.manifest);
-    expect(await storage.get<{ file: string }>('cache', 'catalog:cards')).toMatchObject({ file: A.manifest.files.cards });
-    expect(await storage.get<{ file: string }>('cache', 'catalog:prices')).toMatchObject({ file: A.manifest.files.prices });
+    expect(await storage.get('cache', 'catalog:magic:manifest')).toEqual(A.manifest);
+    expect(await storage.get<{ file: string }>('cache', 'catalog:magic:cards')).toMatchObject({ file: A.manifest.files.cards });
+    expect(await storage.get<{ file: string }>('cache', 'catalog:magic:prices')).toMatchObject({ file: A.manifest.files.prices });
   });
 
   it('can be served from another folder', async () => {
-    const moved = new Map([...A.files].map(([k, v]) => [k.replace('/data/', '/assets/catalog/'), v]));
+    const moved = new Map([...A.files].map(([k, v]) => [k.replace('/data/magic/', '/assets/catalog/'), v]));
     const s = server(moved);
     await loadCatalog({ storage: new MemoryStorage(), fetch: s.fetch, base: '/assets/catalog/' });
     expect(s.urls()[0]).toBe('/assets/catalog/manifest.json');
@@ -104,7 +112,7 @@ describe('loadCatalog: a repeat visit', () => {
     await loadCatalog({ storage, fetch: server(A.files).fetch });
     const again = server(A.files);
     const loaded = await loadCatalog({ storage, fetch: again.fetch });
-    expect(again.urls()).toEqual(['/data/manifest.json']);
+    expect(again.urls()).toEqual(['/data/magic/manifest.json']);
     expect(loaded.offline).toBe(false);
     expect(loaded.catalog.find('Sol Ring')).toBeDefined();
   });
@@ -115,10 +123,10 @@ describe('loadCatalog: a repeat visit', () => {
     const B = site({ cardsHash: 'aaaa', pricesHash: 'qqqq', at: '2026-10-18T22:00:00.000Z', priceTweak: true });
     const s = server(B.files);
     const second = await loadCatalog({ storage, fetch: s.fetch });
-    expect(s.urls()).toEqual(['/data/manifest.json', `/data/${B.manifest.files.prices}`]);
+    expect(s.urls()).toEqual(['/data/magic/manifest.json', `/data/magic/${B.manifest.files.prices}`]);
     expect(second.catalog.cards[0].printings[0].prices.usd).toBe('999.99');
     expect(first.catalog.cards[0].printings[0].prices.usd).not.toBe('999.99');
-    expect(await storage.get<{ file: string }>('cache', 'catalog:prices')).toMatchObject({ file: B.manifest.files.prices });
+    expect(await storage.get<{ file: string }>('cache', 'catalog:magic:prices')).toMatchObject({ file: B.manifest.files.prices });
   });
 
   it('fetches the cards file when the cards changed', async () => {
@@ -127,7 +135,7 @@ describe('loadCatalog: a repeat visit', () => {
     const B = site({ cardsHash: 'bbbb', pricesHash: 'qqqq' });
     const s = server(B.files);
     await loadCatalog({ storage, fetch: s.fetch });
-    expect(s.urls()).toEqual(['/data/manifest.json', `/data/${B.manifest.files.cards}`, `/data/${B.manifest.files.prices}`]);
+    expect(s.urls()).toEqual(['/data/magic/manifest.json', `/data/magic/${B.manifest.files.cards}`, `/data/magic/${B.manifest.files.prices}`]);
   });
 
   it('updates the saved manifest when only the build time changed', async () => {
@@ -135,7 +143,7 @@ describe('loadCatalog: a repeat visit', () => {
     await loadCatalog({ storage, fetch: server(A.files).fetch });
     const B = site({ cardsHash: 'aaaa', pricesHash: 'pppp', at: '2026-10-18T22:00:00.000Z' });
     await loadCatalog({ storage, fetch: server(B.files).fetch });
-    expect((await storage.get<Manifest>('cache', 'catalog:manifest'))!.builtAt).toBe('2026-10-18T22:00:00.000Z');
+    expect((await storage.get<Manifest>('cache', 'catalog:magic:manifest'))!.builtAt).toBe('2026-10-18T22:00:00.000Z');
   });
 });
 
@@ -148,7 +156,7 @@ describe('loadCatalog: when the site can not be reached', () => {
     const loaded = await loadCatalog({ storage, fetch: s.fetch });
     expect(loaded.offline).toBe(true);
     expect(loaded.catalog.find('Sol Ring')).toBeDefined();
-    expect(s.urls()).toEqual(['/data/manifest.json']);
+    expect(s.urls()).toEqual(['/data/magic/manifest.json']);
   });
 
   it('uses the saved copy when a new file can not be downloaded', async () => {
@@ -188,14 +196,14 @@ describe('loadCatalog: when there is no catalog on the site yet', () => {
 
   it('treats a manifest in a format it does not know as unavailable', async () => {
     const odd = new Map(A.files);
-    odd.set('/data/manifest.json', JSON.stringify({ ...A.manifest, format: FORMAT_VERSION + 1 }));
+    odd.set('/data/magic/manifest.json', JSON.stringify({ ...A.manifest, format: FORMAT_VERSION + 1 }));
     const error = await rejection(loadCatalog({ storage: new MemoryStorage(), fetch: server(odd).fetch }));
     expect(error).toBeInstanceOf(CatalogUnavailableError);
   });
 
   it('treats a manifest missing its fields as unavailable', async () => {
     const odd = new Map(A.files);
-    odd.set('/data/manifest.json', JSON.stringify({ format: FORMAT_VERSION }));
+    odd.set('/data/magic/manifest.json', JSON.stringify({ format: FORMAT_VERSION }));
     const error = await rejection(loadCatalog({ storage: new MemoryStorage(), fetch: server(odd).fetch }));
     expect(error).toBeInstanceOf(CatalogUnavailableError);
   });
@@ -212,16 +220,16 @@ describe('loadCatalog: bad data', () => {
   it('does not save a download that will not decode, and is unavailable', async () => {
     const storage = new MemoryStorage();
     const bad = new Map(A.files);
-    bad.set(`/data/${A.manifest.files.cards}`, '{ this is not json');
+    bad.set(`/data/magic/${A.manifest.files.cards}`, '{ this is not json');
     const error = await rejection(loadCatalog({ storage, fetch: server(bad).fetch }));
     expect(error).toBeInstanceOf(CatalogUnavailableError);
-    expect(await storage.get('cache', 'catalog:cards')).toBeUndefined();
-    expect(await storage.get('cache', 'catalog:manifest')).toBeUndefined();
+    expect(await storage.get('cache', 'catalog:magic:cards')).toBeUndefined();
+    expect(await storage.get('cache', 'catalog:magic:manifest')).toBeUndefined();
   });
 
   it('is unavailable when the files are a format it does not know', async () => {
     const bad = new Map(A.files);
-    bad.set(`/data/${A.manifest.files.cards}`, JSON.stringify({ ...built.cards, format: FORMAT_VERSION + 1 }));
+    bad.set(`/data/magic/${A.manifest.files.cards}`, JSON.stringify({ ...built.cards, format: FORMAT_VERSION + 1 }));
     const error = await rejection(loadCatalog({ storage: new MemoryStorage(), fetch: server(bad).fetch }));
     expect(error).toBeInstanceOf(CatalogUnavailableError);
     expect(error.message).toContain('format');
@@ -229,7 +237,7 @@ describe('loadCatalog: bad data', () => {
 
   it('is unavailable when the prices do not match the cards', async () => {
     const bad = new Map(A.files);
-    bad.set(`/data/${A.manifest.files.prices}`, JSON.stringify({ format: FORMAT_VERSION, prices: [] }));
+    bad.set(`/data/magic/${A.manifest.files.prices}`, JSON.stringify({ format: FORMAT_VERSION, prices: [] }));
     const error = await rejection(loadCatalog({ storage: new MemoryStorage(), fetch: server(bad).fetch }));
     expect(error).toBeInstanceOf(CatalogUnavailableError);
   });
@@ -237,28 +245,28 @@ describe('loadCatalog: bad data', () => {
   it('throws away a saved copy that no longer reads, and downloads it again', async () => {
     const storage = new MemoryStorage();
     await loadCatalog({ storage, fetch: server(A.files).fetch });
-    await storage.put('cache', 'catalog:cards', { file: A.manifest.files.cards, text: 'garbage' });
+    await storage.put('cache', 'catalog:magic:cards', { file: A.manifest.files.cards, text: 'garbage' });
     const s = server(A.files);
     const loaded = await loadCatalog({ storage, fetch: s.fetch });
     expect(loaded.offline).toBe(false);
     expect(loaded.catalog.find('Sol Ring')).toBeDefined();
-    expect(s.urls().filter(u => u !== '/data/manifest.json').length).toBeGreaterThan(0);
-    expect((await storage.get<{ text: string }>('cache', 'catalog:cards'))!.text).not.toBe('garbage');
+    expect(s.urls().filter(u => u !== '/data/magic/manifest.json').length).toBeGreaterThan(0);
+    expect((await storage.get<{ text: string }>('cache', 'catalog:magic:cards'))!.text).not.toBe('garbage');
   });
 
   it('gives up cleanly when a saved copy is bad and the site is down', async () => {
     const storage = new MemoryStorage();
     await loadCatalog({ storage, fetch: server(A.files).fetch });
-    await storage.put('cache', 'catalog:prices', { file: A.manifest.files.prices, text: 'garbage' });
+    await storage.put('cache', 'catalog:magic:prices', { file: A.manifest.files.prices, text: 'garbage' });
     const error = await rejection(loadCatalog({ storage, fetch: server(A.files, { down: true }).fetch }));
     expect(error).toBeInstanceOf(CatalogUnavailableError);
-    expect(await storage.get('cache', 'catalog:prices')).toBeUndefined();
+    expect(await storage.get('cache', 'catalog:magic:prices')).toBeUndefined();
   });
 
   it('ignores saved files that belong to another build than the saved manifest', async () => {
     const storage = new MemoryStorage();
     await loadCatalog({ storage, fetch: server(A.files).fetch });
-    await storage.put('cache', 'catalog:cards', { file: 'cards.other.json', text: '{}' });
+    await storage.put('cache', 'catalog:magic:cards', { file: 'cards.other.json', text: '{}' });
     const error = await rejection(loadCatalog({ storage, fetch: server(A.files, { down: true }).fetch }));
     expect(error).toBeInstanceOf(CatalogUnavailableError);
   });
