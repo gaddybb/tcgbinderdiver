@@ -254,6 +254,41 @@ describe('List review: the header', () => {
   });
 });
 
+describe('List review: choosing the header art', () => {
+  const t = copy.review.bannerPicker;
+  const open = async () => fireEvent.click(await screen.findByRole('button', { name: t.open }));
+
+  it('lets the player pick any card in the deck from the list page, and undo it', async () => {
+    const { lists } = await setup(THREE, { saved: ['ajani', 'tower', 'greaves'] });
+    await open();
+    const sheet = await screen.findByRole('dialog', { name: t.title });
+    expect(within(sheet).queryByRole('button', { name: t.reset })).toBeNull();   // nothing chosen yet
+    fireEvent.click(within(sheet).getByRole('button', { name: /Lightning Greaves/ }));
+    await waitFor(async () => expect((await lists.get('a'))?.banner).toBe('Lightning Greaves'));
+    expect(screen.queryByRole('dialog', { name: t.title })).toBeNull();
+    fireEvent.click(await screen.findByRole('button', { name: copy.common.undo }));
+    await waitFor(async () => expect((await lists.get('a'))?.banner).toBeUndefined());
+  });
+
+  it('finds a card by name, marks the current one, and can go back to the first card', async () => {
+    const { lists } = await setup(THREE, { saved: ['ajani', 'tower', 'greaves'] });
+    await open();
+    let sheet = await screen.findByRole('dialog', { name: t.title });
+    expect(within(sheet).getByRole('button', { name: new RegExp("Ajani's Pridemate.*" + t.current) }).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.change(within(sheet).getByLabelText(t.search), { target: { value: 'tower' } });
+    expect(within(sheet).getAllByRole('button', { name: /./ }).filter(b => b.getAttribute('aria-pressed') !== null)).toHaveLength(1);
+    fireEvent.change(within(sheet).getByLabelText(t.search), { target: { value: 'zzz' } });
+    expect(within(sheet).getByText(t.none)).toBeTruthy();
+    fireEvent.change(within(sheet).getByLabelText(t.search), { target: { value: 'tower' } });
+    fireEvent.click(within(sheet).getByRole('button', { name: /Command Tower/ }));
+    await waitFor(async () => expect((await lists.get('a'))?.banner).toBe('Command Tower'));
+    await open();
+    sheet = await screen.findByRole('dialog', { name: t.title });
+    fireEvent.click(within(sheet).getByRole('button', { name: t.reset }));
+    await waitFor(async () => expect((await lists.get('a'))?.banner).toBeUndefined());
+  });
+});
+
 describe('List review: trouble reaching Scryfall', () => {
   it('says so, offers Try again, and fills in once it works', async () => {
     const { fake } = await setup(THREE, { failLookup: true });
