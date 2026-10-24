@@ -49,6 +49,6 @@ self.addEventListener('fetch', function (event) {
     event.respondWith(networkFirst(request, SHELL));
     return;
   }
-  var hashed = url.pathname.indexOf('/assets/') === 0 || /^\/data\/(cards|prices)\./.test(url.pathname);
+  var hashed = url.pathname.indexOf('/assets/') === 0 || /^\/data\/[a-z]+\/(cards|prices)\./.test(url.pathname);
   event.respondWith(hashed ? savedFirst(request) : networkFirst(request, request));
 });

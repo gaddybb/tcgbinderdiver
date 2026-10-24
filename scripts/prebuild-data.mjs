@@ -1,4 +1,4 @@
-// Runs before `npm run build` (npm does this by itself). Builds the card data into public/data so the deployed site has
+// Runs before `npm run build` (npm does this by itself). Builds the card data into public/data/<game>/ so the deployed site has
 // it, but only where that is meant to happen:
 //   - on Cloudflare's build (it sets WORKERS_CI) and in the daily refresh workflow (sets CARD_DATA=1): real download
 //   - everywhere else (your machine, pull request checks): nothing, so builds stay offline and fast. The app then

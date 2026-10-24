@@ -3,6 +3,8 @@
 // Anything that goes wrong becomes CatalogUnavailableError, which the bulk connector answers by using the live API.
 import { CatalogFormatError, FORMAT_VERSION, MANIFEST_FILE, decodeCatalog } from '../../core/catalog';
 import type { Catalog, Manifest } from '../../core/catalog';
+import { MAGIC } from '../../core/games';
+import type { GameDefinition } from '../../core/games';
 import type { AppStorage } from '../../storage';
 import type { FetchLike } from '../scryfall/client';
 
@@ -21,12 +23,14 @@ export interface LoadedCatalog {
 
 export interface CatalogLoaderOptions {
   storage: AppStorage;
-  base?: string;      // where the data files live, with a trailing slash
+  game?: GameDefinition;   // which game's data to load (default Magic); its dataBase says where the files live
+  base?: string;      // overrides the game's data folder, with a trailing slash
   fetch?: FetchLike;
 }
 
-export const CATALOG_BASE = '/data/';
-const KEY = { manifest: 'catalog:manifest', cards: 'catalog:cards', prices: 'catalog:prices' } as const;
+// Before each game had its own folder the copy was saved under these keys; it is deleted on the first load.
+const LEGACY_KEYS = ['catalog:manifest', 'catalog:cards', 'catalog:prices'];
+const keysFor = (game: GameDefinition) => ({ manifest: `catalog:${game.id}:manifest`, cards: `catalog:${game.id}:cards`, prices: `catalog:${game.id}:prices` }) as const;
 
 interface SavedFile { file: string; text: string }
 interface Saved { manifest?: Manifest; cards?: SavedFile; prices?: SavedFile }
@@ -44,8 +48,12 @@ function usable(saved: Saved): saved is Required<Saved> {
 
 export async function loadCatalog(options: CatalogLoaderOptions, retried = false): Promise<LoadedCatalog> {
   const { storage } = options;
-  const base = options.base ?? CATALOG_BASE;
+  const game = options.game ?? MAGIC;
+  const KEY = keysFor(game);
+  const base = options.base ?? game.dataBase;
   const doFetch: FetchLike = options.fetch ?? ((url, init) => globalThis.fetch(url, init));
+
+  await Promise.all(LEGACY_KEYS.map(k => storage.delete('cache', k)));
 
   const saved: Saved = {
     manifest: await storage.get<Manifest>('cache', KEY.manifest),
