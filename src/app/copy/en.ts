@@ -690,7 +690,7 @@ export const en = {
   consent: {
     label: 'Analytics choice',
     title: 'Count visits to help improve Binder Diver?',
-    text: 'Allow analytics and Binder Diver uses Google Analytics to count which pages and features get used. It never sees card names or what is on your lists.',
+    text: 'Allow analytics and Binder Diver uses Google Analytics to count which features get used. It never sees card names or what is on your lists.',
     more: 'How your data is used',
     allow: 'Allow analytics',
     deny: 'No thanks',
@@ -844,11 +844,11 @@ export const en = {
   privacyPage: {
     eyebrow: 'Privacy',
     title: 'Privacy, in plain language',
-    updated: 'Last updated [DATE].',
+    updated: 'Last updated October 24, 2026.',
     lead: 'This page explains what Binder Diver keeps, what it shares, and your choices.',
     sections: {
       device: { title: 'Stored on your device', text: "Your lists, card statuses, binder groups and settings are saved in this browser. They aren't sent to us. Clearing your browser's site data for Binder Diver deletes them." },
-      analytics: { title: 'Analytics, only if you allow it', text: "If you choose Allow analytics, Binder Diver uses Google Analytics to count things like which pages are visited and which features get used. It doesn't collect your name or email, and it isn't used to sell anything." },
+      analytics: { title: 'Analytics, only if you allow it', text: "If you choose Allow analytics, Binder Diver uses Google Tag Manager and Google Analytics to count what gets used: how often a list is pasted, a plan is viewed, a place is finished, a card is marked found, and Buy the rest is tapped. Each count carries only numbers and general labels, such as how many cards or what kind of place. It never includes a card name, a list name or what is on your lists. Google sets cookies on your device to do this. If you choose No thanks, nothing from Google is loaded. You can change your choice below: new counts stop at once, the Google script leaves the page on your next visit, and its cookies stay until you clear them in your browser. It doesn't collect your name or email, and it isn't used to sell anything." },
       cards: { title: 'Card data', text: 'Card data comes from Scryfall. Binder Diver downloads it from its own site, and your browser asks Scryfall directly for card pictures and for any card Binder Diver does not have yet, so Scryfall sees those requests under its own privacy policy.' },
       stores: { title: 'Store search', text: "When you tap Find game stores nearby, Binder Diver opens Google Maps in a new tab with a search for game stores. Google Maps asks for your location itself, under Google's privacy policy; Binder Diver never sees it. Nothing is sent to Google until you tap." },
       affiliate: { title: 'Affiliate links', text: 'Buy on TCGplayer buttons are affiliate links through Impact. If you buy after tapping one, Binder Diver may earn a small commission at no extra cost to you. TCGplayer may set its own cookies once you\'re on its site.' },
@@ -1042,7 +1042,7 @@ export const en = {
     consent: {
     label: 'Analytics choice',
     title: 'Count visits to help improve Binder Diver?',
-    text: 'Allow analytics and Binder Diver uses Google Analytics to count which pages and features get used. It never sees card names or what is on your lists.',
+    text: 'Allow analytics and Binder Diver uses Google Analytics to count which features get used. It never sees card names or what is on your lists.',
     more: 'How your data is used',
     allow: 'Allow analytics',
     deny: 'No thanks',

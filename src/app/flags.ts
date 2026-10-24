@@ -3,7 +3,7 @@ export const FLAGS = {
   affiliateLinks: false, // v2: TCGplayer buy links through Impact
   savedStores: false,    // v2: per-store profiles
   accounts: false,       // v3: Supabase sign-in and sync
-  analytics: false,      // v1, later PR: GA4 behind consent
+  analytics: true,       // v1: GA4 behind consent; nothing runs until config.ts has a container id
   storeMap: true,        // v1: nearby stores, as a Google Maps search that opens in a new tab
 } as const;
 

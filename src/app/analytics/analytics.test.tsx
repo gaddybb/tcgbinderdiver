@@ -18,13 +18,15 @@ type Entry = Record<string, string | number | boolean>;
 function setup(options: { enabled?: boolean; gtmId?: string } = {}) {
   const sent: Entry[] = [];
   const loaded: string[] = [];
+  const modes: string[] = [];   // Consent Mode calls and the script load, in the order they happened
   const config: AnalyticsConfig = {
     enabled: options.enabled ?? true,
     gtmId: options.gtmId ?? 'GTM-TEST123',
-    loadTagManager: id => { loaded.push(id); },
+    loadTagManager: id => { loaded.push(id); modes.push('load'); },
+    consentMode: (command, state) => { modes.push(`${command}:${state}`); },
     send: entry => { sent.push(entry); },
   };
-  return { sent, loaded, config };
+  return { sent, loaded, modes, config };
 }
 
 async function open(path: string, config: AnalyticsConfig, storage = new MemoryStorage(), prepare?: (s: MemoryStorage) => Promise<void>) {
@@ -80,7 +82,7 @@ describe('the consent banner', () => {
     }
   });
 
-  it('is off in the app as shipped: the flag is off and there is no container id yet', async () => {
+  it('does nothing in the app as shipped, because there is no container id yet', async () => {
     goTo('/');
     render(<App storage={new MemoryStorage()} />);
     await screen.findByRole('heading', { level: 1, name: copy.homePage.title });
@@ -102,6 +104,63 @@ describe('the consent banner', () => {
     await screen.findByRole('heading', { level: 1, name: copy.privacyPage.title });
     expect(screen.queryByRole('heading', { name: copy.privacyPage.sections.analytics.title })).toBeNull();
     expect(screen.queryByRole('button', { name: copy.consent.change })).toBeNull();
+  });
+});
+
+describe('Consent Mode', () => {
+  it('starts as denied, before any choice, and loads nothing', async () => {
+    const { modes, loaded, config } = setup();
+    await open('/', config);
+    await screen.findByRole('region', { name: copy.consent.label });
+    expect(modes).toEqual(['default:denied']);
+    expect(loaded).toEqual([]);
+  });
+
+  it('Allow says granted before Tag Manager loads', async () => {
+    const { modes, config } = setup();
+    await open('/', config);
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.allow }));
+    await waitFor(() => expect(modes).toContain('load'));
+    expect(modes).toEqual(['default:denied', 'update:granted', 'load']);
+  });
+
+  it('No thanks never says granted', async () => {
+    const { modes, config } = setup();
+    await open('/', config);
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.deny }));
+    await waitFor(() => expect(screen.queryByRole('region', { name: copy.consent.label })).toBeNull());
+    expect(modes).toEqual(['default:denied']);
+  });
+
+  it('withdrawing after Allow says denied again, and counting stops', async () => {
+    const { modes, config } = setup();
+    await open('/', config);
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.allow }));
+    await waitFor(() => expect(modes).toContain('load'));
+    goTo('/privacy');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.change }));
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.deny }));
+    await waitFor(() => expect(modes).toContain('update:denied'));
+    expect(modes.filter(m => m === 'load')).toHaveLength(1);
+  });
+
+  it('puts gtag-style consent commands on the data layer (Tag Manager only reads the arguments form)', async () => {
+    window.dataLayer = [];
+    const config: AnalyticsConfig = { enabled: true, gtmId: 'GTM-TEST123', loadTagManager: () => {} };
+    await open('/', config);
+    await screen.findByRole('region', { name: copy.consent.label });
+    const entry = window.dataLayer[0] as ArrayLike<unknown>;
+    expect(Object.prototype.toString.call(entry)).toBe('[object Arguments]');
+    expect(Array.from(entry)).toEqual(['consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' }]);
+    window.dataLayer = undefined;
+  });
+
+  it('is not touched while analytics is unavailable', async () => {
+    const { modes, config } = setup({ gtmId: '' });
+    await open('/', config);
+    await screen.findByRole('heading', { level: 1, name: copy.homePage.title });
+    expect(modes).toEqual([]);
   });
 });
 
