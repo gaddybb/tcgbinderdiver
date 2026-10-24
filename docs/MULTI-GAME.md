@@ -230,7 +230,7 @@ Answered by the owner on 2026-10-23:
   slow to crawl.
 - **Lorcana: use Lorcast** (it has prices and a Scryfall-like shape); LorcanaJSON stays the fallback.
 - **Pokémon goes first.** Lorcana follows. **Yu-Gi-Oh! is sidelined (v5)** until the app is shown to be wanted by Yu-Gi-Oh! players: its picture rules and hosting are too much to take on before that.
-- **Pokémon crawl rate:** if TCGdex publishes no limit, a steady 10 calls a second for the nightly or weekly crawl is acceptable (the same pace Lorcast asks for). Still ask them once, as courtesy, and back off at once on any 429.
+- **Pokémon crawl rate:** settled (owner, 2026-10-23). TCGdex's FAQ says there are no published hard limits, but asks users to be considerate and cache locally. The crawl runs late at night at a steady 10 calls a second, and can be slowed to 5 a second (about 1.5 hours for a full crawl) to be extra gentle. Back off at once on any 429.
 
 Still open:
 
