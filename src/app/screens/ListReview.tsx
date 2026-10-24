@@ -27,6 +27,7 @@ import { printingLabel } from '../printingLabel';
 import { Link, navigate } from '../router';
 import { ListCardDetail } from './detail/ListCardDetail';
 import { DivePanel } from './dive/DivePanel';
+import { BannerPicker } from './BannerPicker';
 import { Tour } from './tour/Tour';
 import { neededCards } from './dive/planData';
 import review from './Review.module.css';
@@ -77,6 +78,7 @@ function ReviewBody({ list }: { list: CardList }) {
   const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
   const [selecting, setSelecting] = useState(false);     // phone only: the table always has checkboxes
   const [openKey, setOpenKey] = useState<string | null>(null);   // the card shown in card detail
+  const [pickingBanner, setPickingBanner] = useState(false);
 
   // This list's cards, plus the cards other lists in the next dive still need, so the dive plan beside it has its data too.
   const cards = useMemo(() => {
@@ -231,16 +233,30 @@ function ReviewBody({ list }: { list: CardList }) {
   );
 
   const bannerName = bannerCardName(list);
+  const pickBanner = async (name: string | null) => {
+    const previous = list.banner ?? null;
+    await lists.setBanner(list.id, name);
+    toast.show({ message: copy.cardDetail.banner.set(name ?? list.entries[0]?.name ?? ''), onAction: () => { void lists.setBanner(list.id, previous); } });
+  };
 
   return (
     <>
       {list.entries.length > 0 && <Tour id="list" />}
       <DeckBanner size="page" src={bannerName ? bannerImageUrl(bannerName) : null} />
+      <BannerPicker
+        open={pickingBanner}
+        onClose={() => setPickingBanner(false)}
+        cards={rows.map(r => ({ name: r.entry.name, edge: r.edge, src: r.record?.summary.imageSmall }))}
+        current={bannerName}
+        chosen={list.banner !== undefined}
+        onPick={name => { void pickBanner(name); }}
+      />
       <PageHeader
         title={list.name}
         subtitle={phone ? t.summaryPhone(counts.needed, online) : t.summary(counts.cards, counts.needed, online)}
         actions={
           <span className={review.headerActions}>
+            {list.entries.length > 0 && <Button variant="text" onClick={() => setPickingBanner(true)}>{t.bannerPicker.open}</Button>}
             <Button variant="text" onClick={data.refresh}>{t.refresh}</Button>
             <Button variant="secondary" onClick={() => navigate('/import')}>{t.pasteAnother}</Button>
           </span>
