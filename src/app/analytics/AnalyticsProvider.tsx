@@ -1,20 +1,23 @@
-// Analytics through Google Tag Manager, only with the player's consent, and only counts and labels (see
+// Analytics through Google Tag Manager or, when there is no container, GA4 directly (gtag), only with the player's consent, and only counts and labels (see
 // src/core/analytics): never a card name or the contents of a list. Nothing is loaded and nothing is sent before the player
-// says yes, and none of it exists at all while the feature is off or there is no container id.
+// says yes, and none of it exists at all while the feature is off or there is no container id. Google's Consent Mode is told
+// "denied" first and "granted" only on Allow (and "denied" again if the choice is withdrawn).
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { cleanParams } from '../../core/analytics/events';
 import type { AnalyticsEvent } from '../../core/analytics/events';
 import { isOn } from '../flags';
 import { useStorage } from '../data/StorageProvider';
-import { GTM_ID } from './config';
+import { GA_ID, GTM_ID } from './config';
 
 export type Consent = 'unknown' | 'granted' | 'denied';
 
 export interface AnalyticsConfig {
   enabled: boolean;
-  gtmId: string;
+  gtmId: string;                                                    // a Tag Manager container id, or ''
+  gaId?: string;                                                    // a GA4 measurement id, used when there is no container
   loadTagManager?: (id: string) => void;                            // tests replace the script loader
+  consentMode?: (command: 'default' | 'update', state: 'granted' | 'denied') => void;   // and the Consent Mode calls
   send?: (entry: Record<string, string | number | boolean>) => void;   // and where events go
 }
 
@@ -34,25 +37,48 @@ declare global {
   interface Window { dataLayer?: unknown[] }
 }
 
+// gtag must push its `arguments` object, not an array: that is the form Google's scripts read from the data layer.
+const gtag = function () { (window.dataLayer ??= []).push(arguments); } as (...args: unknown[]) => void;   // eslint-disable-line prefer-rest-params
+const isGa = (id: string) => id.startsWith('G-');
+
 function defaultLoad(id: string): void {
   window.dataLayer = window.dataLayer ?? [];
-  window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
   const script = document.createElement('script');
   script.async = true;
-  script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(id)}`;
+  if (isGa(id)) {
+    gtag('js', new Date());
+    gtag('config', id, { send_page_view: false });   // only the five counted events are sent, not page views
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+  } else {
+    window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+    script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(id)}`;
+  }
   document.head.appendChild(script);
 }
 
-function defaultSend(entry: Record<string, string | number | boolean>): void {
-  window.dataLayer = window.dataLayer ?? [];
-  window.dataLayer.push(entry);
+// Google's Consent Mode: a gtag('consent', ...) command put on the data layer, which Tag Manager reads. It must be the arguments
+// object, not an array, which is why this is a function and not a push of a literal.
+function defaultConsentMode(command: 'default' | 'update', state: 'granted' | 'denied'): void {
+  gtag('consent', command, { analytics_storage: state, ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
 }
 
-const DEFAULT_CONFIG: AnalyticsConfig = { enabled: isOn('analytics'), gtmId: GTM_ID };
+function sendTo(id: string) {
+  return (entry: Record<string, string | number | boolean>): void => {
+    if (isGa(id)) {
+      const { event, ...params } = entry;
+      gtag('event', event, params);
+    } else {
+      (window.dataLayer ??= []).push(entry);
+    }
+  };
+}
+
+const DEFAULT_CONFIG: AnalyticsConfig = { enabled: isOn('analytics'), gtmId: GTM_ID, gaId: GA_ID };
 
 export function AnalyticsProvider({ config = DEFAULT_CONFIG, children }: { config?: AnalyticsConfig; children: ReactNode }) {
   const storage = useStorage();
-  const available = config.enabled && config.gtmId !== '';
+  const tagId = config.gtmId || config.gaId || '';
+  const available = config.enabled && tagId !== '';
   const [consent, setConsent] = useState<Consent>('unknown');
   const [loaded, setLoaded] = useState(false);
   const [reopened, setReopened] = useState(false);
@@ -68,11 +94,23 @@ export function AnalyticsProvider({ config = DEFAULT_CONFIG, children }: { confi
     return () => { current = false; };
   }, [storage]);
 
+  // Consent Mode starts as denied for everything, whatever was chosen before.
   useEffect(() => {
-    if (!available || consent !== 'granted' || loadedScript.current) return;
-    loadedScript.current = true;
-    (config.loadTagManager ?? defaultLoad)(config.gtmId);
-  }, [available, consent, config]);
+    if (available) (config.consentMode ?? defaultConsentMode)('default', 'denied');
+  }, [available, config]);
+
+  useEffect(() => {
+    if (!available) return;
+    const mode = config.consentMode ?? defaultConsentMode;
+    if (consent === 'granted') {
+      mode('update', 'granted');
+      if (loadedScript.current) return;
+      loadedScript.current = true;
+      (config.loadTagManager ?? defaultLoad)(tagId);
+    } else if (consent === 'denied' && loadedScript.current) {
+      mode('update', 'denied');   // withdrawn after Allow: the tag stops storing, and nothing more is sent
+    }
+  }, [available, consent, config, tagId]);
 
   const choose = useCallback((answer: 'granted' | 'denied') => {
     setConsent(answer);
@@ -82,8 +120,8 @@ export function AnalyticsProvider({ config = DEFAULT_CONFIG, children }: { confi
 
   const track = useCallback((event: AnalyticsEvent, params: Record<string, unknown> = {}) => {
     if (!available || consent !== 'granted') return;
-    (config.send ?? defaultSend)({ event, ...cleanParams(event, params) });
-  }, [available, consent, config]);
+    (config.send ?? sendTo(tagId))({ event, ...cleanParams(event, params) });
+  }, [available, consent, config, tagId]);
 
   const value = useMemo<AnalyticsApi>(() => ({
     available,

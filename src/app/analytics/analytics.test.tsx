@@ -18,13 +18,15 @@ type Entry = Record<string, string | number | boolean>;
 function setup(options: { enabled?: boolean; gtmId?: string } = {}) {
   const sent: Entry[] = [];
   const loaded: string[] = [];
+  const modes: string[] = [];   // Consent Mode calls and the script load, in the order they happened
   const config: AnalyticsConfig = {
     enabled: options.enabled ?? true,
     gtmId: options.gtmId ?? 'GTM-TEST123',
-    loadTagManager: id => { loaded.push(id); },
+    loadTagManager: id => { loaded.push(id); modes.push('load'); },
+    consentMode: (command, state) => { modes.push(`${command}:${state}`); },
     send: entry => { sent.push(entry); },
   };
-  return { sent, loaded, config };
+  return { sent, loaded, modes, config };
 }
 
 async function open(path: string, config: AnalyticsConfig, storage = new MemoryStorage(), prepare?: (s: MemoryStorage) => Promise<void>) {
@@ -80,11 +82,13 @@ describe('the consent banner', () => {
     }
   });
 
-  it('is off in the app as shipped: the flag is off and there is no container id yet', async () => {
+  it('as shipped, asks first and loads no Google script until the player allows it', async () => {
     goTo('/');
+    window.dataLayer = undefined;
     render(<App storage={new MemoryStorage()} />);
-    await screen.findByRole('heading', { level: 1, name: copy.homePage.title });
-    expect(screen.queryByRole('region', { name: copy.consent.label })).toBeNull();
+    await screen.findByRole('region', { name: copy.consent.label });
+    expect(document.head.querySelector('script[src*="googletagmanager.com"]')).toBeNull();
+    expect((window.dataLayer as unknown[] | undefined)?.map(e =>Array.from(e as ArrayLike<unknown>)[1])).toEqual(['default']);   // only Consent Mode, denied
   });
 
   it('Change cookie choice on the privacy page asks again, and the page only describes analytics when it is on', async () => {
@@ -102,6 +106,80 @@ describe('the consent banner', () => {
     await screen.findByRole('heading', { level: 1, name: copy.privacyPage.title });
     expect(screen.queryByRole('heading', { name: copy.privacyPage.sections.analytics.title })).toBeNull();
     expect(screen.queryByRole('button', { name: copy.consent.change })).toBeNull();
+  });
+});
+
+describe('Consent Mode', () => {
+  it('starts as denied, before any choice, and loads nothing', async () => {
+    const { modes, loaded, config } = setup();
+    await open('/', config);
+    await screen.findByRole('region', { name: copy.consent.label });
+    expect(modes).toEqual(['default:denied']);
+    expect(loaded).toEqual([]);
+  });
+
+  it('Allow says granted before Tag Manager loads', async () => {
+    const { modes, config } = setup();
+    await open('/', config);
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.allow }));
+    await waitFor(() => expect(modes).toContain('load'));
+    expect(modes).toEqual(['default:denied', 'update:granted', 'load']);
+  });
+
+  it('No thanks never says granted', async () => {
+    const { modes, config } = setup();
+    await open('/', config);
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.deny }));
+    await waitFor(() => expect(screen.queryByRole('region', { name: copy.consent.label })).toBeNull());
+    expect(modes).toEqual(['default:denied']);
+  });
+
+  it('withdrawing after Allow says denied again, and counting stops', async () => {
+    const { modes, config } = setup();
+    await open('/', config);
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.allow }));
+    await waitFor(() => expect(modes).toContain('load'));
+    goTo('/privacy');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.change }));
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.deny }));
+    await waitFor(() => expect(modes).toContain('update:denied'));
+    expect(modes.filter(m => m === 'load')).toHaveLength(1);
+  });
+
+  it('puts gtag-style consent commands on the data layer (Tag Manager only reads the arguments form)', async () => {
+    window.dataLayer = [];
+    const config: AnalyticsConfig = { enabled: true, gtmId: 'GTM-TEST123', loadTagManager: () => {} };
+    await open('/', config);
+    await screen.findByRole('region', { name: copy.consent.label });
+    const entry = window.dataLayer[0] as ArrayLike<unknown>;
+    expect(Object.prototype.toString.call(entry)).toBe('[object Arguments]');
+    expect(Array.from(entry)).toEqual(['consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' }]);
+    window.dataLayer = undefined;
+  });
+
+  it('is not touched while analytics is unavailable', async () => {
+    const { modes, config } = setup({ gtmId: '' });
+    await open('/', config);
+    await screen.findByRole('heading', { level: 1, name: copy.homePage.title });
+    expect(modes).toEqual([]);
+  });
+});
+
+describe('GA4 directly, without a Tag Manager container', () => {
+  it('after Allow, loads gtag.js for the measurement id and sends events as gtag events, never names', async () => {
+    window.dataLayer = [];
+    document.head.querySelectorAll('script[src*="googletagmanager.com"]').forEach(n => n.remove());
+    const config: AnalyticsConfig = { enabled: true, gtmId: '', gaId: 'G-TEST123456' };
+    await open('/import', config);
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.allow }));
+    await waitFor(() => expect(document.head.querySelector('script[src="https://www.googletagmanager.com/gtag/js?id=G-TEST123456"]')).toBeTruthy());
+    const calls = window.dataLayer!.map(e => Array.from(e as ArrayLike<unknown>));
+    expect(calls.map(c => c.slice(0, 2).map(x => (x instanceof Date ? 'date' : x)))).toEqual([
+      ['consent', 'default'], ['consent', 'update'], ['js', 'date'], ['config', 'G-TEST123456'],
+    ]);
+    expect(calls[3][2]).toEqual({ send_page_view: false });
+    window.dataLayer = undefined;
   });
 });
 
