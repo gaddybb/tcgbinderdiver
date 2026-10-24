@@ -87,7 +87,7 @@
   --size-detail-w: 28.75rem;     /* the card detail panel beside the list, on tablet and desktop */
   --size-detail-image: 12.5rem;  /* the big card picture in card detail on a phone */
   --size-detail-image-wide: 15rem;
-  --size-shot: 15rem;      /* height of a screenshot placeholder */
+  --size-shot: 20rem;      /* width of a walkthrough screenshot */
   --content-max: 70rem;
   --card-ratio: 5 / 7;
   --z-menu: 20;
