@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { Logo, TabBar } from '../components';
 import type { TabItem } from '../components';
 import { copy } from '../copy/en';
+import type { GameId } from '../../core/games';
+import { useGame } from '../data/useGame';
 import { cx } from '../cx';
 import { Link, usePath } from '../router';
 import { useLayout } from './useLayout';
@@ -29,10 +31,11 @@ export function tabFor(path: string): string {
 }
 
 function GameSelect() {
+  const [game, setGame] = useGame();
   return (
     <label className={styles.game}>
       <span className={styles.gameLabel}>{t.game}</span>
-      <select className={styles.select} defaultValue="magic">
+      <select className={styles.select} value={game} onChange={e => setGame(e.target.value as GameId)}>
         <option value="magic">{copy.games.magic}</option>
         <option value="pokemon" disabled>{t.gameComing(copy.games.pokemon)}</option>
         <option value="lorcana" disabled>{t.gameComing(copy.games.lorcana)}</option>

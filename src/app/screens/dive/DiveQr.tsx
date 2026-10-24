@@ -8,6 +8,7 @@ import { copyText } from '../../clipboard';
 import { copy } from '../../copy/en';
 import { useConnector } from '../../data/CardDataProvider';
 import { useLists } from '../../data/ListsProvider';
+import { useGame } from '../../data/useGame';
 import { useStoreSettings } from '../../data/StoreSettingsProvider';
 import { encodeHandoff, handoffLink } from '../../handoff/codec';
 import styles from './Dive.module.css';
@@ -46,8 +47,9 @@ export function DiveQr() {
   const { lists } = useLists();
   const { settings } = useStoreSettings();
   const toast = useToast();
+  const [game] = useGame();
   const connector = useConnector();
-  const handoff = useMemo(() => buildHandoff(lists, settings), [lists, settings]);
+  const handoff = useMemo(() => buildHandoff(lists, settings, game), [lists, settings, game]);
   const [link, setLink] = useState<string | null>(null);
 
   useEffect(() => {

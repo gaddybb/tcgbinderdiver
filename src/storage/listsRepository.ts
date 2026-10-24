@@ -1,4 +1,5 @@
 import { MAX_LISTS, WISHLIST_ID, canCreateList, createList, duplicateList, sortLists } from '../core/lists';
+import type { GameId } from '../core/games';
 import type { CardList } from '../core/lists';
 import type { AppStorage } from './types';
 
@@ -53,9 +54,9 @@ export class ListsRepository {
     return wishlist;
   }
 
-  async createDeck(name: string, now: Date, options: { sample?: boolean; banner?: string } = {}): Promise<CardList> {
+  async createDeck(name: string, now: Date, options: { sample?: boolean; banner?: string; game?: GameId } = {}): Promise<CardList> {
     if (!canCreateList((await this.all()).length)) throw new ListLimitError();
-    const deck = { ...createList({ id: this.makeId(), kind: 'deck', name }, now), ...(options.sample ? { sample: true } : {}), ...(options.banner ? { banner: options.banner } : {}) };
+    const deck = { ...createList({ id: this.makeId(), kind: 'deck', name, game: options.game }, now), ...(options.sample ? { sample: true } : {}), ...(options.banner ? { banner: options.banner } : {}) };
     await this.save(deck);
     return deck;
   }

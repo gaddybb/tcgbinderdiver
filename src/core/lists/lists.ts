@@ -1,6 +1,8 @@
 // List operations. Pure: every function takes the list (or lists) and returns a new one; `now` is passed in.
 import type { CardStatus } from '../status';
 import { MAX_CARDS_PER_LIST, MAX_LISTS, WISHLIST_ID } from './limits';
+import { DEFAULT_GAME } from '../games';
+import type { GameId } from '../games';
 import type { CardList, IncomingEntry, ListEntry, ListKind, PrintRef } from './types';
 
 export const cleanName = (name: string): string => name.replace(/\s+/g, ' ').trim();
@@ -8,9 +10,9 @@ export const isValidListName = (name: string): boolean => cleanName(name).length
 export const canCreateList = (existingCount: number): boolean => existingCount < MAX_LISTS;
 
 // A new list starts switched on for the next dive.
-export function createList(init: { id: string; kind: ListKind; name: string }, now: Date): CardList {
+export function createList(init: { id: string; kind: ListKind; name: string; game?: GameId }, now: Date): CardList {
   const iso = now.toISOString();
-  return { id: init.id, kind: init.kind, name: cleanName(init.name), entries: [], inNextDive: true, createdAt: iso, updatedAt: iso };
+  return { id: init.id, kind: init.kind, name: cleanName(init.name), entries: [], inNextDive: true, createdAt: iso, updatedAt: iso, ...(init.game && init.game !== DEFAULT_GAME ? { game: init.game } : {}) };
 }
 
 const touch = (list: CardList, now: Date): CardList => ({ ...list, updatedAt: now.toISOString() });

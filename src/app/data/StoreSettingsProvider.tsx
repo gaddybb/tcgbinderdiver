@@ -3,9 +3,12 @@ import type { ReactNode } from 'react';
 import type { StoreProfile } from '../../core/engine/engine';
 import { DEFAULT_STORE_SETTINGS, storeProfile } from '../../core/store';
 import type { StoreSettings } from '../../core/store';
+import { DEFAULT_GAME } from '../../core/games';
+import { useGame } from './useGame';
 import { useStorage } from './StorageProvider';
 
-const KEY = 'store-settings';
+// Settings are kept per game (a binder group of one game means nothing in another). Magic keeps the key it always had.
+const keyFor = (game: string) => (game === DEFAULT_GAME ? 'store-settings' : `store-settings:${game}`);
 
 interface StoreSettingsApi {
   settings: StoreSettings;
@@ -20,6 +23,8 @@ const Context = createContext<StoreSettingsApi | null>(null);
 // that plans, so the list review, the dive plan and the store all agree.
 export function StoreSettingsProvider({ children }: { children: ReactNode }) {
   const storage = useStorage();
+  const [game] = useGame();
+  const KEY = keyFor(game);
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
   const [ready, setReady] = useState(false);
   const latest = useRef(settings);
@@ -28,18 +33,19 @@ export function StoreSettingsProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     storage.get<StoreSettings>('settings', KEY).then(saved => {
       if (cancelled) return;
-      if (saved) { latest.current = { ...DEFAULT_STORE_SETTINGS, ...saved }; setSettings(latest.current); }
+      latest.current = saved ? { ...DEFAULT_STORE_SETTINGS, ...saved } : DEFAULT_STORE_SETTINGS;
+      setSettings(latest.current);
       setReady(true);
     });
     return () => { cancelled = true; };
-  }, [storage]);
+  }, [storage, KEY]);
 
   const update = useCallback((change: (settings: StoreSettings) => StoreSettings) => {
     const next = change(latest.current);
     latest.current = next;
     setSettings(next);
     void storage.put('settings', KEY, next);
-  }, [storage]);
+  }, [storage, KEY]);
 
   const value = useMemo<StoreSettingsApi>(() => ({ settings, ready, profile: storeProfile(settings), update }), [settings, ready, update]);
   return <Context.Provider value={value}>{children}</Context.Provider>;

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { endTrip, startTrip } from '../../core/trip';
 import type { Trip } from '../../core/trip';
 import { useLists } from './ListsProvider';
+import { useGame } from './useGame';
 import { useStorage } from './StorageProvider';
 
 const KEY = 'current';
@@ -22,6 +23,7 @@ const Context = createContext<TripApi | null>(null);
 export function TripProvider({ children }: { children: ReactNode }) {
   const storage = useStorage();
   const lists = useLists();
+  const [game] = useGame();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [ready, setReady] = useState(false);
   const latest = useRef<Trip | null>(null);
@@ -48,14 +50,14 @@ export function TripProvider({ children }: { children: ReactNode }) {
     ready,
     start(listIds) {
       const now = lists.now();
-      const next = startTrip(`trip-${now.getTime()}`, now, listIds);
+      const next = startTrip(`trip-${now.getTime()}`, now, listIds, game);
       save(next);
       return next;
     },
     update(change) { if (latest.current) save(change(latest.current)); },
     end() { if (latest.current) save(endTrip(latest.current, lists.now())); },
     clear() { save(null); },
-  }), [trip, ready, lists, save]);
+  }), [trip, ready, lists, save, game]);
 
   return <Context.Provider value={api}>{children}</Context.Provider>;
 }

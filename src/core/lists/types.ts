@@ -1,4 +1,5 @@
 import type { PrintRef } from '../parse/parseDecklist';
+import type { GameId } from '../games';
 import type { CardStatus } from '../status';
 
 export type { PrintRef };
@@ -26,6 +27,7 @@ export interface CardList {
   createdAt: string;    // ISO
   updatedAt: string;    // ISO; changes when the contents or name change, not when the dive switch moves
   banner?: string;      // the name of a card whose art heads the list; without it, the first card is used
+  game?: GameId;        // absent means Magic: only other games' lists say so
   sample?: boolean;     // a sample deck the player is trying out: removed when they paste their own list or try another
 }
 
