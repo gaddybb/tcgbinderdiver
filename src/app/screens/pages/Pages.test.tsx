@@ -242,12 +242,12 @@ describe('About, Support and Privacy', () => {
     expect(screen.getByText(copy.supportPage.goText)).toBeTruthy();
   });
 
-  it('Privacy covers only what the app does now: device storage, card data, store search, accounts and contact', () => {
+  it('Privacy covers only what the app does now: device storage, analytics, card data, store search, accounts and contact', () => {
     open('/privacy');
     const s = copy.privacyPage.sections;
     expect(screen.getByRole('heading', { level: 1, name: copy.privacyPage.title })).toBeTruthy();
-    for (const section of [s.device, s.cards, s.stores, s.accounts, s.contact]) expect(screen.getByRole('heading', { name: section.title })).toBeTruthy();
-    for (const section of [s.analytics, s.affiliate]) expect(screen.queryByRole('heading', { name: section.title })).toBeNull();
+    for (const section of [s.device, s.analytics, s.cards, s.stores, s.accounts, s.contact]) expect(screen.getByRole('heading', { name: section.title })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: s.affiliate.title })).toBeNull();
     expect(screen.getByText(s.stores.text)).toBeTruthy();
     expect(screen.getByText(new RegExp(copy.privacyPage.updated.replace(/[[\]]/g, '\\$&')))).toBeTruthy();
   });

@@ -82,11 +82,13 @@ describe('the consent banner', () => {
     }
   });
 
-  it('does nothing in the app as shipped, because there is no container id yet', async () => {
+  it('as shipped, asks first and loads no Google script until the player allows it', async () => {
     goTo('/');
+    window.dataLayer = undefined;
     render(<App storage={new MemoryStorage()} />);
-    await screen.findByRole('heading', { level: 1, name: copy.homePage.title });
-    expect(screen.queryByRole('region', { name: copy.consent.label })).toBeNull();
+    await screen.findByRole('region', { name: copy.consent.label });
+    expect(document.head.querySelector('script[src*="googletagmanager.com"]')).toBeNull();
+    expect((window.dataLayer as unknown[] | undefined)?.map(e =>Array.from(e as ArrayLike<unknown>)[1])).toEqual(['default']);   // only Consent Mode, denied
   });
 
   it('Change cookie choice on the privacy page asks again, and the page only describes analytics when it is on', async () => {
@@ -161,6 +163,23 @@ describe('Consent Mode', () => {
     await open('/', config);
     await screen.findByRole('heading', { level: 1, name: copy.homePage.title });
     expect(modes).toEqual([]);
+  });
+});
+
+describe('GA4 directly, without a Tag Manager container', () => {
+  it('after Allow, loads gtag.js for the measurement id and sends events as gtag events, never names', async () => {
+    window.dataLayer = [];
+    document.head.querySelectorAll('script[src*="googletagmanager.com"]').forEach(n => n.remove());
+    const config: AnalyticsConfig = { enabled: true, gtmId: '', gaId: 'G-TEST123456' };
+    await open('/import', config);
+    fireEvent.click(await screen.findByRole('button', { name: copy.consent.allow }));
+    await waitFor(() => expect(document.head.querySelector('script[src="https://www.googletagmanager.com/gtag/js?id=G-TEST123456"]')).toBeTruthy());
+    const calls = window.dataLayer!.map(e => Array.from(e as ArrayLike<unknown>));
+    expect(calls.map(c => c.slice(0, 2).map(x => (x instanceof Date ? 'date' : x)))).toEqual([
+      ['consent', 'default'], ['consent', 'update'], ['js', 'date'], ['config', 'G-TEST123456'],
+    ]);
+    expect(calls[3][2]).toEqual({ send_page_view: false });
+    window.dataLayer = undefined;
   });
 });
 
