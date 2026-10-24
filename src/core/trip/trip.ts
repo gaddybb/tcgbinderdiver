@@ -3,6 +3,8 @@
 // Pure: ids and times come in as arguments.
 import { buildPlan, finishStop, reopenStop } from '../engine/engine';
 import type { NeededCard, Plan, Printing, StoreProfile } from '../engine/engine';
+import { DEFAULT_GAME } from '../games';
+import type { GameId } from '../games';
 import { lockedPrintings } from '../cards/printingArt';
 import type { CardRecord } from '../cards/types';
 import { mergeNeeded } from '../lists';
@@ -22,10 +24,11 @@ export interface Trip {
   found: Record<string, Record<string, number>>;   // card key -> list id -> copies found
   notAvailable: string[];     // card keys marked Not available at a counter stop
   events: TripEvent[];
+  game?: GameId;              // absent means Magic
 }
 
-export const startTrip = (id: string, now: Date, listIds: readonly string[]): Trip => (
-  { id, startedAt: now.toISOString(), listIds: [...listIds], found: {}, notAvailable: [], events: [] }
+export const startTrip = (id: string, now: Date, listIds: readonly string[], game: GameId = DEFAULT_GAME): Trip => (
+  { id, startedAt: now.toISOString(), listIds: [...listIds], found: {}, notAvailable: [], events: [], ...(game !== DEFAULT_GAME ? { game } : {}) }
 );
 
 export const endTrip = (trip: Trip, now: Date): Trip => (trip.endedAt ? trip : { ...trip, endedAt: now.toISOString() });

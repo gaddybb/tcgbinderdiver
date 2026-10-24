@@ -7,6 +7,7 @@ import {
 import type { CardList, IncomingEntry, PrintRef } from '../../core/lists';
 import type { CardStatus } from '../../core/status';
 import { ListLimitError, ListsRepository } from '../../storage';
+import { useGame } from './useGame';
 import { useStorage } from './StorageProvider';
 
 export type CreateResult =
@@ -57,6 +58,7 @@ interface ListsProviderProps {
 // This is where the clock is read, because src/core never does.
 export function ListsProvider({ children, clock = () => new Date(), makeId }: ListsProviderProps) {
   const storage = useStorage();
+  const [game] = useGame();
   const repo = useMemo(() => new ListsRepository(storage, makeId), [storage, makeId]);
   const clockRef = useRef(clock);
   useEffect(() => { clockRef.current = clock; });
@@ -90,7 +92,7 @@ export function ListsProvider({ children, clock = () => new Date(), makeId }: Li
       async createDeck(name, entries) {
         const at = now();
         try {
-          const deck = await repo.createDeck(name, at);
+          const deck = await repo.createDeck(name, at, { game });
           const { list, overflow } = addEntries(deck, entries, at);
           await repo.save(list);
           await refresh();
@@ -104,7 +106,7 @@ export function ListsProvider({ children, clock = () => new Date(), makeId }: Li
       async startSample(name, entries, banner) {
         const at = now();
         for (const old of (await repo.all()).filter(l => l.sample)) await repo.remove(old.id);
-        const deck = await repo.createDeck(name, at, { sample: true, banner });
+        const deck = await repo.createDeck(name, at, { sample: true, banner, game });
         const { list } = addEntries(deck, entries, at);
         await repo.save(list);
         await refresh();
@@ -183,7 +185,7 @@ export function ListsProvider({ children, clock = () => new Date(), makeId }: Li
         await refresh();
       },
     };
-  }, [lists, ready, storage.persistent, repo, refresh, now]);
+  }, [lists, ready, storage.persistent, repo, refresh, now, game]);
 
   return <ListsContext.Provider value={api}>{children}</ListsContext.Provider>;
 }

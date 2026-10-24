@@ -5,6 +5,8 @@ import type { BinderGroup } from '../engine/engine';
 import { MAX_CARDS_PER_LIST, MAX_LISTS } from '../lists/limits';
 import type { CardList, IncomingEntry, ListKind, PrintRef } from '../lists';
 import { nameKey } from '../parse/parseDecklist';
+import { DEFAULT_GAME, isGameId } from '../games';
+import type { GameId } from '../games';
 import type { StoreSettings } from '../store';
 
 // What identifies a card in a compact link: five bytes of a hash of its name. Both devices have the same card catalog, so the
@@ -33,14 +35,16 @@ export interface HandoffList {
 }
 
 export interface Handoff {
+  game?: GameId;                // absent means Magic
   lists: HandoffList[];
   settings?: StoreSettings;
 }
 
 // The lists that are on for the next dive and have something to find, with their binder groups. A sample deck goes too: it
 // is a real list to whoever is trying the app, and the phone gets it as an ordinary one.
-export function buildHandoff(lists: readonly CardList[], settings: StoreSettings): Handoff {
+export function buildHandoff(lists: readonly CardList[], settings: StoreSettings, game: GameId = DEFAULT_GAME): Handoff {
   return {
+    ...(game !== DEFAULT_GAME ? { game } : {}),
     lists: lists
       .filter(l => l.inNextDive)
       .map(l => ({ name: l.name, kind: l.kind, entries: l.entries.filter(e => e.status === 'needed').map(e => ({ name: e.name, quantity: e.quantity, ...(e.locked && e.print ? { lock: e.print } : {}) })) }))
@@ -59,6 +63,7 @@ export function toWire(handoff: Handoff, compact = false): string {
     : handoff.lists.map(l => [l.name, l.kind === 'wishlist' ? 1 : 0, l.entries.map(e => (e.lock ? [e.name, e.quantity, e.lock.setCode, e.lock.collectorNumber] : [e.name, e.quantity]))]);
   return JSON.stringify({
     v: compact ? 2 : 1,
+    ...(handoff.game && handoff.game !== DEFAULT_GAME ? { g: handoff.game } : {}),
     l: lists,
     ...(s ? { s: [s.binderGroups.map(g => [g.id, g.name, g.setCodes]), s.notCarried, s.includeBasicLands ? 1 : 0, s.pull.worthPullMinCards, s.pull.worthPullMinUsd, s.combinedCommander ? 1 : 0] } : {}),
   });
@@ -131,7 +136,7 @@ export function resolveFingerprints(handoff: Handoff, names: ReadonlyMap<number,
 export function fromWire(text: string): Handoff | null {
   let raw: unknown;
   try { raw = JSON.parse(text); } catch { return null; }
-  const o = raw as { v?: unknown; l?: unknown; s?: unknown } | null;
+  const o = raw as { v?: unknown; l?: unknown; s?: unknown; g?: unknown } | null;
   if (typeof o !== 'object' || o === null || (o.v !== 1 && o.v !== 2) || !Array.isArray(o.l) || o.l.length === 0 || o.l.length > MAX_LISTS) return null;
 
   const lists: HandoffList[] = [];
@@ -156,7 +161,9 @@ export function fromWire(text: string): Handoff | null {
     lists.push({ name, kind: kind === 1 ? 'wishlist' : 'deck', entries: cleaned });
   }
 
-  if (o.s === undefined) return { lists };
+  if (o.g !== undefined && !isGameId(o.g)) return null;
+  const game = o.g === undefined || o.g === DEFAULT_GAME ? {} : { game: o.g as GameId };
+  if (o.s === undefined) return { ...game, lists };
   const s = o.s as unknown[];
   if (!Array.isArray(s) || (s.length !== 5 && s.length !== 6)) return null;   // 5: a link made before the Commander switch
   const [groups, notCarried, basics, minCards, minUsd, commander] = s;
@@ -169,6 +176,7 @@ export function fromWire(text: string): Handoff | null {
     binderGroups.push({ id: g[0], name: g[1], setCodes: g[2].map(c => c.toLowerCase()) });
   }
   return {
+    ...game,
     lists,
     settings: {
       binderGroups, notCarried: notCarried.map(c => c.toLowerCase()), includeBasicLands: basics === 1, combinedCommander: commander === 1,

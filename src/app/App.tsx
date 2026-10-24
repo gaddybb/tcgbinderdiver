@@ -36,11 +36,11 @@ export function App({ storage, clock, connector, sampleDecks, random, analytics 
   const phone = useLayout() === 'phone';
   return (
     <ToastProvider>
+      <StorageProvider storage={storage}>
       <div className={cx(styles.shell, phone && styles.shellPhone)}>
         <SiteNav />
         <OfflineBanner />
         <main className={cx(styles.main, phone && styles.mainPhone)}>
-          <StorageProvider storage={storage}>
             <AnalyticsProvider config={analytics}>
             <ListsProvider clock={clock}>
               <SampleDecksProvider decks={sampleDecks} random={random}>
@@ -55,10 +55,10 @@ export function App({ storage, clock, connector, sampleDecks, random, analytics 
             </ListsProvider>
             <ConsentBanner />
             </AnalyticsProvider>
-          </StorageProvider>
         </main>
         <Footer />
       </div>
+      </StorageProvider>
     </ToastProvider>
   );
 }
