@@ -2,27 +2,21 @@
 // Logic is copied unchanged from reference/engine/engine.ts; types, WEIGHTS and V1_STORE live in their own modules.
 import type {
   BinderGroup, Candidate, CardInput, CardRoute, Finish, Location, NeededCard, Plan, PlanStop,
-  Printing, RankedStop, Stop, StopKind, StoreProfile,
+  GameRules, Printing, RankedStop, Stop, StopKind, StoreProfile,
 } from './types';
-import { WEIGHTS } from './weights';
+import { MAGIC_RULES } from './rules';
 
 export type {
   BinderGroup, Candidate, CardInput, CardRoute, Finish, Location, NeededCard, Plan, PlanStop,
-  Printing, RankedStop, Stop, StopKind, StoreProfile,
+  GameRules, Printing, RankedStop, Stop, StopKind, StoreProfile,
 };
 export { WEIGHTS } from './weights';
+export { MAGIC_RULES, isBasicLand } from './rules';
 export { V1_STORE } from './storeProfile';
 export { DEFAULT_PULL_SETTINGS } from './pullSettings';
 export { pullVerdict } from './pullVerdict';
 export type { PullSettings, PullVerdict } from './types';
 
-const MAIN_SET_TYPES = new Set(['core', 'expansion', 'draft_innovation', 'masters']);
-// Sets whose prints look like the card everyone knows. Prints from other product sets (Jumpstart, Duel Decks and the like) often
-// carry their own art, so they rank a little lower, all else equal.
-const ORDINARY_SET_TYPES = new Set(['core', 'expansion', 'masters']);
-const SPECIAL_SET_TYPES = new Set(['box', 'masterpiece', 'promo', 'memorabilia', 'funny', 'token']);
-const SPECIAL_FRAMES = new Set(['showcase', 'extendedart', 'inverted']);
-const STOP_ORDER: Record<StopKind, number> = { set_binder: 0, commander_box: 1, value_binder: 2, display_case: 3, ask_associate: 4 };
 const YEAR_MS = 365.25 * 24 * 3600 * 1000;
 
 export function priceFor(p: Printing, f: Finish): number | null {
@@ -38,29 +32,24 @@ export function ageYears(releasedAt: string, now: Date): number {
   return Math.max(0, (now.getTime() - t) / YEAR_MS);
 }
 
-export function isBasicLand(typeLine: string): boolean {
-  const front = typeLine.split(' // ')[0];
-  return /\bBasic\b/.test(front) && /\bLand\b/.test(front);
+function isSpecial(p: Printing, rules: GameRules): boolean {
+  return p.promo || p.promoTypes.length > 0 || rules.specialSetTypes.has(p.setType) || rules.specialSetCodes.has(p.setCode.toLowerCase());
 }
 
-function isSpecial(p: Printing): boolean {
-  return p.promo || p.promoTypes.length > 0 || SPECIAL_SET_TYPES.has(p.setType) || p.setCode.toLowerCase() === 'plst';
+function hasSpecialFrame(p: Printing, rules: GameRules): boolean {
+  return p.fullArt || p.borderColor === 'borderless' || p.frameEffects.some(e => rules.specialFrames.has(e));
 }
 
-function hasSpecialFrame(p: Printing): boolean {
-  return p.fullArt || p.borderColor === 'borderless' || p.frameEffects.some(e => SPECIAL_FRAMES.has(e));
-}
-
-export function classify(p: Printing, price: number | null, store: StoreProfile, now: Date):
+export function classify(p: Printing, price: number | null, store: StoreProfile, now: Date, rules: GameRules = MAGIC_RULES):
     { location: Location; groupId?: string; viaAge: boolean } {
   const code = p.setCode.toLowerCase();
   if (store.usesDisplayCase && price !== null && price >= store.displayCaseMin) return { location: 'display_case', viaAge: false };
-  if (store.hasCommanderSection && p.setType === 'commander') return { location: 'commander_box', viaAge: false };
+  if (store.hasCommanderSection && rules.commanderSetType !== null && p.setType === rules.commanderSetType) return { location: 'commander_box', viaAge: false };
   // With no combined Commander library, a recent Commander set is a binder of its own, like any other set.
   if (store.usesSetBinders) {
     const group = store.binderGroups.find(g => g.setCodes.map(c => c.toLowerCase()).includes(code));
     if (group) return { location: 'set_binder', groupId: group.id, viaAge: false };
-    const bindered = MAIN_SET_TYPES.has(p.setType) || (!store.hasCommanderSection && p.setType === 'commander');
+    const bindered = rules.mainSetTypes.has(p.setType) || (!store.hasCommanderSection && rules.commanderSetType !== null && p.setType === rules.commanderSetType);
     if (bindered && ageYears(p.releasedAt, now) <= store.setBinderMaxAgeYears)
       return { location: 'set_binder', viaAge: true };
   }
@@ -89,8 +78,9 @@ function stopFor(loc: Location, p: Printing, groupId: string | undefined, store:
   }
 }
 
-export function routeCard(card: CardInput, store: StoreProfile, now: Date): CardRoute {
-  if (!store.includeBasicLands && isBasicLand(card.typeLine)) return { status: 'skipped_basic' };
+export function routeCard(card: CardInput, store: StoreProfile, now: Date, rules: GameRules = MAGIC_RULES): CardRoute {
+  const WEIGHTS = rules.weights;
+  if (!store.includeBasicLands && rules.isBasicLand(card.typeLine)) return { status: 'skipped_basic' };
   const notCarried = new Set(store.notCarried.map(c => c.toLowerCase()));
   const raw: Omit<Candidate, 'score'>[] = [];
   const meta = new Map<Omit<Candidate, 'score'>, boolean>();   // viaAge per candidate
@@ -99,7 +89,7 @@ export function routeCard(card: CardInput, store: StoreProfile, now: Date): Card
     for (const f of p.finishes) {
       if (!store.acceptFinishes.includes(f)) continue;
       const price = priceFor(p, f);
-      const c = classify(p, price, store, now);
+      const c = classify(p, price, store, now, rules);
       const { stop, hint } = stopFor(c.location, p, c.groupId, store);
       const cand = { printing: p, finish: f, price, location: c.location, stop, hint };
       raw.push(cand); meta.set(cand, c.viaAge);
@@ -115,9 +105,9 @@ export function routeCard(card: CardInput, store: StoreProfile, now: Date): Card
     let s = WEIGHTS.base[c.location];
     if (c.location !== 'display_case') s *= WEIGHTS.rarity[p.rarity] ?? WEIGHTS.rarity.special;
     s *= WEIGHTS.finish[c.finish];
-    if (isSpecial(p)) s *= WEIGHTS.special;
-    else if (!ORDINARY_SET_TYPES.has(p.setType) && p.setType !== 'commander') s *= WEIGHTS.altProduct;
-    if (hasSpecialFrame(p)) s *= WEIGHTS.frame;
+    if (isSpecial(p, rules)) s *= WEIGHTS.special;
+    else if (!rules.ordinarySetTypes.has(p.setType) && p.setType !== rules.commanderSetType) s *= WEIGHTS.altProduct;
+    if (hasSpecialFrame(p, rules)) s *= WEIGHTS.frame;
     if (c.price === null) s *= WEIGHTS.unknownPrice;
     if (meta.get(c)) {
       const yrs = ageYears(p.releasedAt, now);
@@ -133,7 +123,7 @@ export function routeCard(card: CardInput, store: StoreProfile, now: Date): Card
     if (!cur || better(c, cur.best)) byStop.set(c.stop.id, { stop: c.stop, score: c.score, best: c });
   }
   const ranked = [...byStop.values()].sort((a, b) =>
-    b.score - a.score || STOP_ORDER[a.stop.kind] - STOP_ORDER[b.stop.kind] || a.stop.id.localeCompare(b.stop.id));
+    b.score - a.score || rules.stopOrder[a.stop.kind] - rules.stopOrder[b.stop.kind] || a.stop.id.localeCompare(b.stop.id));
   return { status: 'routed', ranked };
 }
 
@@ -146,12 +136,12 @@ function better(a: Candidate, b: Candidate): boolean {
 }
 
 // ---------------- plan ----------------
-export function buildPlan(needed: NeededCard[], store: StoreProfile, now: Date, finished: Set<string> = new Set()): Plan {
+export function buildPlan(needed: NeededCard[], store: StoreProfile, now: Date, finished: Set<string> = new Set(), rules: GameRules = MAGIC_RULES): Plan {
   const routes = new Map<string, CardRoute>();
   const noStop: string[] = [], skipped: string[] = [];
   const first = new Map<string, RankedStop>();
   for (const n of needed) {
-    const r = routeCard(n.card, store, now); routes.set(n.key, r);
+    const r = routeCard(n.card, store, now, rules); routes.set(n.key, r);
     if (r.status === 'skipped_basic') { skipped.push(n.key); continue; }
     const open = r.status === 'routed' ? r.ranked.filter(x => !finished.has(x.stop.id)) : [];
     if (open.length === 0) { noStop.push(n.key); continue; }
@@ -166,16 +156,16 @@ export function buildPlan(needed: NeededCard[], store: StoreProfile, now: Date, 
     const r = routes.get(n.key) as { status: 'routed'; ranked: RankedStop[] };
     let pick = f;
     for (const x of r.ranked) {
-      if (finished.has(x.stop.id) || x === f || x.score < f.score - WEIGHTS.nearTie) continue;
+      if (finished.has(x.stop.id) || x === f || x.score < f.score - rules.weights.nearTie) continue;
       const px = pop.get(x.stop.id) ?? 0, pp = pop.get(pick.stop.id) ?? 0;
       if (px > pp || (px === pp && x.score > pick.score)) pick = x;
     }
     chosen.set(n.key, pick);
   }
-  return assemble(needed, chosen, routes, noStop, skipped);
+  return assemble(needed, chosen, routes, noStop, skipped, rules);
 }
 
-function assemble(needed: NeededCard[], chosen: Map<string, RankedStop>, routes: Map<string, CardRoute>, noStop: string[], skipped: string[], frozenOrder?: string[], left: Map<string, string[]> = new Map()): Plan {
+function assemble(needed: NeededCard[], chosen: Map<string, RankedStop>, routes: Map<string, CardRoute>, noStop: string[], skipped: string[], rules: GameRules, frozenOrder?: string[], left: Map<string, string[]> = new Map()): Plan {
   const stops = new Map<string, PlanStop>();
   const assignment = new Map<string, string>();
   for (const n of needed) {
@@ -189,10 +179,10 @@ function assemble(needed: NeededCard[], chosen: Map<string, RankedStop>, routes:
   const list = [...stops.values()];
   if (frozenOrder) {
     const idx = (id: string) => { const i = frozenOrder.indexOf(id); return i === -1 ? Number.MAX_SAFE_INTEGER : i; };
-    list.sort((a, b) => idx(a.stop.id) - idx(b.stop.id) || STOP_ORDER[a.stop.kind] - STOP_ORDER[b.stop.kind]);
+    list.sort((a, b) => idx(a.stop.id) - idx(b.stop.id) || rules.stopOrder[a.stop.kind] - rules.stopOrder[b.stop.kind]);
   } else {
     list.sort((a, b) =>
-      STOP_ORDER[a.stop.kind] - STOP_ORDER[b.stop.kind] ||
+      rules.stopOrder[a.stop.kind] - rules.stopOrder[b.stop.kind] ||
       (a.stop.kind === 'set_binder' ? (b.copies - a.copies) || (Date.parse(b.stop.releasedAt ?? '') || 0) - (Date.parse(a.stop.releasedAt ?? '') || 0) : 0) ||
       a.stop.label.localeCompare(b.stop.label));
   }
@@ -202,7 +192,7 @@ function assemble(needed: NeededCard[], chosen: Map<string, RankedStop>, routes:
 }
 
 // Finish a stop mid-trip: only that stop's cards move, to their next unfinished stop. Order stays frozen.
-export function finishStop(plan: Plan, needed: NeededCard[], stopId: string, finished: Set<string>, found: Set<string>): Plan {
+export function finishStop(plan: Plan, needed: NeededCard[], stopId: string, finished: Set<string>, found: Set<string>, rules: GameRules = MAGIC_RULES): Plan {
   const nowFinished = new Set(finished); nowFinished.add(stopId);
   const chosen = new Map<string, RankedStop>();
   const noStop = [...plan.noStop];
@@ -217,12 +207,12 @@ export function finishStop(plan: Plan, needed: NeededCard[], stopId: string, fin
     if (next) chosen.set(n.key, next); else noStop.push(n.key);
   }
   for (const n of needed) if (found.has(n.key) && plan.assignment.get(n.key) === stopId) chosen.delete(n.key);   // found cards leave the plan
-  return assemble(needed.filter(n => chosen.has(n.key)), chosen, plan.routes, noStop, plan.skipped, plan.order, left);
+  return assemble(needed.filter(n => chosen.has(n.key)), chosen, plan.routes, noStop, plan.skipped, rules, plan.order, left);
 }
 
 // Reopen a finished stop: the cards that left it unfound come back (from a later stop or from no_stop).
 // Found cards stay found, other cards stay where they are, and stop order stays frozen.
-export function reopenStop(plan: Plan, needed: NeededCard[], stopId: string, finished: Set<string>, found: Set<string>): Plan {
+export function reopenStop(plan: Plan, needed: NeededCard[], stopId: string, finished: Set<string>, found: Set<string>, rules: GameRules = MAGIC_RULES): Plan {
   if (!finished.has(stopId)) return plan;
   const stillFinished = new Set(finished); stillFinished.delete(stopId);
   const chosen = new Map<string, RankedStop>();
@@ -244,5 +234,5 @@ export function reopenStop(plan: Plan, needed: NeededCard[], stopId: string, fin
     if (cur) chosen.set(n.key, r.ranked.find(x => x.stop.id === cur)!);
   }
   const noStop = plan.noStop.filter(k => !restored.has(k));
-  return assemble(needed.filter(n => chosen.has(n.key)), chosen, plan.routes, noStop, plan.skipped, plan.order, left);
+  return assemble(needed.filter(n => chosen.has(n.key)), chosen, plan.routes, noStop, plan.skipped, rules, plan.order, left);
 }
